@@ -556,7 +556,8 @@ class Orchestrator:
             "caveat": gate.decision is gate_module.GateDecision.ANSWER_WITH_CAVEAT,
         }
 
-        if not supported and not context["conclusion"]:
+        reporting_conflict = gate.decision is gate_module.GateDecision.REPORT_CONFLICT
+        if not supported and not context["conclusion"] and not reporting_conflict:
             turn.answer = self._compose(Task.DIRECT_ANSWER, question, history,
                                         context=context,
                                         system=prompts.DIRECT_SYSTEM, grounded=False)

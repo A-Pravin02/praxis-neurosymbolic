@@ -273,6 +273,10 @@ def verify(
     superseded_values = {
         _round(v) for c in report.contradictions for v in c.superseded_values
     }
+    # While a conflict is unresolved, *neither* side may be asserted. Stating one
+    # of two disputed values and only then mentioning the disagreement would let
+    # the reader take the first number as the answer.
+    disputed_values = {_round(v) for c in unresolved for v in c.values}
 
     for claim in claims:
         fact = claim.fact
@@ -282,10 +286,16 @@ def verify(
             claim.notes = "Sources disagree on this value."
             continue
 
-        if superseded_values and _round_set(extract_numbers(claim.text)) & superseded_values:
+        claim_numbers = _round_set(extract_numbers(claim.text))
+        if superseded_values and claim_numbers & superseded_values:
             claim.status = ClaimStatus.CONTRADICTED
             claim.support_score = 0.0
             claim.notes = "This value was superseded by a newer source."
+            continue
+        if disputed_values and claim_numbers & disputed_values:
+            claim.status = ClaimStatus.CONTRADICTED
+            claim.support_score = 0.0
+            claim.notes = "The sources disagree about this value."
             continue
 
         score, citations = support_for(claim.text, spans)

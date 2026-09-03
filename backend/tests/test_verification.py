@@ -232,3 +232,16 @@ def test_provenance_context_may_be_mentioned():
         "the entitlement is 20 days. [1]",
         claims, [dated], extra_context=["Handbook 2026 supersedes Handbook 2019"])
     assert report.grounded
+
+
+def test_neither_side_of_an_unresolved_conflict_may_be_asserted():
+    conflict = Contradiction(subject="policy", predicate="warranty_months",
+                             values=[24.0, 36.0])
+    claims = [
+        Claim(text="The warranty period is 24 months from purchase", relevance=0.9),
+        Claim(text="The warranty period is 36 months", relevance=0.9),
+    ]
+    report = verify("warranty", claims, [span("The warranty period is 24 months.")],
+                    contradictions=[conflict])
+    assert all(c.status is ClaimStatus.CONTRADICTED for c in report.claims)
+    assert report.supported_claims == []

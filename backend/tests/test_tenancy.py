@@ -204,3 +204,32 @@ def test_documents_endpoint_is_tenant_scoped(client):
     globex_titles = {d["title"] for d in globex}
     assert acme_titles and globex_titles
     assert not (acme_titles & globex_titles)
+
+
+# --- migrations ------------------------------------------------------------
+
+def test_migrations_match_the_models():
+    """`alembic upgrade head` must produce exactly what the models describe.
+
+    This is the regression test for a real defect: the first migration used
+    `Base.metadata.create_all`, so every later model change was silently absorbed
+    into revision 0001 and the *second* migration then collided with it on a
+    fresh database. Autogenerate diffing the live schema against the models
+    catches that drift the moment it appears.
+    """
+    from alembic.autogenerate import compare_metadata
+    from alembic.migration import MigrationContext
+
+    from app.db.models import Base
+
+    with admin_engine.connect() as conn:
+        context = MigrationContext.configure(conn)
+        diff = compare_metadata(context, Base.metadata)
+
+    # The generated tsvector column and the ivfflat/GIN indexes are created with
+    # raw DDL, so ignore index-only differences on `chunks`.
+    significant = [
+        entry for entry in diff
+        if not (isinstance(entry, tuple) and entry and "index" in str(entry[0]).lower())
+    ]
+    assert significant == [], f"models and migrations have drifted: {significant}"

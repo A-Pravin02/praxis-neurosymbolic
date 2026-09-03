@@ -248,19 +248,6 @@ def compose_grounded_answer(question: str, ctx: dict) -> str:
         marks = _cite(claim.get("citation_indexes") or [])
         lines.append(f"{text.rstrip('.')}.{marks}" if marks else f"{text.rstrip('.')}.")
 
-    if not lines and citations:
-        # Quarantined passages are evidence to look at, never text to repeat as an
-        # answer: a document trying to issue instructions must not get a voice.
-        usable = [c for c in citations if not c.get("quarantined")]
-        if usable:
-            top = usable[0]
-            snippet = normalize(top.get("snippet", ""))[:400]
-            if snippet:
-                lines.append(
-                    f"According to {top.get('title', 'the source')}: "
-                    f"\"{snippet}\" [{top.get('index', 1)}]"
-                )
-
     if inferences:
         steps = "; ".join(
             f"{normalize(step.get('sentence') or step.get('conclusion', ''))} "
@@ -285,6 +272,19 @@ def compose_grounded_answer(question: str, ctx: dict) -> str:
                     f"Note: the sources disagree on the {label} for "
                     f"{c.get('subject', 'this subject')}; recorded values are "
                     f"{values}.{marks} I have not resolved which is authoritative."
+                )
+
+    if not lines and citations:
+        # Quarantined passages are evidence to look at, never text to repeat as an
+        # answer: a document trying to issue instructions must not get a voice.
+        usable = [c for c in citations if not c.get("quarantined")]
+        if usable:
+            top = usable[0]
+            snippet = normalize(top.get("snippet", ""))[:400]
+            if snippet:
+                lines.append(
+                    f"According to {top.get('title', 'the source')}: "
+                    f"\"{snippet}\" [{top.get('index', 1)}]"
                 )
 
     if caveat:
