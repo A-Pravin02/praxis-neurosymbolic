@@ -1,0 +1,67 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: praxis-db
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres_superuser_pw}
+      POSTGRES_DB: ${POSTGRES_DB:-praxis}
+    ports:
+      - "5432:5432"
+    volumes:
+      - praxis-db-data:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/10-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d praxis"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: praxis-backend
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      LOG_FORMAT: ${LOG_FORMAT:-json}
+      DATABASE_URL: postgresql+psycopg://praxis_app:praxis_app_pw@db:5432/praxis
+      ADMIN_DATABASE_URL: postgresql+psycopg://praxis_owner:praxis_owner_pw@db:5432/praxis
+      JWT_SECRET: ${JWT_SECRET:-local-development-only-secret-do-not-use-in-production-01}
+      LLM_PROVIDER: ${LLM_PROVIDER:-mock}
+      LLM_MODEL: ${LLM_MODEL:-praxis-mock-1}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_BASE_URL: ${LLM_BASE_URL:-}
+      EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-hashing}
+      CORS_ORIGINS: http://localhost:8080,http://localhost:5173
+      SEED_ON_START: "true"
+    ports:
+      - "8000:8000"
+    volumes:
+      - praxis-uploads:/app/data/uploads
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/api/health').status==200 else 1)\""]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: praxis-frontend
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+
+volumes:
+  praxis-db-data:
+  praxis-uploads:
