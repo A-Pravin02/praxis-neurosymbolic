@@ -104,3 +104,48 @@ dummy verification runs when the email is unknown so responses do not reveal exi
 Token format is `<tenant_hex>.<secret>`. The prefix is an untrusted routing hint used only to
 bind an RLS tenant before the hashed-secret lookup; authorisation still comes entirely from the
 stored row, and the row's `tenant_id` is re-checked. A forged prefix simply finds nothing.
+
+## ADR-020 — Migrations are explicit DDL, never `metadata.create_all`
+The initial migration originally called `Base.metadata.create_all`. That reads the
+*current* models, so every later model addition was silently absorbed into revision
+0001 — and the second migration then failed on a fresh database with "relation already
+exists". Found by the clean-start validation, not by the test suite, which is itself a
+lesson. Revision 0001 is now explicit `op.create_table` DDL, and
+`test_migrations_match_the_models` diffs the migrated schema against the models so any
+future drift fails a test instead of a deployment.
+
+## ADR-021 — Claim relevance and claim support are separate scores
+A sentence lifted verbatim from a retrieved document is trivially "supported" by that
+document, which says nothing about whether it answers the question. Conflating the two
+let an unrelated passage satisfy the evidence gate. `Claim.relevance` (does this answer
+the question?) is now computed during selection and `Claim.support_score` (is this
+backed by evidence?) during verification, and the gate consults both.
+
+## ADR-022 — An unresolved conflict suppresses both values, not just the derived one
+An earlier version suppressed the derived conclusion when sources disagreed but still
+let a retrieved sentence stating one of the disputed values through, so the answer read
+"The warranty period is 24 months… the sources disagree." A reader takes the first
+number as the answer. Any claim stating a disputed value is now marked CONTRADICTED,
+and the conflict report *is* the answer.
+
+## ADR-023 — Temporal conflict resolution, with disclosure
+When conflicting facts all carry distinct effective dates, the newest supersedes: a 2026
+handbook replaces a 2019 one, and refusing to answer because a withdrawn document still
+exists would make the system useless. The conflict is still reported, the superseded
+value is still shown, and the severity drops to `warning` rather than disappearing.
+Without an ordering signal there is no automatic resolution — a confidence difference is
+evidence about the extractor, not about the world.
+
+## ADR-024 — A permissive email type instead of `EmailStr`
+Pydantic's `EmailStr` delegates to `email-validator`, which rejects reserved test domains
+such as `.test` — exactly what a demo corpus and a test suite should use. Address syntax
+is not a security control here; authentication is. A constrained string with a shape
+check is the right trade-off.
+
+## ADR-025 — Free-text extraction only mints known predicates
+Deriving a predicate name from an arbitrary noun phrase produced facts like
+`annual_leave_days = 10` from a sentence about *sick* leave, because a hint matched too
+loosely. Text extraction now requires a match in `PREDICATE_HINTS` (longest hint wins),
+skips sentences carrying qualifiers ("during", "target", "unless"), and treats
+conditional sentences as rule candidates rather than facts. A missing fact is recoverable;
+a wrong fact is treated as ground truth by the reasoning engine.
