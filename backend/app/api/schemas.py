@@ -112,8 +112,21 @@ class ClaimOut(BaseModel):
     kind: str
     status: str
     support_score: float
+    relevance: float = 0.0
     citation_indexes: list[int] = []
     fact_ids: list[str] = []
+
+
+class ProvenanceOut(BaseModel):
+    source_kind: str = "document"
+    document_id: str | None = None
+    chunk_id: str | None = None
+    document_title: str = ""
+    evidence_text: str = ""
+    extractor: str = ""
+    rule_codes: list[str] = []
+    premise_fact_ids: list[str] = []
+    effective_date: str | None = None
 
 
 class FactOut(BaseModel):
@@ -123,8 +136,9 @@ class FactOut(BaseModel):
     object: Any
     kind: str
     confidence: float
-    source: str = ""
-    evidence_text: str = ""
+    provenance: ProvenanceOut = ProvenanceOut()
+    valid_from: str | None = None
+    valid_to: str | None = None
     citation_index: int | None = None
 
 
@@ -132,8 +146,13 @@ class InferenceStepOut(BaseModel):
     step: int
     rule_code: str
     rule_name: str = ""
+    rule_text: str = ""
     premises: list[str] = []
+    premise_fact_ids: list[str] = []
     conclusion: str
+    # A readable rendering of the conclusion, for prose and for the UI.
+    sentence: str = ""
+    premise_sentences: list[str] = []
     confidence: float = 1.0
 
 
@@ -142,9 +161,20 @@ class ContradictionOut(BaseModel):
     predicate: str
     values: list[Any]
     fact_ids: list[str] = []
+    document_ids: list[str] = []
+    chunk_ids: list[str] = []
     citation_indexes: list[int] = []
     severity: str = "error"
+    kind: str = "functional_conflict"
     resolution: str = ""
+    # True when an ordering signal (a newer effective date) identifies which value
+    # supersedes the others. The conflict is reported either way.
+    resolved: bool = False
+    preferred_value: Any = None
+    superseded_values: list[Any] = []
+    # True when this conflict actually blocks the answer, rather than sitting
+    # elsewhere in the knowledge base.
+    blocking: bool = False
 
 
 class PolicyDecisionOut(BaseModel):
@@ -159,8 +189,10 @@ class ReasoningTraceOut(BaseModel):
     facts: list[FactOut] = []
     inferences: list[InferenceStepOut] = []
     rules_considered: list[str] = []
+    rules_fired: list[str] = []
     contradictions: list[ContradictionOut] = []
     conclusion: str = ""
+    iterations: int = 0
 
 
 class StageTimingOut(BaseModel):

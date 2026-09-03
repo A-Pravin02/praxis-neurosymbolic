@@ -455,7 +455,7 @@ class Orchestrator:
             "goal": (f"{plan.goal_subject}.{plan.goal_predicate}"
                      if plan.goal_predicate else ""),
             "facts": facts_out,
-            "inferences": [s.as_dict() for s in inference.steps],
+            "inferences": self._readable_inferences(inference),
             "rules_considered": inference.rules_considered[:40],
             "rules_fired": inference.rules_fired,
             "contradictions": contradictions,

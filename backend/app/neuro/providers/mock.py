@@ -302,11 +302,17 @@ def compose_abstention(ctx: dict) -> str:
     reasons: list[str] = ctx.get("reasons") or []
     text = ABSTENTION_TEXT
     if reasons:
-        text += "\n\nWhy: " + "; ".join(normalize(r) for r in reasons[:4]) + "."
+        text += "\n\nWhy: " + "; ".join(_fragment(r) for r in reasons[:4]) + "."
     suggestions = ctx.get("suggestions") or []
     if suggestions:
-        text += "\n\nYou could try: " + "; ".join(normalize(s) for s in suggestions[:3]) + "."
+        text += "\n\nYou could try: " + "; ".join(
+            _fragment(s) for s in suggestions[:3]) + "."
     return text
+
+
+def _fragment(text: str) -> str:
+    """Strip terminal punctuation so joined fragments do not double up."""
+    return normalize(text).rstrip(" .;")
 
 
 def compose_inference_explanation(ctx: dict) -> str:

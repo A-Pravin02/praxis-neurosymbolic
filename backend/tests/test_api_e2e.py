@@ -234,3 +234,25 @@ def test_conversation_can_be_renamed_and_archived(client):
                  json={"is_archived": True})
     listing = client.get("/api/conversations", headers=headers).json()
     assert conversation_id not in {c["id"] for c in listing}
+
+
+def test_response_schema_preserves_the_whole_trace(client):
+    """A field dropped by the API schema is a field the UI cannot show."""
+    headers = auth_headers(client, "alice@acme.test")
+    body = client.post("/api/chat", headers=headers, json={
+        "message": "How many annual leave days am I entitled to?"}).json()
+
+    step = body["reasoning"]["inferences"][0]
+    assert step["rule_text"] and step["sentence"]
+    assert step["premise_fact_ids"] is not None
+
+    fact = body["reasoning"]["facts"][0]
+    assert "provenance" in fact and "source_kind" in fact["provenance"]
+
+    conflict = next(c for c in body["reasoning"]["contradictions"]
+                    if c["predicate"] == "annual_leave_days")
+    assert conflict["resolved"] is True
+    assert conflict["preferred_value"] == 20.0
+    assert conflict["superseded_values"] == [18.0]
+    assert conflict["blocking"] is False
+    assert body["claims"][0]["relevance"] >= 0.0
