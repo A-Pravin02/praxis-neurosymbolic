@@ -403,17 +403,30 @@ class Orchestrator:
                           Route.CONTRADICTION_ANALYSIS, Route.DIRECT_RESPONSE):
             existing = {c.text.lower() for c in claims}
             span_claims: list[Claim] = []
-            for claim in claims_from_spans(question, spans):
+            focus = _focus_terms(frame, conclusion_fact)
+            conclusion_value = (
+                _round(conclusion_fact.value) if conclusion_fact is not None else None
+            )
+            for claim in claims_from_spans(
+                question, spans, focus_terms=focus,
+                prefer_numeric=frame.intent in ("attribute_lookup", "eligibility_check",
+                                                "document_lookup"),
+            ):
                 if claim.text.lower() in existing:
                     continue
                 # A sentence whose value a newer document replaced must not be
                 # presented as current. It is still visible as evidence.
+                numbers = {_round(n) for n in _numbers(claim.text)}
                 if frame.intent != "contradiction_analysis" and superseded_values:
-                    numbers = {_round(n) for n in _numbers(claim.text)}
                     if numbers & superseded_values:
                         continue
+                # Never stand a competing number next to a derived conclusion: a
+                # correct "15 days" answer beside a generic "20 days" sentence
+                # reads as a contradiction to the user even when it is not one.
+                if conclusion_value is not None and numbers and                         conclusion_value not in numbers:
+                    continue
                 span_claims.append(claim)
-            span_claims.sort(key=lambda c: -c.support_score)
+            span_claims.sort(key=lambda c: -c.relevance)
             limit = 2 if conclusion_fact is not None else 4
             claims.extend(span_claims[:limit])
         return claims[:10]
@@ -535,7 +548,11 @@ class Orchestrator:
                     inference, self._derivation_steps(inference, conclusion_fact))[:6]
                 if conclusion_fact is not None else []
             ),
-            "contradictions": turn.reasoning.get("contradictions", []),
+            # Only conflicts that bear on this answer are narrated. Everything
+            # else stays in the warnings and the reasoning trace, so an unrelated
+            # disagreement elsewhere in the corpus cannot contaminate the answer.
+            "contradictions": [c for c in turn.reasoning.get("contradictions", [])
+                               if c.get("blocking")],
             "caveat": gate.decision is gate_module.GateDecision.ANSWER_WITH_CAVEAT,
         }
 
@@ -681,6 +698,19 @@ class Orchestrator:
 
 
 # ---------------------------------------------------------------------------
+
+def _focus_terms(frame: IntentFrame, conclusion_fact: FactDTO | None) -> list[str]:
+    """The words that identify what the question is about."""
+    from app.neuro.heuristics import PREDICATE_HINTS, label_for
+
+    predicate = (conclusion_fact.predicate if conclusion_fact is not None
+                 else frame.target_attribute)
+    if not predicate:
+        return []
+    terms = [predicate.replace("_", " "), label_for(predicate)]
+    terms.extend(PREDICATE_HINTS.get(predicate, ()))
+    return terms
+
 
 def _round(value: Any) -> Any:
     try:

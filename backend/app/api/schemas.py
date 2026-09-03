@@ -350,7 +350,7 @@ class EvalModeMetricsOut(BaseModel):
     citation_accuracy: float
     unsupported_claim_rate: float
     hallucination_rate: float
-    contradiction_detection_rate: float
+    contradiction_rate: float
     symbolic_accuracy: float
     abstention_accuracy: float
     retrieval_precision: float

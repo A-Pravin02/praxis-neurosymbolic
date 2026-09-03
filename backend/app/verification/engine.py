@@ -55,6 +55,11 @@ class Claim:
     supporting_chunk_ids: list[str] = field(default_factory=list)
     supporting_fact_ids: list[str] = field(default_factory=list)
     support_score: float = 0.0
+    # How well this candidate answers the question. Selection and verification are
+    # different judgements: a sentence copied verbatim from a document is always
+    # "supported" by that document, which says nothing about whether it is an
+    # answer. Relevance is what decides that, and the gate uses both.
+    relevance: float = 0.0
     status: ClaimStatus = ClaimStatus.UNSUPPORTED
     notes: str = ""
 
@@ -62,6 +67,7 @@ class Claim:
         return {
             "text": self.text, "kind": self.kind.value, "status": self.status.value,
             "support_score": round(self.support_score, 4),
+            "relevance": round(self.relevance, 4),
             "citation_indexes": sorted(set(self.citation_indexes)),
             "fact_ids": self.supporting_fact_ids,
         }
@@ -190,8 +196,17 @@ def _looks_like_heading(sentence: str) -> bool:
 
 
 def claims_from_spans(question: str, spans: list[EvidenceSpan],
-                      max_claims: int = 6) -> list[Claim]:
-    """For a pure document lookup, the claim *is* the cited sentence."""
+                      max_claims: int = 6, *, focus_terms: list[str] | None = None,
+                      prefer_numeric: bool = False) -> list[Claim]:
+    """For a document lookup, the claim *is* the cited sentence.
+
+    `focus_terms` are the words that identify what was asked about (the canonical
+    attribute and its synonyms). Without them a question like "what is the return
+    window for the Router X1" scores the product's overview paragraph highest,
+    because it repeats the product name, while the sentence that actually answers
+    the question mentions the product only implicitly.
+    """
+    focus = {w for term in (focus_terms or []) for w in content_words(term)}
     out: list[Claim] = []
     for index, span in enumerate(spans, start=1):
         if span.quarantined:
@@ -208,6 +223,11 @@ def claims_from_spans(question: str, spans: list[EvidenceSpan],
             # that merely repeats the common words "leave" and "days".
             score = 0.5 * coverage(question, sentence) + 0.5 * weighted_overlap(
                 question, sentence)
+            if focus:
+                words = set(content_words(sentence))
+                score += 0.35 * (len(focus & words) / len(focus))
+            if prefer_numeric and extract_numbers(sentence):
+                score += 0.10
             if score > best_score:
                 best_sentence, best_score = sentence, score
         if not best_sentence:
@@ -215,19 +235,17 @@ def claims_from_spans(question: str, spans: list[EvidenceSpan],
         out.append(Claim(
             text=normalize(best_sentence)[:600], kind=FactKind.DIRECT,
             citation_indexes=[index], supporting_chunk_ids=[str(span.chunk_id)],
-            support_score=round(best_score, 4),
-            status=ClaimStatus.SUPPORTED if best_score >= settings.claim_support_threshold
-            else ClaimStatus.WEAK,
+            relevance=round(best_score, 4),
         ))
 
     if not out:
         return out
     # Keep only sentences that are competitive with the best one; a passage that
     # merely shares common words is evidence, not an answer.
-    best = max(c.support_score for c in out)
+    best = max(c.relevance for c in out)
     cutoff = max(0.35, best * 0.8)
-    out = [c for c in out if c.support_score >= cutoff]
-    out.sort(key=lambda c: -c.support_score)
+    out = [c for c in out if c.relevance >= cutoff]
+    out.sort(key=lambda c: -c.relevance)
     return out[:max_claims]
 
 
@@ -294,7 +312,18 @@ def verify(
             claim.notes = "From your workspace profile record."
             continue
 
-        if claim.support_score >= settings.claim_support_threshold:
+        if fact is None:
+            # A span-derived claim: it is quoted evidence, so support is not in
+            # question; relevance is.
+            if claim.relevance >= settings.claim_support_threshold:
+                claim.status = ClaimStatus.SUPPORTED
+            elif claim.relevance > 0:
+                claim.status = ClaimStatus.WEAK
+                claim.notes = "Related to the question but not a direct answer."
+            else:
+                claim.status = ClaimStatus.UNSUPPORTED
+            claim.support_score = min(claim.support_score, 1.0)
+        elif claim.support_score >= settings.claim_support_threshold:
             claim.status = ClaimStatus.SUPPORTED
         elif claim.support_score > 0:
             claim.status = ClaimStatus.WEAK
