@@ -133,6 +133,9 @@ def extract_numbers(text: str) -> list[float]:
 _ELIGIBILITY = re.compile(
     r"\b(am i|are we|is (he|she|they)|do i|does .* (qualify|entitle)|eligible|eligibility|"
     r"entitled|qualify|allowed to take|can i (take|claim|get))\b", re.I)
+_ELIGIBILITY_OPENER = re.compile(
+    r"^\s*(am i|are we|are they|is (he|she|they)|do i|does (he|she|they)|can i|may i)\b",
+    re.I)
 _QUANTITY = re.compile(
     r"\b(how many|how much|what is my|what's my|how long|number of|days? (of|am i)|amount)\b",
     re.I)
@@ -239,10 +242,15 @@ def question_shape(text: str) -> str:
         return "authorization"
     if _CONTRADICTION.search(t):
         return "contradiction"
-    if _ELIGIBILITY.search(t):
+    # "Am I entitled to 20 days?" is a yes/no eligibility question; "How many days
+    # am I entitled to?" asks for a value. Both mention entitlement, so the opener
+    # decides which one it is.
+    if _ELIGIBILITY_OPENER.match(t):
         return "eligibility"
     if _QUANTITY.search(t):
         return "quantity"
+    if _ELIGIBILITY.search(t):
+        return "eligibility"
     if _DOCUMENT_LOOKUP.search(t):
         return "document_lookup"
     if _DEFINITION.match(t):

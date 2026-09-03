@@ -193,11 +193,34 @@ def extract_from_text(
     return result
 
 
+def _condition_predicate(match: "re.Match[str]", sentence: str) -> str | None:
+    """Find the attribute a comparison is about.
+
+    The attribute can sit on either side of the comparator:
+        "employees with more than 2 years of service"  -> after
+        "the notice period is more than 30 days"       -> before
+    so several phrasings are tried, longest hint wins.
+    """
+    unit = (match.groupdict().get("unit") or "").strip()
+    tail = sentence[match.end():].strip()
+    tail_words = " ".join(tail.split()[:4])
+    candidates = [
+        f"{unit} {tail_words}".strip(),
+        tail_words,
+        match.group("subject_phrase"),
+    ]
+    for candidate in candidates:
+        predicate = canonical_predicate(candidate, known_only=True)
+        if predicate:
+            return predicate
+    return None
+
+
 def _rule_candidate(sentence: str, document_id: uuid.UUID | None,
                     chunk_id: uuid.UUID | None) -> RuleCandidate | None:
     conditions: list[dict[str, Any]] = []
     for match in _CONDITION_RE.finditer(sentence):
-        predicate = canonical_predicate(match.group("subject_phrase"), known_only=True)
+        predicate = _condition_predicate(match, sentence)
         if not predicate:
             continue
         comparator = _COMPARATOR_WORDS[match.group("comparator").lower()]

@@ -186,6 +186,11 @@ def build_intent_frame(question: str, ctx: dict | None = None) -> dict:
         "open": "open_question",
         "empty": "smalltalk",
     }[shape]
+    # "What is the return window for the X1?" is shaped like a definition but is
+    # really a lookup of a known attribute. Route it accordingly, or the pipeline
+    # answers a workspace question as if it were general knowledge.
+    if intent == "definition" and predicate:
+        intent = "attribute_lookup"
     frame = {
         "intent": intent,
         "shape": shape,

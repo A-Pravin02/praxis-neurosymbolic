@@ -177,3 +177,20 @@ class UserLookup(Base, TimestampMixin):
     user_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False
     )
+
+
+class TenantLookup(Base, TimestampMixin):
+    """Global slug -> tenant routing table, used before a tenant context exists.
+
+    Same rationale as UserLookup (ADR-018): registration and workspace joining
+    happen before row level security has a tenant to filter on, and granting the
+    application a row-security bypass to solve that would be a permanent hole.
+    This table holds a slug, an id and an active flag - no tenant data.
+    """
+    __tablename__ = "tenant_lookup"
+
+    slug: Mapped[str] = mapped_column(String(64), primary_key=True)
+    tenant_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False
+    )
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)

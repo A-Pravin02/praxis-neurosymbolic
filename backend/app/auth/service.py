@@ -6,7 +6,7 @@ import re
 import uuid
 from dataclasses import dataclass
 
-from sqlalchemy import select, text
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -14,7 +14,9 @@ from app.auth import passwords, tokens
 from app.core import audit
 from app.core.errors import ConflictError, InvalidCredentialsError, TokenError, ValidationError
 from app.core.logging import get_logger
-from app.db.models.tenancy import Permission, RefreshToken, Role, Tenant, User, UserLookup, UserRole
+from app.db.models.tenancy import (
+    Permission, RefreshToken, Role, Tenant, TenantLookup, User, UserLookup, UserRole,
+)
 from app.db.session import SessionLocal, bind_tenant
 from app.tenancy.context import Principal
 from app.tenancy.permissions import ALL_PERMISSIONS, DEFAULT_ROLE, ROLE_TEMPLATES
@@ -107,14 +109,15 @@ def resolve_principal(session: Session, user: User) -> Principal:
 def _lookup_tenant_unscoped(session: Session, slug: str) -> dict | None:
     """Exact-slug tenant lookup used before a tenant context exists.
 
-    Only id/slug/is_active are returned and only an exact match is possible, so
-    this cannot be used to enumerate or read tenant data.
+    Reads the routing table (see TenantLookup), which is deliberately not row
+    level secured because there is no tenant to filter on yet. Only an exact slug
+    match is possible and only the id and active flag are returned, so it cannot
+    be used to enumerate or read tenant data.
     """
-    row = session.execute(
-        text("SELECT id, slug, is_active FROM tenants WHERE slug = :slug"),
-        {"slug": slug},
-    ).mappings().first()
-    return dict(row) if row else None
+    row = session.get(TenantLookup, slug)
+    if row is None:
+        return None
+    return {"id": row.tenant_id, "slug": row.slug, "is_active": row.is_active}
 
 
 # ---------------------------------------------------------------------------
@@ -158,6 +161,7 @@ def register(
             tenant_id = uuid.uuid4()
             bind_tenant(session, tenant_id)
             session.add(Tenant(id=tenant_id, slug=slug, name=name or slug))
+            session.add(TenantLookup(slug=slug, tenant_id=tenant_id, is_active=True))
             session.flush()
             role_names = ["admin"]
             created_tenant = True

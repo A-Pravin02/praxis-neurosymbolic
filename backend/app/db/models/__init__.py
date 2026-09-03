@@ -12,6 +12,7 @@ from app.db.models.tenancy import (
     Role,
     RolePermission,
     Tenant,
+    TenantLookup,
     User,
     UserLookup,
     UserRole,
@@ -19,7 +20,7 @@ from app.db.models.tenancy import (
 
 __all__ = [
     "Base", "Tenant", "User", "Role", "Permission", "UserRole", "RolePermission",
-    "RefreshToken", "AuditEvent", "UserLookup", "Conversation", "Message", "Document", "Chunk",
+    "RefreshToken", "AuditEvent", "UserLookup", "TenantLookup", "Conversation", "Message", "Document", "Chunk",
     "Entity", "Fact", "Claim", "Answer", "ProvenanceRecord", "Rule", "ConstraintRule",
     "Policy", "AccessConstraint", "EvalRun", "EvalCaseResult",
 ]

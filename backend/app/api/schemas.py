@@ -5,7 +5,18 @@ import datetime as dt
 import uuid
 from typing import Any, Literal
 
-from pydantic import BaseModel, EmailStr, Field, field_validator
+from pydantic import BaseModel, Field, StringConstraints, field_validator
+from typing_extensions import Annotated as _Annotated
+
+# A pragmatic email type. `EmailStr` from pydantic delegates to email-validator,
+# which rejects reserved test domains such as `.test` - exactly what a demo and a
+# test suite should be using. Address syntax is not a security control here:
+# authentication is, so a permissive shape check is the right trade-off.
+Email = _Annotated[
+    str,
+    StringConstraints(strip_whitespace=True, to_lower=True, min_length=3,
+                      max_length=320, pattern=r"^[^@\s]+@[^@\s]+\.[^@\s]{2,}$"),
+]
 
 
 # ---------------------------------------------------------------------------
@@ -13,7 +24,7 @@ from pydantic import BaseModel, EmailStr, Field, field_validator
 # ---------------------------------------------------------------------------
 
 class RegisterRequest(BaseModel):
-    email: EmailStr
+    email: Email
     password: str = Field(min_length=1, max_length=256)
     display_name: str = Field(default="", max_length=200)
     tenant_slug: str | None = Field(default=None, max_length=64)
@@ -21,7 +32,7 @@ class RegisterRequest(BaseModel):
 
 
 class LoginRequest(BaseModel):
-    email: EmailStr
+    email: Email
     password: str = Field(min_length=1, max_length=256)
 
 

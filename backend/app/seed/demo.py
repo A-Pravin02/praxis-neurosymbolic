@@ -19,7 +19,9 @@ from app.core.logging import get_logger, log_event
 from app.db.models.policy import AccessConstraint, Policy
 from app.db.models.rag import Document
 from app.db.models.symbolic import ConstraintRule, Rule
-from app.db.models.tenancy import Role, Tenant, User, UserLookup, UserRole
+from app.db.models.tenancy import (
+    Role, Tenant, TenantLookup, User, UserLookup, UserRole,
+)
 from app.db.provision import ensure_permission_catalogue
 from app.db.session import SessionLocal, bind_tenant
 from app.knowledge import store as knowledge_store
@@ -266,18 +268,16 @@ def base_constraints() -> list[dict[str, Any]]:
 # ---------------------------------------------------------------------------
 
 def _get_or_create_tenant(session: Session, slug: str, name: str) -> Tenant:
-    from sqlalchemy import text
     bind_tenant(session, None)
-    row = session.execute(text("SELECT id FROM tenants WHERE slug = :s"),
-                          {"s": slug}).first()
-    if row:
-        tenant_id = row[0]
-        bind_tenant(session, tenant_id)
-        return session.get(Tenant, tenant_id)
+    routing = session.get(TenantLookup, slug)
+    if routing is not None:
+        bind_tenant(session, routing.tenant_id)
+        return session.get(Tenant, routing.tenant_id)
     tenant_id = uuid.uuid4()
     bind_tenant(session, tenant_id)
     tenant = Tenant(id=tenant_id, slug=slug, name=name)
     session.add(tenant)
+    session.add(TenantLookup(slug=slug, tenant_id=tenant_id, is_active=True))
     session.flush()
     return tenant
 
