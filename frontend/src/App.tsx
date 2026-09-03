@@ -186,6 +186,10 @@ export default function App() {
     "New conversation";
   const canUpload = user.permissions.includes("document:write");
   const canDelete = user.permissions.includes("document:delete");
+  // Ablation modes answer without the evidence gate, so the API restricts them to
+  // users who may run the benchmark. Hiding the selector keeps the UI honest
+  // about what an ordinary user can choose; the API enforces it regardless.
+  const canCompareModes = user.permissions.includes("eval:run");
 
   return (
     <div className={`app${panel ? " with-panel" : ""}`}>
@@ -263,18 +267,24 @@ export default function App() {
             ☰
           </button>
           <h1>{activeTitle}</h1>
-          <label className="visually-hidden" htmlFor="pipeline-mode">Pipeline mode</label>
-          <select
-            id="pipeline-mode"
-            className="mode-select"
-            value={pipelineMode}
-            onChange={(event) => setPipelineMode(event.target.value as PipelineMode)}
-            title="Compare the full pipeline against its ablations"
-          >
-            {MODES.map((mode) => (
-              <option key={mode.value} value={mode.value}>{mode.label}</option>
-            ))}
-          </select>
+          {canCompareModes && (
+            <>
+              <label className="visually-hidden" htmlFor="pipeline-mode">
+                Pipeline mode
+              </label>
+              <select
+                id="pipeline-mode"
+                className="mode-select"
+                value={pipelineMode}
+                onChange={(event) => setPipelineMode(event.target.value as PipelineMode)}
+                title="Compare the full pipeline against its ablations"
+              >
+                {MODES.map((mode) => (
+                  <option key={mode.value} value={mode.value}>{mode.label}</option>
+                ))}
+              </select>
+            </>
+          )}
           <button
             className={`icon-button${panel === "evidence" ? " active" : ""}`}
             onClick={() => setPanel(panel === "evidence" ? null : "evidence")}

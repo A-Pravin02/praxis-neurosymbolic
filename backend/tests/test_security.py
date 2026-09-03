@@ -360,3 +360,27 @@ def test_audit_trail_is_tenant_scoped(client):
     globex = client.get("/api/audit",
                         headers=auth_headers(client, "admin@globex.test")).json()
     assert {e["id"] for e in acme}.isdisjoint({e["id"] for e in globex})
+
+
+def test_ordinary_users_cannot_disable_verification(client):
+    """The ablation modes answer without the evidence gate."""
+    employee = auth_headers(client, "alice@acme.test")
+    for mode in ("llm_only", "llm_rag", "llm_rag_verify"):
+        response = client.post("/api/chat", headers=employee, json={
+            "message": "How many annual leave days am I entitled to?",
+            "pipeline_mode": mode})
+        assert response.status_code == 403, mode
+    # The verified pipeline is always available.
+    assert client.post("/api/chat", headers=employee, json={
+        "message": "hello", "pipeline_mode": "neurosymbolic"}).status_code == 200
+    # An analyst may compare modes, because that is what the permission is for.
+    assert client.post("/api/chat", headers=auth_headers(client, "analyst@acme.test"),
+                       json={"message": "hello",
+                             "pipeline_mode": "llm_only"}).status_code == 200
+
+
+def test_ablation_mode_is_rejected_on_the_streaming_endpoint_too(client):
+    with client.stream("POST", "/api/chat/stream",
+                       headers=auth_headers(client, "alice@acme.test"),
+                       json={"message": "hello", "pipeline_mode": "llm_only"}) as stream:
+        assert stream.status_code == 403

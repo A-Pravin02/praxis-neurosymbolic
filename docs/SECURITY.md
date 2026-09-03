@@ -28,6 +28,17 @@ control and a permanent regression test in `backend/tests/test_security.py`.
 | 18 | Accidental RLS bypass | Tests assert the app role is not owner/superuser/BYPASSRLS | `test_application_role_is_not_a_superuser_and_cannot_bypass_rls` |
 | 19 | Unsupported facts presented as data | Evidence gate + post-generation grounding check | `test_invented_number_is_caught` |
 | 20 | Silently ignored contradictions | Conflicts block or are disclosed; never dropped | `test_5_unresolved_contradiction_is_reported` |
+| 21 | Turning off verification | Ablation pipeline modes require `eval:run` | `test_ordinary_users_cannot_disable_verification` |
+
+## The evidence gate cannot be switched off by a user
+
+The four pipeline modes exist so the architecture can be benchmarked against
+itself, and `llm_only` / `llm_rag` deliberately answer *without* the evidence
+gate. That is exactly the behaviour this platform exists to prevent, so
+selecting a non-default mode requires the `eval:run` permission — the same one
+that gates the benchmark. An ordinary user always gets the verified pipeline,
+enforced on both the blocking and the streaming endpoint. The UI hides the
+selector for users who lack the permission, but the API is what enforces it.
 
 ## Tenant isolation: four independent layers
 

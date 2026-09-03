@@ -14,11 +14,13 @@ from app.api.schemas import (
 from app.config import settings
 from app.core import ratelimit
 from app.core.deps import CurrentPrincipal, DbSession, client_ip, require_permissions
-from app.core.errors import NotFoundError
+from app.core.errors import AuthorizationError, NotFoundError
 from app.db.session import tenant_session
 from app.orchestrator import conversation as convo
 from app.orchestrator.pipeline import AssistantTurn, Orchestrator
-from app.tenancy.permissions import CHAT_USE, CONVERSATION_READ, CONVERSATION_WRITE
+from app.tenancy.permissions import (
+    CHAT_USE, CONVERSATION_READ, CONVERSATION_WRITE, EVAL_RUN,
+)
 
 router = APIRouter(tags=["chat"])
 
@@ -113,6 +115,21 @@ def list_messages(conversation_id: uuid.UUID, db: DbSession,
 # Chat
 # ---------------------------------------------------------------------------
 
+def _guard_pipeline_mode(principal, payload: ChatRequest) -> None:
+    """Ablation modes disable verification, so they are not for ordinary users.
+
+    `llm_only` and `llm_rag` exist to benchmark the architecture against itself.
+    They answer without the evidence gate, which is exactly the behaviour this
+    platform exists to prevent, so selecting one requires the same permission as
+    running the evaluation harness.
+    """
+    if payload.pipeline_mode != "neurosymbolic" and EVAL_RUN not in principal.permissions:
+        raise AuthorizationError(
+            "Comparing pipeline modes requires the evaluation permission. "
+            "The default pipeline is the verified one."
+        )
+
+
 def _run_turn(db, principal, payload: ChatRequest, *, persist: bool = True):
     """Shared body for the blocking and streaming endpoints."""
     conversation = (
@@ -139,6 +156,7 @@ def _run_turn(db, principal, payload: ChatRequest, *, persist: bool = True):
 def chat(payload: ChatRequest, request: Request, db: DbSession,
          principal: CurrentPrincipal) -> AssistantTurnOut:
     ratelimit.check("chat", str(principal.user_id), settings.rate_limit_chat_per_minute)
+    _guard_pipeline_mode(principal, payload)
     conversation, message, turn = _run_turn(db, principal, payload)
     return _turn_out(turn, conversation_id=conversation.id,
                      message_id=message.id if message else None)
@@ -154,6 +172,7 @@ def chat_stream(payload: ChatRequest, request: Request,
     already-approved text, chunked for the user's benefit.
     """
     ratelimit.check("chat", str(principal.user_id), settings.rate_limit_chat_per_minute)
+    _guard_pipeline_mode(principal, payload)
 
     def event_stream() -> Iterator[str]:
         try:
