@@ -14,8 +14,7 @@ frontend/.vite/
 htmlcov/
 .mypy_cache/
 .ruff_cache/
-eval_reports/*.json
-eval_reports/*.md
+eval_reports/
 !eval_reports/.gitkeep
 data/uploads/
 *.sqlite3
