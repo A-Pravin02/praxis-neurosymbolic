@@ -79,6 +79,7 @@ class Head:
     subject: Term
     predicate: str
     value: Term
+    unit: str = ""
     raw: dict[str, Any] = field(default_factory=dict)
 
 
@@ -190,8 +191,11 @@ def parse_head(raw: Any) -> Head:
         raise RuleError(f"Invalid head predicate: {predicate!r}")
     if "value" not in raw:
         raise RuleError("The rule head needs a 'value'.")
+    unit = raw.get("unit", "")
+    if not isinstance(unit, str) or len(unit) > 24:
+        raise RuleError("A rule head unit must be a short string.")
     return Head(subject=parse_term(raw.get("subject", "?s")), predicate=predicate,
-                value=parse_term(raw["value"]), raw=raw)
+                value=parse_term(raw["value"]), unit=unit, raw=raw)
 
 
 def compile_rule(code: str, body: Any, head: Any, *, name: str = "",

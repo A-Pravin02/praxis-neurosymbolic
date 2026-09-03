@@ -202,6 +202,18 @@ def build_intent_frame(question: str, ctx: dict | None = None) -> dict:
 # Answer composition
 # ---------------------------------------------------------------------------
 
+def _fmt(value: object) -> str:
+    if isinstance(value, float) and value.is_integer():
+        return str(int(value))
+    return str(value)
+
+
+def _fmt(value: object) -> str:
+    if isinstance(value, float) and value.is_integer():
+        return str(int(value))
+    return str(value)
+
+
 def _cite(indexes: list[int]) -> str:
     if not indexes:
         return ""
@@ -232,27 +244,43 @@ def compose_grounded_answer(question: str, ctx: dict) -> str:
         lines.append(f"{text.rstrip('.')}.{marks}" if marks else f"{text.rstrip('.')}.")
 
     if not lines and citations:
-        top = citations[0]
-        snippet = normalize(top.get("snippet", ""))[:400]
-        if snippet:
-            lines.append(f"According to {top.get('title', 'the source')}: \"{snippet}\" [1]")
+        # Quarantined passages are evidence to look at, never text to repeat as an
+        # answer: a document trying to issue instructions must not get a voice.
+        usable = [c for c in citations if not c.get("quarantined")]
+        if usable:
+            top = usable[0]
+            snippet = normalize(top.get("snippet", ""))[:400]
+            if snippet:
+                lines.append(
+                    f"According to {top.get('title', 'the source')}: "
+                    f"\"{snippet}\" [{top.get('index', 1)}]"
+                )
 
     if inferences:
         steps = "; ".join(
-            f"{normalize(step.get('conclusion', ''))} (via {step.get('rule_code', 'rule')})"
+            f"{normalize(step.get('sentence') or step.get('conclusion', ''))} "
+            f"(rule {step.get('rule_code', '?')})"
             for step in inferences[:4]
         )
         lines.append(f"This follows from the recorded facts and rules: {steps}.")
 
     if contradictions:
         for c in contradictions[:2]:
-            values = ", ".join(str(v) for v in c.get("values", []))
+            values = ", ".join(_fmt(v) for v in c.get("values", []))
             marks = _cite(c.get("citation_indexes") or [])
-            lines.append(
-                f"Note: the sources disagree on {c.get('predicate', 'this value')} "
-                f"for {c.get('subject', 'this subject')} — recorded values are {values}.{marks} "
-                f"I have not resolved which is authoritative."
-            )
+            label = str(c.get("predicate", "this value")).replace("_", " ")
+            if c.get("resolved"):
+                lines.append(
+                    f"The sources disagree on the {label}: recorded values are "
+                    f"{values}.{marks} {c.get('resolution', '')} The superseded value is "
+                    f"shown so the discrepancy is visible rather than hidden."
+                )
+            else:
+                lines.append(
+                    f"Note: the sources disagree on the {label} for "
+                    f"{c.get('subject', 'this subject')}; recorded values are "
+                    f"{values}.{marks} I have not resolved which is authoritative."
+                )
 
     if caveat:
         lines.append(
@@ -308,7 +336,7 @@ def compose_direct_answer(question: str) -> str:
         return (
             "Hello. I'm Praxis, an assistant that answers from your workspace's documents "
             "and rules. Ask me something about them and I'll show you the evidence and the "
-            "reasoning behind my answer — or tell you plainly when I don't have enough to "
+            "reasoning behind my answer - or tell you plainly when I don't have enough to "
             "go on."
         )
     return (

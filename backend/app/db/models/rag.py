@@ -3,8 +3,10 @@ from __future__ import annotations
 import uuid
 
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import Boolean, Float, ForeignKey, Index, Integer, String, Text, UniqueConstraint
-from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy import (
+    Boolean, Computed, Float, ForeignKey, Index, Integer, String, Text, UniqueConstraint,
+)
+from sqlalchemy.dialects.postgresql import JSONB, TSVECTOR, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.config import settings
@@ -63,6 +65,12 @@ class Chunk(Base, UUIDPkMixin, TimestampMixin):
     section: Mapped[str] = mapped_column(String(300), default="", nullable=False)
     page: Mapped[int | None] = mapped_column(Integer)
     embedding: Mapped[list[float] | None] = mapped_column(Vector(settings.embedding_dimension))
+    # Generated in the database so lexical search always matches the stored text.
+    tsv = mapped_column(
+        TSVECTOR,
+        Computed("to_tsvector('english', coalesce(text,''))", persisted=True),
+        nullable=True,
+    )
     # Prompt-injection screening result, computed at ingest time.
     injection_flagged: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     injection_score: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)

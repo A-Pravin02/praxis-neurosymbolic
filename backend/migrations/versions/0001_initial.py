@@ -20,8 +20,20 @@ APP_ROLE = "praxis_app"
 
 def upgrade() -> None:
     bind = op.get_bind()
-    op.execute("CREATE EXTENSION IF NOT EXISTS vector")
-    op.execute("CREATE EXTENSION IF NOT EXISTS pg_trgm")
+    # Extensions normally already exist: docker/postgres/init.sql installs them as
+    # the superuser on first boot. Creating them here is a convenience for
+    # databases provisioned another way, and a missing extension must produce a
+    # clear message rather than a confusing failure further down.
+    for extension in ("vector", "pg_trgm"):
+        try:
+            with bind.begin_nested():
+                op.execute(f"CREATE EXTENSION IF NOT EXISTS {extension}")
+        except Exception as exc:  # pragma: no cover - environment dependent
+            raise RuntimeError(
+                f"The '{extension}' extension is not installed and the migration role "
+                f"cannot create it. Run: CREATE EXTENSION {extension}; as a superuser "
+                f"in this database first."
+            ) from exc
 
     Base.metadata.create_all(bind=bind)
 

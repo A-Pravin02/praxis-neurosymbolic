@@ -21,7 +21,10 @@ from typing import Any
 
 from app.config import settings
 from app.knowledge.schema import FactDTO, FactKind, render_value, unwrap
-from app.neuro.heuristics import content_words, coverage, extract_numbers, normalize, sentences
+from app.neuro.heuristics import (
+    content_words, coverage, extract_numbers, normalize, phrase_fact, sentences,
+    weighted_overlap,
+)
 from app.rag.retriever import EvidenceSpan
 from app.symbolic.engine import Contradiction, InferenceStep
 
@@ -91,6 +94,17 @@ class VerificationReport:
         }
 
 
+def _round(value: Any) -> Any:
+    try:
+        return round(float(value), 6)
+    except (TypeError, ValueError):
+        return value
+
+
+def _round_set(values: list[float]) -> set[Any]:
+    return {_round(v) for v in values}
+
+
 # ---------------------------------------------------------------------------
 # Evidence relevance
 # ---------------------------------------------------------------------------
@@ -155,9 +169,7 @@ def claims_from_facts(facts: list[FactDTO], *, label: str = "") -> list[Claim]:
     for fact in facts:
         if fact.kind is FactKind.MODEL_GENERATED:
             continue
-        subject = "You" if fact.subject == "self" else fact.subject
-        predicate = fact.predicate.replace("_", " ")
-        text = f"{subject} {predicate} is {render_value(fact.object)}".strip()
+        text = phrase_fact(fact.subject, fact.predicate, render_value(fact.object))
         out.append(Claim(
             text=normalize(text), kind=fact.kind, fact=fact,
             supporting_fact_ids=[fact.fact_id] if fact.fact_id else [],
@@ -166,6 +178,15 @@ def claims_from_facts(facts: list[FactDTO], *, label: str = "") -> list[Claim]:
             notes=label,
         ))
     return out
+
+
+def _looks_like_heading(sentence: str) -> bool:
+    """Titles and section headings are labels, not assertions."""
+    words = [w for w in sentence.split() if w.isalpha()]
+    if len(words) < 3:
+        return True
+    titled = sum(1 for w in words if w[:1].isupper())
+    return titled / len(words) > 0.6
 
 
 def claims_from_spans(question: str, spans: list[EvidenceSpan],
@@ -177,8 +198,17 @@ def claims_from_spans(question: str, spans: list[EvidenceSpan],
             continue
         best_sentence, best_score = "", 0.0
         for sentence in sentences(span.text):
-            score = coverage(question, sentence)
-            if score > best_score and len(sentence) > 25:
+            # A heading or a title is not a claim; require a real sentence.
+            if len(sentence) <= 25 or len(content_words(sentence)) < 5:
+                continue
+            if _looks_like_heading(sentence):
+                continue
+            # Weighting by term length approximates inverse document frequency,
+            # so "annual" separates the annual-leave sentence from any sentence
+            # that merely repeats the common words "leave" and "days".
+            score = 0.5 * coverage(question, sentence) + 0.5 * weighted_overlap(
+                question, sentence)
+            if score > best_score:
                 best_sentence, best_score = sentence, score
         if not best_sentence:
             continue
@@ -189,9 +219,16 @@ def claims_from_spans(question: str, spans: list[EvidenceSpan],
             status=ClaimStatus.SUPPORTED if best_score >= settings.claim_support_threshold
             else ClaimStatus.WEAK,
         ))
-        if len(out) >= max_claims:
-            break
-    return out
+
+    if not out:
+        return out
+    # Keep only sentences that are competitive with the best one; a passage that
+    # merely shares common words is evidence, not an answer.
+    best = max(c.support_score for c in out)
+    cutoff = max(0.35, best * 0.8)
+    out = [c for c in out if c.support_score >= cutoff]
+    out.sort(key=lambda c: -c.support_score)
+    return out[:max_claims]
 
 
 # ---------------------------------------------------------------------------
@@ -210,8 +247,13 @@ def verify(
     report = VerificationReport(claims=claims, contradictions=list(contradictions or []))
     report.evidence_relevance = evidence_relevance(question, spans)
 
-    conflicted_keys = {
-        (c.subject, c.predicate) for c in report.contradictions
+    # A conflict an ordering signal already resolved (a superseding version) does
+    # not invalidate the claim that uses the surviving value; it is reported
+    # alongside the answer instead.
+    unresolved = [c for c in report.contradictions if c.severity == "error"]
+    conflicted_keys = {(c.subject, c.predicate) for c in unresolved}
+    superseded_values = {
+        _round(v) for c in report.contradictions for v in c.superseded_values
     }
 
     for claim in claims:
@@ -220,6 +262,12 @@ def verify(
             claim.status = ClaimStatus.CONTRADICTED
             claim.support_score = 0.0
             claim.notes = "Sources disagree on this value."
+            continue
+
+        if superseded_values and _round_set(extract_numbers(claim.text)) & superseded_values:
+            claim.status = ClaimStatus.CONTRADICTED
+            claim.support_score = 0.0
+            claim.notes = "This value was superseded by a newer source."
             continue
 
         score, citations = support_for(claim.text, spans)
@@ -263,7 +311,7 @@ def verify(
         if supported else 0.0
     )
 
-    if report.contradictions:
+    if unresolved:
         report.status = VerificationStatus.CONTRADICTED
     elif not claims:
         report.status = VerificationStatus.INSUFFICIENT_EVIDENCE
@@ -334,15 +382,30 @@ class GroundingReport:
 
 
 def check_grounding(answer: str, approved_claims: list[Claim],
-                    spans: list[EvidenceSpan]) -> GroundingReport:
-    """Verify the produced text says nothing the approved evidence does not."""
+                    spans: list[EvidenceSpan],
+                    extra_context: list[str] | None = None) -> GroundingReport:
+    """Verify the produced text says nothing the approved evidence does not.
+
+    `extra_context` carries system-derived provenance the answer is allowed to
+    mention - source titles, effective dates, conflict resolutions. Those strings
+    come from the platform's own records, not from the model, so checking the
+    answer against them is still a check against ground truth.
+    """
     report = GroundingReport()
     if not answer.strip():
         return report
 
     approved_text = " ".join(c.text for c in approved_claims)
     evidence_text = " ".join(s.text for s in spans)
-    haystack = f"{approved_text} {evidence_text}"
+    provenance_text = " ".join(
+        part for span in spans
+        for part in (span.document_title, span.section, span.effective_date or "",
+                     span.version_label)
+        if part
+    )
+    haystack = " ".join(
+        [approved_text, evidence_text, provenance_text, " ".join(extra_context or [])]
+    )
     haystack_numbers = {round(n, 6) for n in extract_numbers(haystack)}
     haystack_words = set(content_words(haystack))
 
@@ -357,14 +420,16 @@ def check_grounding(answer: str, approved_claims: list[Claim],
         if len(sentence) < 12 or _HEDGE.match(sentence):
             continue
         report.total_sentences += 1
-        numbers = {round(n, 6) for n in extract_numbers(sentence)}
+        # Citation markers such as [2] are references, not asserted values.
+        bare = _CITATION_MARK.sub(" ", sentence)
+        numbers = {round(n, 6) for n in extract_numbers(bare)}
         missing_numbers = numbers - haystack_numbers
         if missing_numbers:
             report.unsupported_numbers.extend(sorted(missing_numbers))
             report.unsupported_sentences.append(sentence[:240])
             unsupported += 1
             continue
-        words = set(content_words(sentence))
+        words = set(content_words(bare))
         if words and len(words & haystack_words) / len(words) < 0.34:
             report.unsupported_sentences.append(sentence[:240])
             unsupported += 1

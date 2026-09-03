@@ -42,8 +42,25 @@ def lower_words(text: str) -> list[str]:
     return _WORD_RE.findall((text or "").lower())
 
 
+def stem(word: str) -> str:
+    """Very light suffix stripping so "bands" matches "band".
+
+    Deliberately crude: a full stemmer would need a dependency and would change
+    behaviour across languages. This only collapses regular English plurals and
+    a couple of common verb endings, which is what term-overlap scoring needs.
+    """
+    if len(word) > 4 and word.endswith("ies"):
+        return word[:-3] + "y"
+    if len(word) > 4 and word.endswith(("ses", "xes", "zes", "ches", "shes")):
+        return word[:-2]
+    if len(word) > 3 and word.endswith("s") and not word.endswith("ss"):
+        return word[:-1]
+    return word
+
+
 def content_words(text: str) -> list[str]:
-    return [w for w in lower_words(text) if w not in STOPWORDS and len(w) > 1]
+    return [stem(w) for w in lower_words(text)
+            if w not in STOPWORDS and len(w) > 1]
 
 
 def term_counts(text: str) -> Counter[str]:
@@ -84,9 +101,21 @@ def weighted_overlap(query: str, document: str) -> float:
     return hit / total
 
 
+_ISO_DATE = re.compile(r"\b\d{4}-\d{2}-\d{2}\b")
+_IDENTIFIER = re.compile(r"\b[A-Za-z]{1,4}[-_]?\d{1,4}\b")
+_NUMBER = re.compile(r"(?<![\w.\-])-?\d+(?:\.\d+)?")
+
+
 def extract_numbers(text: str) -> list[float]:
+    """Numeric values asserted by the text.
+
+    Dates and identifiers (rule codes such as R12, employee ids such as E-1002)
+    are stripped first: they are labels, not quantities, and scoring them as
+    quantities makes the grounding check reject correct answers.
+    """
+    cleaned = _IDENTIFIER.sub(" ", _ISO_DATE.sub(" ", text or ""))
     out: list[float] = []
-    for token in re.findall(r"-?\d+(?:\.\d+)?", text or ""):
+    for token in _NUMBER.findall(cleaned):
         try:
             out.append(float(token))
         except ValueError:
@@ -123,32 +152,79 @@ _GREETING = re.compile(r"^\s*(hi|hello|hey|good (morning|afternoon|evening)|than
 
 # Predicate vocabulary the demo domain uses. Extended at ingest time by adapters.
 PREDICATE_HINTS: dict[str, tuple[str, ...]] = {
-    "annual_leave_days": ("annual leave", "leave days", "vacation", "holiday allowance",
-                          "paid leave", "leave entitlement", "leave allowance"),
-    "years_of_service": ("years of service", "tenure", "service years", "worked here",
-                         "length of service"),
+    # Hints must be specific enough to be unambiguous. "leave allowance" was
+    # removed because it matches both annual and sick leave; every hint here has
+    # to contain the word that distinguishes the predicate.
+    "annual_leave_days": ("annual leave", "vacation days", "vacation allowance",
+                          "holiday allowance", "paid leave", "annual leave entitlement",
+                          "leave entitlement"),
+    "years_of_service": ("years of service", "length of service", "service years",
+                         "tenure"),
     "sick_leave_days": ("sick leave", "sick days", "medical leave"),
-    "remote_work_days": ("remote work", "work from home", "wfh", "hybrid days"),
-    "probation_months": ("probation", "probationary period"),
+    "remote_work_days": ("remote work", "remote working days", "work from home", "wfh"),
+    "probation_months": ("probationary period", "probation period"),
     "notice_period_days": ("notice period", "resignation notice"),
     "training_budget": ("training budget", "learning budget", "development budget"),
+    "equipment_budget": ("equipment budget", "hardware budget"),
     "expense_limit": ("expense limit", "expense cap", "reimbursement limit"),
-    "salary": ("salary", "compensation", "pay", "remuneration"),
-    "warranty_months": ("warranty", "guarantee period"),
+    "salary": ("salary", "compensation", "remuneration"),
+    "warranty_months": ("warranty period", "warranty", "guarantee period"),
     "return_window_days": ("return window", "return period", "returns policy"),
-    "support_hours": ("support hours", "sla", "response time"),
+    "support_hours": ("support hours",),
+    "retention_years": ("data retention", "retention period"),
+    "incident_report_hours": ("incident reporting", "incident report window"),
+    "review_days": ("review cycle", "access review"),
+}
+
+# Readable noun phrases used when a fact is rendered as a sentence. The unit
+# comes from the fact's stored value, so labels never repeat it.
+PREDICATE_LABELS: dict[str, str] = {
+    "annual_leave_days": "annual leave entitlement",
+    "sick_leave_days": "sick leave allowance",
+    "remote_work_days": "remote working allowance",
+    "notice_period_days": "notice period",
+    "carryover_days": "leave carryover limit",
+    "probation_months": "probationary period",
+    "years_of_service": "length of service",
+    "training_budget": "training budget",
+    "equipment_budget": "equipment budget",
+    "expense_limit": "single-item expense limit",
+    "warranty_months": "warranty period",
+    "return_window_days": "return window",
+    "support_hours": "support hours start time",
+    "on_probation": "probation status",
+    "retention_years": "data retention period",
+    "incident_report_hours": "incident reporting deadline",
+    "salary": "salary",
+    "age": "age",
+    "department": "department",
+    "country": "country",
+    "employee_id": "employee identifier",
 }
 
 
+def label_for(predicate: str) -> str:
+    return PREDICATE_LABELS.get(predicate, predicate.replace("_", " "))
+
+
+def phrase_fact(subject: str, predicate: str, value: str) -> str:
+    """Render a triple as an English sentence for a claim or a conclusion."""
+    label = label_for(predicate)
+    if subject == "self":
+        return f"Your {label} is {value}"
+    if subject in ("policy", "company", "organisation"):
+        return f"The {label} is {value}"
+    return f"For {subject}, the {label} is {value}"
+
+
 def guess_predicate(text: str) -> str | None:
+    """Map a question onto a known predicate, preferring the longest hint match."""
     low = normalize(text).lower()
     best: tuple[int, str] | None = None
     for predicate, hints in PREDICATE_HINTS.items():
         for hint in hints:
-            if hint in low:
-                score = len(hint)
-                if best is None or score > best[0]:
-                    best = (score, predicate)
+            if hint in low and (best is None or len(hint) > best[0]):
+                best = (len(hint), predicate)
     return best[1] if best else None
 
 

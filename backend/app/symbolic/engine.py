@@ -272,6 +272,16 @@ class Contradiction:
     severity: str = "error"
     resolution: str = ""
     kind: str = "functional_conflict"
+    # Set when an ordering signal (a newer effective date) identifies which value
+    # supersedes the others. The conflict is still reported; it is not hidden.
+    preferred_value: Any = None
+    preferred_fact_id: str = ""
+    superseded_fact_ids: list[str] = field(default_factory=list)
+    superseded_values: list[Any] = field(default_factory=list)
+
+    @property
+    def is_resolved(self) -> bool:
+        return self.preferred_fact_id != "" or self.preferred_value is not None
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -280,6 +290,9 @@ class Contradiction:
             "evidence": self.evidence, "document_ids": self.document_ids,
             "chunk_ids": self.chunk_ids, "severity": self.severity,
             "resolution": self.resolution, "kind": self.kind,
+            "resolved": self.is_resolved, "preferred_value": self.preferred_value,
+            "superseded_values": self.superseded_values,
+            "superseded_fact_ids": self.superseded_fact_ids,
         }
 
 
@@ -378,7 +391,8 @@ class SymbolicEngine:
             document_title=(match.premises[0].provenance.document_title
                             if match.premises else ""),
         )
-        return make_fact(str(subject), rule.head.predicate, value,
+        unit = rule.head.unit or _unit_from_premises(match.premises, rule.head.predicate)
+        return make_fact(str(subject), rule.head.predicate, value, unit=unit,
                          kind=FactKind.INFERRED, confidence=confidence,
                          provenance=provenance)
 
@@ -485,6 +499,16 @@ class SymbolicEngine:
         return current
 
 
+def _unit_from_premises(premises: list[FactDTO], predicate: str) -> str:
+    """Inherit a unit from a premise that speaks about the same predicate."""
+    for fact in premises:
+        if fact.predicate == predicate and isinstance(fact.object, dict):
+            unit = fact.object.get("unit", "")
+            if unit:
+                return unit
+    return ""
+
+
 @dataclass
 class Proof:
     goal: str
@@ -570,30 +594,52 @@ def detect_contradictions(facts: list[FactDTO], *,
             chunk_ids=sorted({str(f.provenance.chunk_id) for f in involved
                               if f.provenance.chunk_id}),
         )
-        contradiction.resolution = _suggest_resolution(involved)
+        _apply_resolution(contradiction, involved)
         contradictions.append(contradiction)
     return contradictions
 
 
-def _suggest_resolution(facts: list[FactDTO]) -> str:
-    """Propose, but never silently apply, a resolution.
+def _apply_resolution(contradiction: Contradiction, facts: list[FactDTO]) -> None:
+    """Record which value supersedes the others, when there is a reason to say so.
 
-    A newer effective date or a strictly higher confidence is evidence about which
-    value to prefer. The system reports the conflict either way; it does not hide
-    it behind an automatic choice.
+    A newer effective date is an ordering signal a document set actually carries:
+    a 2026 handbook replaces a 2019 one. When that signal exists the conflict is
+    downgraded from `error` to `warning` and the preferred value is recorded - but
+    the conflict is still reported to the user, and the superseded value is still
+    shown. The system never silently picks a side without saying so.
     """
     dated = [f for f in facts if f.provenance.effective_date]
-    if dated and len({f.provenance.effective_date for f in dated}) > 1:
+    distinct_dates = {f.provenance.effective_date for f in dated}
+    if len(dated) == len(facts) and len(distinct_dates) > 1:
         newest = max(dated, key=lambda f: f.provenance.effective_date or "")
-        return (f"The most recent source ({newest.provenance.document_title or 'unknown'}, "
-                f"effective {newest.provenance.effective_date}) states "
-                f"{unwrap(newest.object)}. Confirm which version is authoritative.")
+        contradiction.preferred_value = unwrap(newest.object)
+        contradiction.preferred_fact_id = newest.fact_id
+        contradiction.superseded_fact_ids = [
+            f.fact_id for f in facts if f is not newest and f.fact_id
+        ]
+        contradiction.superseded_values = [
+            unwrap(f.object) for f in facts if f is not newest
+        ]
+        contradiction.severity = "warning"
+        contradiction.kind = "superseded_version"
+        contradiction.resolution = (
+            f"{newest.provenance.document_title or 'The most recent source'} is "
+            f"effective {newest.provenance.effective_date} and supersedes the older "
+            f"source(s); its value is {unwrap(newest.object)}."
+        )
+        return
+
     confidences = {round(f.confidence, 3) for f in facts}
     if len(confidences) > 1:
         best = max(facts, key=lambda f: f.confidence)
-        return (f"Extraction confidence differs; the strongest extraction gives "
-                f"{unwrap(best.object)}. Human review is needed.")
-    return "Sources disagree with no ordering signal. Human review is needed."
+        contradiction.resolution = (
+            f"Extraction confidence differs; the strongest extraction gives "
+            f"{unwrap(best.object)}. Human review is needed."
+        )
+        return
+    contradiction.resolution = (
+        "Sources disagree with no ordering signal. Human review is needed."
+    )
 
 
 # ---------------------------------------------------------------------------

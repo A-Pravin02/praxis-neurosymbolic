@@ -63,19 +63,40 @@ _CONDITION_RE = re.compile(
     rf"(?P<value>\d+(?:\.\d+)?)\s*(?P<unit>{_UNITS})?",
     re.I)
 
+# A sentence carrying one of these qualifiers states a conditional, an exception
+# or a target rather than an unconditional value. Extracting a fact from it would
+# be wrong, so these sentences are left as retrievable text only.
+_QUALIFIER = re.compile(
+    r"\b(during|unless|except|provided that|subject to|target|typically|"
+    r"approximately|around|estimated|may set|can set|lower limit|for example|"
+    r"e\.g\.|up to a maximum|at the discretion|where applicable)\b", re.I)
+
 _NOISE_PREFIX = re.compile(
     r"^(the|a|an|this|that|their|its|your|our|each|every|all|any|such|said)\s+", re.I)
 
 
-def canonical_predicate(phrase: str) -> str | None:
-    """Map a natural phrase onto a known predicate, else derive a snake_case one."""
+def canonical_predicate(phrase: str, *, known_only: bool = False) -> str | None:
+    """Map a natural phrase onto a predicate.
+
+    The longest matching hint wins, so "sick leave allowance" resolves to
+    sick_leave_days rather than to whichever leave predicate happens to be
+    declared first. With ``known_only`` the function refuses to invent a
+    predicate from arbitrary prose - free-text extraction uses that mode, because
+    predicates coined from a stray noun phrase are the main source of junk facts.
+    """
     cleaned = _NOISE_PREFIX.sub("", normalize(phrase).lower()).strip(" .,:;-")
     if not cleaned or len(cleaned) < 3:
         return None
+    best: tuple[int, str] | None = None
     for predicate, hints in PREDICATE_HINTS.items():
         for hint in hints:
-            if hint in cleaned or cleaned in hint:
-                return predicate
+            if hint in cleaned:
+                if best is None or len(hint) > best[0]:
+                    best = (len(hint), predicate)
+    if best is not None:
+        return best[1]
+    if known_only:
+        return None
     words = [w for w in re.split(r"[^a-z0-9]+", cleaned) if w]
     if not words or len(words) > 5:
         return None
@@ -130,7 +151,7 @@ def extract_from_text(
     seen: set[tuple[str, str, Any]] = set()
 
     for sentence in sentences(text):
-        if len(sentence) > 600:
+        if len(sentence) > 600 or _QUALIFIER.search(sentence):
             result.skipped_sentences += 1
             continue
 
@@ -148,7 +169,7 @@ def extract_from_text(
         ):
             for match in pattern.finditer(sentence):
                 phrase = match.groupdict().get("phrase") or ""
-                predicate = canonical_predicate(phrase)
+                predicate = canonical_predicate(phrase, known_only=True)
                 if not predicate:
                     continue
                 try:
@@ -176,7 +197,7 @@ def _rule_candidate(sentence: str, document_id: uuid.UUID | None,
                     chunk_id: uuid.UUID | None) -> RuleCandidate | None:
     conditions: list[dict[str, Any]] = []
     for match in _CONDITION_RE.finditer(sentence):
-        predicate = canonical_predicate(match.group("subject_phrase"))
+        predicate = canonical_predicate(match.group("subject_phrase"), known_only=True)
         if not predicate:
             continue
         comparator = _COMPARATOR_WORDS[match.group("comparator").lower()]
@@ -188,7 +209,8 @@ def _rule_candidate(sentence: str, document_id: uuid.UUID | None,
     conclusion = None
     entail = _ENTITLEMENT.search(sentence)
     if entail:
-        predicate = canonical_predicate(entail.groupdict().get("phrase") or "")
+        predicate = canonical_predicate(entail.groupdict().get("phrase") or "",
+                                        known_only=True)
         if predicate:
             conclusion = {
                 "type": "assign", "predicate": predicate,

@@ -14,7 +14,7 @@ import uuid
 from dataclasses import dataclass, field
 from typing import Any
 
-from sqlalchemy import Float, func, select, text
+from sqlalchemy import Float, func, select
 from sqlalchemy.orm import Session
 
 from app.config import settings
@@ -159,12 +159,12 @@ class HybridRetriever:
     def _lexical_search(self, query_text: str, limit: int, auth_filter,
                         collection: str | None) -> list[EvidenceSpan]:
         tsquery = func.plainto_tsquery("english", query_text)
-        tsv = text("chunks.tsv")
-        rank = func.ts_rank_cd(tsv, tsquery).cast(Float).label("rank")
+        rank = func.ts_rank_cd(Chunk.tsv, tsquery).cast(Float).label("rank")
         stmt = (
             select(*self._base_columns(), rank)
             .join(Document, Document.id == Chunk.document_id)
-            .where(auth_filter, Document.status == "ready", tsv.bool_op("@@")(tsquery))
+            .where(auth_filter, Document.status == "ready",
+                   Chunk.tsv.bool_op("@@")(tsquery))
             .order_by(rank.desc())
             .limit(limit)
         )
