@@ -19,3 +19,13 @@ eval_reports/
 data/uploads/
 *.sqlite3
 .DS_Store
+
+# Datasets. Real data is never committed: it is large, often confidential, and
+# belongs in object storage or on the ingesting machine, not in git history.
+data/
+datasets/
+*.csv
+*.tsv
+*.parquet
+*.jsonl
+!backend/app/seed/**/*.csv

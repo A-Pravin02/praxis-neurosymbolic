@@ -2,9 +2,14 @@
 
 ## The claim this project makes
 
-Hallucination is not solved here, and it cannot be solved by any architecture
-that includes a language model. What this platform does is narrower and
-checkable:
+Hallucination is *reduced* here, measurably. It is not *eliminated*, and there is
+good reason to think no architecture containing a language model can eliminate it
+outright — the residual risk moves rather than vanishing (see "Where the residual
+risk lives" below). Those are two different claims, and the difference matters:
+the first is what this platform demonstrates and what the benchmark measures; the
+second is what would be unfalsifiable to assert.
+
+What this platform does is narrower and checkable:
 
 > A factual claim reaches the user only when evidence for it exists, is relevant,
 > supports the claim, and is not contradicted. Otherwise the system says it does
@@ -149,3 +154,55 @@ and the confidence shown for it is capped at 0.45.
 - **Nothing here validates the sources themselves.** If a document is wrong, a
   well-grounded answer will be confidently wrong. Provenance tells you *where* a
   claim came from, not whether that source deserved trust.
+
+## Where the residual risk lives
+
+"Eliminated" would mean: no input can ever produce an unsupported assertion. This
+architecture does not achieve that, and the reason is worth stating precisely,
+because it also says exactly where the remaining risk is and how to shrink it.
+
+The risk does not disappear — it **moves**, out of the model's parameters and into
+four places that are at least inspectable:
+
+1. **The presentation step.** The response model receives a closed packet and is
+   told to present it. With the offline provider this is airtight, because that
+   provider can only recombine the packet. With a cloud model it is a strong
+   constraint, not a proof: the model could still paraphrase a value wrongly. The
+   post-generation grounding check catches numeric drift and untraceable
+   sentences, which is a large fraction of that surface — but it is lexical, so a
+   meaning-changing paraphrase that reuses the words can pass.
+
+2. **The sources.** A well-grounded answer from a wrong document is confidently
+   wrong. Provenance tells you where a claim came from, never whether that source
+   deserved trust. No amount of verification machinery fixes a bad corpus.
+
+3. **Extraction and rules.** A fact mined wrongly, or a rule authored wrongly,
+   produces a derivation that is internally valid and externally false. This is
+   why extraction only mints known predicates, why qualified sentences are
+   skipped, and why mined rule candidates are never activated automatically —
+   but a human can still write a wrong rule.
+
+4. **The gate's thresholds.** They are an operating point on a trade-off curve,
+   not a truth detector. Raise them and false abstention rises; lower them and
+   unsupported answers get through. `docs/EVALUATION.md` measures both sides,
+   which is the only honest way to present a threshold.
+
+There is also a theoretical argument that some hallucination rate is irreducible
+for a calibrated model over an open domain — a model that never guesses on
+genuinely uncertain inputs is not calibrated, and one that is calibrated must
+sometimes be wrong. This platform sidesteps rather than refutes that: for the
+verified path it does not ask the model to be calibrated at all, it removes the
+model from the truth decision. The cost is that the verified path only covers
+questions the corpus and rules can answer, and everything outside it is labelled
+as unverified rather than answered confidently.
+
+**The defensible claim, stated once:**
+
+> Unsupported generation is reduced by moving fact determination out of the model
+> and gating presentation on evidence, and the reduction is measurable by ablation
+> against the same model on the same corpus. The residual risk is confined to the
+> presentation step, the sources, the extraction and rules, and the chosen
+> thresholds — each of which is inspectable and independently improvable.
+
+That is a stronger position than "we solved hallucination", because it survives
+someone actually testing it.

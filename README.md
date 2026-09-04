@@ -165,9 +165,13 @@ Five controls, in the order they apply:
 
 Full detail, including what none of this fixes, in `docs/HALLUCINATION.md`.
 
-**This does not solve hallucination.** No architecture containing a language model
-does. What it does is refuse unsupported claims through deterministic checks, and
-measure whether that actually reduces unsupported generation.
+**This reduces hallucination; it does not eliminate it.** The reduction is real
+and measurable by ablation. Elimination is a different and much stronger claim:
+the residual risk does not vanish, it moves — into the presentation step, the
+sources themselves, the extraction and rules, and the chosen thresholds. Each of
+those is inspectable and independently improvable, which is the point.
+`docs/HALLUCINATION.md` says exactly where the risk lives and why that framing is
+stronger than claiming the problem is solved.
 
 ---
 
