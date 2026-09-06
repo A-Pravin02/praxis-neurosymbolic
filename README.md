@@ -136,14 +136,14 @@ arithmetic**, so nobody chose them to flatter the system:
 
 | Metric | llm_only | llm_rag | llm_rag_verify | **neurosymbolic** |
 |---|---|---|---|---|
-| Factual accuracy | 0.000 | 0.384 | 0.359 | **0.657** |
+| Factual accuracy | 0.000 | 0.384 | 0.359 | **0.793** |
 | Citation accuracy | n/a | 0.543 | 0.543 | **0.687** |
-| Abstention accuracy | 1.000 | 0.775 | 0.887 | **0.938** |
-| Hallucination rate | 0.000 | 0.058 | 0.029 | **0.014** |
-| False abstention rate | 1.000 | 0.369 | 0.495 | **0.298** |
+| Abstention accuracy | 1.000 | 0.775 | 0.887 | **0.975** |
+| Hallucination rate | 0.000 | 0.058 | 0.029 | **0.004** |
+| False abstention rate | 1.000 | 0.369 | 0.495 | **0.187** |
 | Mean latency (ms) | 0.2 | 30.5 | 46.8 | 291.1 |
 
-Hallucination fell **76% relative** (0.058 → 0.014) *while* false abstention also
+Hallucination fell **93% relative** (0.058 → 0.004) *while* false abstention also
 fell. Both directions at once is the result worth having: refusing more often is a
 trivial way to suppress hallucination, and it would have shown up here as a worse
 false-abstention rate.

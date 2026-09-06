@@ -25,8 +25,8 @@ claim you can check, and disprove.
 
 On 278 questions over a real 70-table dataset, with machine-derived ground truth
 and the same model throughout, hallucination fell from **0.058 (RAG alone) to
-0.014 (full pipeline)** — a 76% relative reduction — while *false* abstention fell
-too, 0.369 to 0.298. That second number is the one that keeps the first honest:
+0.004 (full pipeline)** — a 93% relative reduction — while *false* abstention fell
+too, 0.369 to 0.187. That second number is the one that keeps the first honest:
 any system can drive hallucination to zero by refusing everything, and that would
 show up here as a worse false-abstention rate rather than a better one. Full
 tables and caveats in [EVALUATION.md](EVALUATION.md) and
@@ -216,7 +216,7 @@ has not been tested and should not be sold.
 
 | Claim | Supported? |
 |---|---|
-| "Reduces hallucination in enterprise QA over a known corpus" | Yes — measured by ablation, 0.058 → 0.014 |
+| "Reduces hallucination in enterprise QA over a known corpus" | Yes — measured by ablation, 0.058 → 0.004 |
 | "Reduces hallucination on structured, factual questions" | Yes — this is what the 278 cases are |
 | "Reduces hallucination on open-ended natural-language questions" | **Not tested.** The dataset suite is templated |
 | "Prevents LLM hallucination" | **No.** Too broad, and unfalsifiable as stated |

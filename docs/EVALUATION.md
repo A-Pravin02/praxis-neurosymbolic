@@ -121,19 +121,19 @@ rows by arithmetic**, not chosen by whoever wrote the question.
 
 | Metric | llm_only | llm_rag | llm_rag_verify | neurosymbolic | better |
 |---|---|---|---|---|---|
-| Factual accuracy | 0.000 | 0.384 | 0.359 | **0.657** | higher |
+| Factual accuracy | 0.000 | 0.384 | 0.359 | **0.793** | higher |
 | Citation accuracy | n/a | 0.543 | 0.543 | **0.687** | higher |
-| Abstention accuracy | 1.000 | 0.775 | 0.887 | **0.938** | higher |
+| Abstention accuracy | 1.000 | 0.775 | 0.887 | **0.975** | higher |
 | Groundedness | 1.000 | 1.000 | 1.000 | 1.000 | higher |
 | Retrieval recall | n/a | 1.000 | 1.000 | 1.000 | higher |
 | Retrieval precision | n/a | 0.159 | 0.159 | 0.148 | higher |
-| Hallucination rate | 0.000 | 0.058 | 0.029 | **0.014** | lower |
-| Unsupported claim rate | n/a | 0.000 | 0.251 | 0.020 | lower |
-| False abstention rate | 1.000 | 0.369 | 0.495 | **0.298** | lower |
+| Hallucination rate | 0.000 | 0.058 | 0.029 | **0.004** | lower |
+| Unsupported claim rate | n/a | 0.000 | 0.251 | 0.043 | lower |
+| False abstention rate | 1.000 | 0.369 | 0.495 | **0.187** | lower |
 | Mean latency (ms) | 0.2 | 30.5 | 46.8 | 291.1 | lower |
 
-Hallucination fell **0.058 to 0.014, a 76% relative reduction**, while false
-abstention *also* fell (0.369 to 0.298). Both moving in the right direction at
+Hallucination fell **0.058 to 0.004, a 93% relative reduction**, while false
+abstention *also* fell (0.369 to 0.187). Both moving in the right direction at
 once is the claim worth making: refusing more often is a trivial way to suppress
 hallucination, and it would have shown up here as a worse false-abstention rate.
 

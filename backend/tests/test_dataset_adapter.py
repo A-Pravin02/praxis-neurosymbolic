@@ -195,3 +195,49 @@ def test_subject_name_words_do_not_match_columns(tenant_db, admin_acme):
         tenant_db, admin_acme,
         "What is the mean household income in the solar_plant_generation dataset?")
     assert resolution.predicate is None
+
+
+# --- ambiguity between same-named datasets ---------------------------------
+
+def test_two_tables_answering_to_one_name_are_reported_as_ambiguous(
+        tenant_db, admin_acme):
+    """Only one of them holds the column, and that must not decide it.
+
+    Trying candidates in order and keeping the first that yields a match is the
+    worst possible tie-break: it guarantees answering from the one table that
+    *can* answer, even when the reader meant the other, and the reply is fluent
+    and cited.
+    """
+    from app.knowledge.schema import make_fact
+    from app.knowledge import store as knowledge_store
+
+    knowledge_store.save_facts(tenant_db, admin_acme.tenant_id, [
+        make_fact("dataset:hr_data_intake", "headcount_mean", 42),
+        make_fact("dataset:sales_db_intake", "store_id_mean", 183),
+    ])
+    resolution = resolve(tenant_db, admin_acme,
+                         "What is the mean store id in the intake dataset?")
+    assert resolution.predicate is None, "a tie must not silently pick a winner"
+    assert resolution.ambiguous_subjects == [
+        "dataset:hr_data_intake", "dataset:sales_db_intake"]
+
+
+def test_a_closer_name_still_wins_over_a_longer_one(tenant_db, admin_acme):
+    """An unequal match is not ambiguity.
+
+    `promotion` names the question's subject better than `employee_promotion`
+    does, and preferring the closer name is correct - the ambiguity rule must
+    not swallow this case.
+    """
+    from app.knowledge.schema import make_fact
+    from app.knowledge import store as knowledge_store
+
+    knowledge_store.save_facts(tenant_db, admin_acme.tenant_id, [
+        make_fact("dataset:bonus", "payout_mean", 1200),
+        make_fact("dataset:annual_bonus", "payout_mean", 3400),
+    ])
+    resolution = resolve(tenant_db, admin_acme,
+                         "What is the mean payout in the bonus dataset?")
+    assert resolution.subject == "dataset:bonus"
+    assert resolution.predicate == "payout_mean"
+    assert not resolution.ambiguous_subjects

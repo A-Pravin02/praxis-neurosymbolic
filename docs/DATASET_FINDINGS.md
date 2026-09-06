@@ -81,22 +81,22 @@ arithmetic over the real rows**:
 
 | Metric | llm_only | llm_rag | llm_rag_verify | **neurosymbolic** | better |
 |---|---|---|---|---|---|
-| Factual accuracy | 0.000 | 0.384 | 0.359 | **0.657** | higher |
+| Factual accuracy | 0.000 | 0.384 | 0.359 | **0.793** | higher |
 | Citation accuracy | n/a | 0.543 | 0.543 | **0.687** | higher |
-| Abstention accuracy | 1.000 | 0.775 | 0.887 | **0.938** | higher |
+| Abstention accuracy | 1.000 | 0.775 | 0.887 | **0.975** | higher |
 | Groundedness | 1.000 | 1.000 | 1.000 | 1.000 | higher |
 | Retrieval recall | n/a | 1.000 | 1.000 | 1.000 | higher |
 | Retrieval precision | n/a | 0.159 | 0.159 | 0.148 | higher |
-| **Hallucination rate** | 0.000 | 0.058 | 0.029 | **0.014** | lower |
-| Unsupported claim rate | n/a | 0.000 | 0.251 | 0.020 | lower |
-| False abstention rate | 1.000 | 0.369 | 0.495 | **0.298** | lower |
+| **Hallucination rate** | 0.000 | 0.058 | 0.029 | **0.004** | lower |
+| Unsupported claim rate | n/a | 0.000 | 0.251 | 0.043 | lower |
+| False abstention rate | 1.000 | 0.369 | 0.495 | **0.187** | lower |
 | Mean latency (ms) | 0.2 | 30.5 | 46.8 | 291.1 | lower |
 
 The full pipeline is best on every quality axis simultaneously — which is the
 result worth having, because the easy way to cut hallucination is to refuse more
 often, and that would have shown up as a *higher* false-abstention rate. Instead
-both fell: hallucination 0.058 → 0.014 (a 76% relative reduction) while false
-abstention fell 0.369 → 0.298.
+both fell: hallucination 0.058 → 0.004 (a 93% relative reduction) while false
+abstention fell 0.369 → 0.187.
 
 `llm_only` scores 1.000 on abstention and 0.000 on hallucination because the
 offline model refuses everything it has no glossary entry for. Its 1.000
@@ -202,3 +202,68 @@ The suite is now **312 tests**.
   architecture's contribution, not what a fluent model would do unaided. Re-run
   the harness with a cloud provider before quoting hallucination figures as
   general.
+
+## Postscript: what the curated suite then exposed
+
+The templated questions were the benchmark's weakest point, so
+`scripts/build_curated_suite.py` rewrote 74 of the cases in natural phrasing
+while reusing their machine-derived expected values by id (see
+[EVALUATION.md](EVALUATION.md)). The first run was a bad result, and an
+instructive one:
+
+| | Generated | Curated (first run) |
+|---|---|---|
+| Factual accuracy | 0.657 | **0.280** |
+| False abstention | 0.298 | **0.660** |
+| Hallucination rate | 0.014 | **0.000** |
+
+Accuracy more than halved on the same ground truth. Crucially it **failed in the
+safe direction** — hallucination went to zero and abstention accuracy to 1.000.
+The system did not start inventing answers when it stopped understanding the
+question; it stopped answering.
+
+Three more defects were behind it, and none was in the resolver, which mapped
+"the highest fuel price" to `fuel_price_max` correctly all along.
+
+10. **A computed statistic could not be VERIFIED.** Only inferred facts and user
+    attributes had a path to that status, so a value the system had calculated
+    from the source rows was capped at SUPPORTED and forfeited the gate's entire
+    `0.30 × verified_share` term. It now verifies when the stated figure is the
+    fact's value *and* that value appears in the retrieved evidence — the same
+    check the precision bug (defect 3) broke.
+
+11. **The relevance waiver was half-applied.** The gate waives its retrieval
+    floor for a derived, supported answer, then scored confidence with a formula
+    still weighted `0.22 ×` that waived relevance. The answer cleared the floor
+    and died on the score. Both phrasings of the walmart fuel-price case
+    abstained, so this was suppressing template questions too.
+
+12. **Same-named tables were disambiguated by which one could answer.** "The
+    train dataset" matches `HR Data/train.csv` and `Sales DB/TRAIN.csv` equally
+    well; the resolver kept the first candidate yielding a matching column, which
+    guarantees answering from the one table that *can* answer even when the reader
+    meant the other. An exact tie in subject score is now reported as ambiguity,
+    naming the candidates. An unequal match still resolves — "promotion" names
+    `promotion.csv` better than `employee_promotion.csv`, and preferring the
+    closer name is right there.
+
+After the fixes, on the same 278 machine-derived cases:
+
+| Metric | before | after |
+|---|---|---|
+| Factual accuracy | 0.657 | **0.793** |
+| Abstention accuracy | 0.938 | **0.975** |
+| Hallucination rate | 0.014 | **0.004** |
+| False abstention rate | 0.298 | **0.187** |
+
+Curated factual accuracy went 0.280 → 0.360, and its abstention accuracy is a
+perfect 1.000 with hallucination at 0.000. It peaked at 0.460 *before* the
+ambiguity fix, which traded some accuracy back for that perfect abstention rate.
+That is the right trade: the cases given up are ones whose ground truth assumes
+"train" means one particular train table, and declining to guess between two is
+the behaviour this architecture exists to have.
+
+**Read the post-fix numbers as in-sample.** They are measured on the suite that
+motivated the fixes. The curated suite's own 0.360 remains the honest headline
+for phrasing robustness, and a fresh, unseen phrasing set is needed before
+treating any of it as a general result.

@@ -245,3 +245,63 @@ def test_neither_side_of_an_unresolved_conflict_may_be_asserted():
                     contradictions=[conflict])
     assert all(c.status is ClaimStatus.CONTRADICTED for c in report.claims)
     assert report.supported_claims == []
+
+
+# --- computed statistics reach VERIFIED ------------------------------------
+
+CARD_SPAN = span("The walmart.csv table has 423,325 data rows. Fuel_Price ranges "
+                 "from 2.472 to 4.468 with a mean of 3.3586.", title="Dataset card")
+
+
+def test_a_computed_statistic_is_verified_when_the_evidence_carries_its_value():
+    """This is the strongest determinism the system has, and it was capped.
+
+    Only INFERRED facts and user attributes could reach VERIFIED, so a value the
+    system had calculated from the source rows scored merely SUPPORTED and lost
+    the gate's whole verified-share term - which made the pipeline abstain on
+    figures it computed itself.
+    """
+    fact = make_fact("dataset:walmart", "fuel_price_max", 4.468,
+                     kind=FactKind.DIRECT,
+                     provenance=Provenance(
+                         source_kind="record", extractor="merged_dataset",
+                         evidence_text="Computed over 423325 values of Fuel_Price."))
+    report = verify("maximum fuel price", claims_from_facts([fact]), [CARD_SPAN])
+    assert report.claims[0].status is ClaimStatus.VERIFIED
+
+
+def test_a_statistic_the_evidence_does_not_corroborate_is_not_verified():
+    """The guard is what separates verification from assertion.
+
+    A fact whose own card prints a differently rounded figure must fall back to
+    support scoring - that mismatch was a real defect, not a hypothetical.
+    """
+    fact = make_fact("dataset:walmart", "fuel_price_max", 9.999,
+                     kind=FactKind.DIRECT,
+                     provenance=Provenance(source_kind="record",
+                                           extractor="merged_dataset"))
+    report = verify("maximum fuel price", claims_from_facts([fact]), [CARD_SPAN])
+    assert report.claims[0].status is not ClaimStatus.VERIFIED
+
+
+def test_waiving_the_relevance_floor_also_removes_it_from_the_confidence_score():
+    """Otherwise the answer clears the floor and dies on the score.
+
+    The gate waives the floor for a value derived for the subject asked about and
+    backed by its own passage; scoring that answer on retrieval similarity anyway
+    re-applies the very test just waived, so a paraphrase fails on wording alone.
+    """
+    fact = make_fact("dataset:walmart", "fuel_price_max", 4.468,
+                     kind=FactKind.DIRECT,
+                     provenance=Provenance(source_kind="record",
+                                           extractor="merged_dataset"))
+    claims = claims_from_facts([fact])
+    # A question phrased in words the card does not use: relevance is low, but the
+    # value itself is present in the evidence.
+    report = verify("how high does fuel get", claims, [CARD_SPAN])
+    assert report.evidence_relevance < 0.5, "precondition: retrieval looks weak"
+
+    result = gate_module.evaluate(report, [CARD_SPAN], symbolic_conclusion=True)
+    assert result.signals["relevance_floor_waived"] is True
+    assert result.decision is not GateDecision.ABSTAIN, (
+        f"waived the floor then abstained on the score anyway: {result.reasons}")
