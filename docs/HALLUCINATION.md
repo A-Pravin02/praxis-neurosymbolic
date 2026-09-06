@@ -207,11 +207,43 @@ model from the truth decision. The cost is that the verified path only covers
 questions the corpus and rules can answer, and everything outside it is labelled
 as unverified rather than answered confidently.
 
+## What the claim covers, and what it does not
+
+The measured result is about **enterprise question answering over a known
+corpus**: questions with a determinate answer that some source or rule can
+settle. Within that scope the evidence is strong. Outside it, the architecture
+has not been tested and should not be sold.
+
+| Claim | Supported? |
+|---|---|
+| "Reduces hallucination in enterprise QA over a known corpus" | Yes — measured by ablation, 0.058 → 0.014 |
+| "Reduces hallucination on structured, factual questions" | Yes — this is what the 278 cases are |
+| "Reduces hallucination on open-ended natural-language questions" | **Not tested.** The dataset suite is templated |
+| "Prevents LLM hallucination" | **No.** Too broad, and unfalsifiable as stated |
+
+Two specific reasons the narrow framing is the honest one:
+
+1. **The evaluated questions are templated.** They exercise attribute lookup over
+   tabular statistics thoroughly and phrasing variety hardly at all. A question
+   asking the same thing in an unusual way may fail resolution and abstain — that
+   shows up in the false-abstention rate, not the hallucination rate, but it is a
+   real limit on generality.
+2. **Verification is lexical and numeric, not entailment-based.** A paraphrase
+   that changes meaning while preserving the words can pass the support check.
+   That gap is exactly where open-ended questions live, which is why the
+   structured claim is the defensible one today.
+
+So the title this work supports is *"a neuro-symbolic architecture that reduces
+hallucination in enterprise QA"*, not *"a system that prevents LLM
+hallucinations."* The first is what the benchmark measures. The second is what a
+reviewer would take apart.
+
 **The defensible claim, stated once:**
 
-> Unsupported generation is reduced by moving fact determination out of the model
-> and gating presentation on evidence, and the reduction is measurable by ablation
-> against the same model on the same corpus. The residual risk is confined to the
+> For enterprise question answering over a known corpus, unsupported generation is
+> reduced by moving fact determination out of the model and gating presentation on
+> evidence, and the reduction is measurable by ablation against the same model on
+> the same corpus. The residual risk is confined to the
 > presentation step, the sources, the extraction and rules, and the chosen
 > thresholds — each of which is inspectable and independently improvable.
 

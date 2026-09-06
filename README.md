@@ -310,5 +310,9 @@ about itself.
 - **The verifier judges support, never truth.** A well-supported claim from a
   wrong document is still wrong. Provenance tells you where a claim came from,
   not whether that source deserved trust.
+- **The claim is scoped to enterprise QA over a known corpus**, and to
+  structured factual questions within it. Open-ended natural-language questions
+  are untested. "Reduces hallucination in enterprise QA" is supported;
+  "prevents LLM hallucination" is not.
 - **Nothing here is production-hardened.** See the checklist in
   `docs/DEPLOYMENT.md` before deploying anywhere real.

@@ -181,6 +181,10 @@ The suite is now **312 tests**.
 
 ## Honest limits of this result
 
+- **The scope is enterprise QA over a known corpus**, and specifically
+  structured factual questions. That is what the 278 cases are and what the
+  numbers support. Open-ended natural-language questions are *not* tested here,
+  and the result should not be generalised to them.
 - **The suite is generated, not curated.** Its questions are templated, so they
   test attribute lookup over tabular statistics well and natural phrasing
   variety poorly.
