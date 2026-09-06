@@ -144,7 +144,8 @@ def evaluate(
         return GateResult(GateDecision.ABSTAIN, 0.0, reasons, signals)
 
     # --- confidence --------------------------------------------------------
-    confidence = _confidence(report, usable_spans, verified, symbolic_conclusion)
+    confidence = _confidence(report, usable_spans, verified, symbolic_conclusion,
+                             relevance_waived=bool(conclusion_backed))
     signals["computed_confidence"] = round(confidence, 4)
 
     if not require_evidence and not supported:
@@ -184,7 +185,8 @@ def evaluate(
 
 
 def _confidence(report: VerificationReport, usable_spans: list[EvidenceSpan],
-                verified: list, symbolic_conclusion: bool) -> float:
+                verified: list, symbolic_conclusion: bool,
+                relevance_waived: bool = False) -> float:
     """Blend independent signals. Deterministic derivation dominates."""
     supported = report.supported_claims
     if not supported and not verified:
@@ -196,11 +198,27 @@ def _confidence(report: VerificationReport, usable_spans: list[EvidenceSpan],
     verified_share = len(verified) / max(1, len(supported))
     unsupported_penalty = 0.08 * min(report.unsupported_count, 4)
 
+    weights = {"support": 0.34, "relevance": 0.22, "retrieval": 0.14,
+               "verified": 0.30}
+    if relevance_waived:
+        # The floor above was waived because the answer is a value derived for the
+        # subject asked about, backed by its own source passage. Leaving relevance
+        # in the blend would re-apply the very test just waived, and the answer
+        # would clear the floor only to die on the score - which is exactly what
+        # happened to correctly-resolved statistics whose question was phrased in
+        # words the dataset card does not use. The weight is redistributed across
+        # the remaining signals rather than dropped, so this stays a weighted
+        # average and cannot inflate confidence beyond what they support.
+        spare = weights.pop("relevance")
+        total = sum(weights.values())
+        weights = {name: w + spare * w / total for name, w in weights.items()}
+        relevance = 0.0
+
     confidence = (
-        0.34 * support
-        + 0.22 * relevance
-        + 0.14 * min(1.0, retrieval)
-        + 0.30 * verified_share
+        weights["support"] * support
+        + weights.get("relevance", 0.0) * relevance
+        + weights["retrieval"] * min(1.0, retrieval)
+        + weights["verified"] * verified_share
     )
     if symbolic_conclusion and verified:
         # A conclusion the rule engine derived from verified premises is the

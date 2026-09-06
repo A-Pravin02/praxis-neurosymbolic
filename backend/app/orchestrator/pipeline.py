@@ -744,6 +744,33 @@ class Orchestrator:
 
         reporting_conflict = gate.decision is gate_module.GateDecision.REPORT_CONFLICT
         named_subject = self.resolution.subject
+
+        # Deliberately not gated on `not supported`: when the name is ambiguous,
+        # a span that happens to match is not a rescue, it is the leak. "The train
+        # dataset" once fell through to a course description about training a
+        # recommendation model, which is supported, cited, and nonsense.
+        if not reporting_conflict and self.resolution.ambiguous_subjects:
+            # Several datasets answer to the name the question used, and it does
+            # not say which. Picking the one that happens to hold a matching column
+            # would produce a fluent, cited answer about the wrong table.
+            labels = [s.split(":", 1)[-1] for s in self.resolution.ambiguous_subjects]
+            listed = ", ".join(f"`{label}`" for label in labels)
+            turn.answer = (
+                f"That name matches more than one dataset here - {listed} - and the "
+                f"question doesn't say which one you mean. They hold different "
+                f"columns, so answering from whichever happens to have a matching "
+                f"one would be guessing. Which did you mean?"
+            )
+            turn.warnings.append(f"Ambiguous dataset name; candidates: {listed}.")
+            turn.gate_decision = gate_module.GateDecision.ABSTAIN.value
+            turn.verification_status = VerificationStatus.INSUFFICIENT_EVIDENCE.value
+            turn.confidence = 0.0
+            audit.record(self.session, audit.ANSWER_ABSTAINED,
+                         tenant_id=self.principal.tenant_id,
+                         actor_user_id=self.principal.user_id, outcome="abstained",
+                         detail={"reason": "ambiguous_subject_name",
+                                 "candidates": list(self.resolution.ambiguous_subjects)})
+            return
         if (not supported and not context["conclusion"] and not reporting_conflict
                 and named_subject and not self.resolution.resolved):
             # The question named a dataset this workspace holds, but nothing in it

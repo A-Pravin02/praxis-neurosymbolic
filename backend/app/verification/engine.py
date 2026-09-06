@@ -346,6 +346,38 @@ def verify(
             claim.notes = "From your workspace profile record."
             continue
 
+        if fact is not None and fact.kind is FactKind.DIRECT:
+            # A computed statistic is deterministic in the strongest sense this
+            # system offers: the value was calculated from the source rows and its
+            # provenance records the population it came from. Only the INFERRED
+            # path could reach VERIFIED before, so these claims were capped at
+            # SUPPORTED and forfeited the gate's whole verified-share term - which
+            # is why the pipeline abstained on figures it had computed itself.
+            #
+            # The guard is what makes this verification rather than assertion: the
+            # figure the claim states must be the fact's value, and that value must
+            # actually appear in the retrieved evidence. A statistic's own
+            # provenance records the population it was computed over ("Computed
+            # over 423325 values of Fuel_Price"), not the figure itself, so the
+            # evidence spans are what can corroborate it. This is the check that
+            # the precision bug broke - a fact holding 34.803915 against a card
+            # printing 34.8039 fails it, and correctly falls back to support
+            # scoring rather than claiming verification.
+            value = unwrap(fact.object)
+            if isinstance(value, (int, float)) and not isinstance(value, bool):
+                stated = extract_numbers(claim.text)
+                corroborating = (n for span in spans
+                                 for n in extract_numbers(span.text))
+                if (any(numbers_agree(float(value), n) for n in stated)
+                        and any(numbers_agree(float(value), n) for n in corroborating)):
+                    claim.status = ClaimStatus.VERIFIED
+                    claim.support_score = max(claim.support_score, fact.confidence)
+                    claim.notes = (
+                        "Computed from the source data; the value matches the figure "
+                        "recorded in its own source passage."
+                    )
+                    continue
+
         if fact is None:
             # A span-derived claim: it is quoted evidence, so support is not in
             # question; relevance is.

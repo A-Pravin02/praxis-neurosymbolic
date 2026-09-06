@@ -60,6 +60,9 @@ class Resolution:
     score: float = 0.0
     statistic: str | None = None
     candidates: list[tuple[str, float]] = field(default_factory=list)
+    # Subjects the question's name matched equally well. Populated only when the
+    # question does not say which of them is meant.
+    ambiguous_subjects: list[str] = field(default_factory=list)
 
     @property
     def resolved(self) -> bool:
@@ -71,6 +74,7 @@ class Resolution:
             "score": round(self.score, 4), "statistic": self.statistic,
             "candidates": [{"predicate": p, "score": round(s, 4)}
                            for p, s in self.candidates[:5]],
+            "ambiguous_subjects": list(self.ambiguous_subjects),
         }
 
 
@@ -197,6 +201,22 @@ def resolve(session: Session, principal: Principal, question: str,
     # median income in the walmart dataset" from a supermarket table that happens
     # to have an income column - which is the wrong answer, fluently delivered.
     candidate_subjects: list[str | None] = list(named) or list(partial) or [None]
+
+    # Two tables can answer to the same name: `HR Data/train.csv` and
+    # `Sales DB/TRAIN.csv` both match "the train dataset" exactly as well. The
+    # loop below picks whichever candidate yields a matching column, which is the
+    # worst possible tie-break - it guarantees answering from the one table that
+    # *can* answer, even when the reader meant the other one, and the reply is
+    # fluent and cited. An unequal match is different and must still resolve:
+    # "promotion" names `promotion.csv` better than `employee_promotion.csv`, and
+    # picking the closer name is correct there.
+    #
+    # So the trigger is an exact tie at the top, not merely several candidates.
+    if candidate_subjects[0] is not None and len(subject_scores) > 1:
+        top_score = subject_scores[0][1]
+        tied = [s for s, score in subject_scores if score == top_score]
+        if len(tied) > 1 and not any(score >= 1.0 for _, score in subject_scores):
+            return Resolution(statistic=statistic, ambiguous_subjects=sorted(tied))
 
     best: tuple[str | None, str, float] | None = None
     all_scored: list[tuple[str, float]] = []
