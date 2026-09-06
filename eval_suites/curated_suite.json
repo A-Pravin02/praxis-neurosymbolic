@@ -1,0 +1,1302 @@
+[
+ {
+  "id": "curated-rows-walmart",
+  "question": "How big is the walmart table?",
+  "expected_kind": "grounded",
+  "expected_values": [
+   423325.0
+  ],
+  "gold_documents": [
+   "Dataset card: walmart.csv"
+  ],
+  "tags": [
+   "dataset",
+   "shape",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `rows-walmart`. Ground truth unchanged: Counted directly from walmart.csv."
+ },
+ {
+  "id": "curated-rows-diamonds",
+  "question": "How many diamonds are in the diamonds data?",
+  "expected_kind": "grounded",
+  "expected_values": [
+   53940.0
+  ],
+  "gold_documents": [
+   "Dataset card: diamonds.csv"
+  ],
+  "tags": [
+   "dataset",
+   "shape",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `rows-diamonds`. Ground truth unchanged: Counted directly from diamonds.csv."
+ },
+ {
+  "id": "curated-rows-kc_house_data",
+  "question": "I'm looking at kc_house_data - how many property records is that?",
+  "expected_kind": "grounded",
+  "expected_values": [
+   21613.0
+  ],
+  "gold_documents": [
+   "Dataset card: kc_house_data.csv"
+  ],
+  "tags": [
+   "dataset",
+   "shape",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `rows-kc_house_data`. Ground truth unchanged: Counted directly from kc_house_data.csv."
+ },
+ {
+  "id": "curated-rows-hr_data_test",
+  "question": "What's the row count on the test dataset?",
+  "expected_kind": "grounded",
+  "expected_values": [
+   23490.0
+  ],
+  "gold_documents": [
+   "Dataset card: test.csv"
+  ],
+  "tags": [
+   "dataset",
+   "shape",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `rows-hr_data_test`. Ground truth unchanged: Counted directly from HR Data/test.csv."
+ },
+ {
+  "id": "curated-rows-solar_plant_plant_1_generation_data",
+  "question": "How many readings did Plant_1_Generation_Data record?",
+  "expected_kind": "grounded",
+  "expected_values": [
+   68778.0
+  ],
+  "gold_documents": [
+   "Dataset card: Plant_1_Generation_Data.csv"
+  ],
+  "tags": [
+   "dataset",
+   "shape",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `rows-solar_plant_plant_1_generation_data`. Ground truth unchanged: Counted directly from Solar Plant/Plant_1_Generation_Data.csv."
+ },
+ {
+  "id": "curated-rows-employee_promotion",
+  "question": "Tell me the size of the employee_promotion table.",
+  "expected_kind": "grounded",
+  "expected_values": [
+   54808.0
+  ],
+  "gold_documents": [
+   "Dataset card: employee_promotion.csv"
+  ],
+  "tags": [
+   "dataset",
+   "shape",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `rows-employee_promotion`. Ground truth unchanged: Counted directly from employee_promotion.csv."
+ },
+ {
+  "id": "curated-rows-sales_db_train",
+  "question": "Roughly how many entries are in TRAIN?",
+  "expected_kind": "grounded",
+  "expected_values": [
+   188340.0
+  ],
+  "gold_documents": [
+   "Dataset card: TRAIN.csv"
+  ],
+  "tags": [
+   "dataset",
+   "shape",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `rows-sales_db_train`. Ground truth unchanged: Counted directly from Sales DB/TRAIN.csv."
+ },
+ {
+  "id": "curated-rows-voltas_power",
+  "question": "The Power dataset - how many observations does it hold?",
+  "expected_kind": "grounded",
+  "expected_values": [
+   19309.0
+  ],
+  "gold_documents": [
+   "Dataset card: Power.csv"
+  ],
+  "tags": [
+   "dataset",
+   "shape",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `rows-voltas_power`. Ground truth unchanged: Counted directly from Voltas/Power.csv."
+ },
+ {
+  "id": "curated-rows-worldwide_crop_consumption",
+  "question": "Number of rows in worldwide_crop_consumption?",
+  "expected_kind": "grounded",
+  "expected_values": [
+   21165.0
+  ],
+  "gold_documents": [
+   "Dataset card: worldwide_crop_consumption.csv"
+  ],
+  "tags": [
+   "dataset",
+   "shape",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `rows-worldwide_crop_consumption`. Ground truth unchanged: Counted directly from worldwide_crop_consumption.csv."
+ },
+ {
+  "id": "curated-rows-voltas_currentvoltage",
+  "question": "How many samples does CurrentVoltage contain?",
+  "expected_kind": "grounded",
+  "expected_values": [
+   19352.0
+  ],
+  "gold_documents": [
+   "Dataset card: CurrentVoltage.csv"
+  ],
+  "tags": [
+   "dataset",
+   "shape",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `rows-voltas_currentvoltage`. Ground truth unchanged: Counted directly from Voltas/CurrentVoltage.csv."
+ },
+ {
+  "id": "curated-rows-sales_db_test_final",
+  "question": "What is TEST_FINAL's total record count?",
+  "expected_kind": "grounded",
+  "expected_values": [
+   22265.0
+  ],
+  "gold_documents": [
+   "Dataset card: TEST_FINAL.csv"
+  ],
+  "tags": [
+   "dataset",
+   "shape",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `rows-sales_db_test_final`. Ground truth unchanged: Counted directly from Sales DB/TEST_FINAL.csv."
+ },
+ {
+  "id": "curated-rows-voltas_overview",
+  "question": "How many rows of data are there in Overview?",
+  "expected_kind": "grounded",
+  "expected_values": [
+   20316.0
+  ],
+  "gold_documents": [
+   "Dataset card: Overview.csv"
+  ],
+  "tags": [
+   "dataset",
+   "shape",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `rows-voltas_overview`. Ground truth unchanged: Counted directly from Voltas/Overview.csv."
+ },
+ {
+  "id": "curated-max-walmart-fuel_price",
+  "question": "What's the highest fuel price recorded in walmart?",
+  "expected_kind": "grounded",
+  "expected_values": [
+   4.468
+  ],
+  "gold_documents": [
+   "Dataset card: walmart.csv"
+  ],
+  "tags": [
+   "dataset",
+   "statistic",
+   "max",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `max-walmart-fuel_price`. Ground truth unchanged: max of Fuel_Price computed over 423325 values."
+ },
+ {
+  "id": "curated-max-walmart-cpi",
+  "question": "In the walmart data, how high does CPI go?",
+  "expected_kind": "grounded",
+  "expected_values": [
+   228.9765
+  ],
+  "gold_documents": [
+   "Dataset card: walmart.csv"
+  ],
+  "tags": [
+   "dataset",
+   "statistic",
+   "max",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `max-walmart-cpi`. Ground truth unchanged: max of CPI computed over 422740 values."
+ },
+ {
+  "id": "curated-max-solar_plant_plant_1_generation_data-dc_power",
+  "question": "What was peak DC power at Plant_1_Generation_Data?",
+  "expected_kind": "grounded",
+  "expected_values": [
+   14471.12
+  ],
+  "gold_documents": [
+   "Dataset card: Plant_1_Generation_Data.csv"
+  ],
+  "tags": [
+   "dataset",
+   "statistic",
+   "max",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `max-solar_plant_plant_1_generation_data-dc_power`. Ground truth unchanged: max of DC_POWER computed over 68778 values."
+ },
+ {
+  "id": "curated-max-solar_plant_plant_2_generation_data-dc_power",
+  "question": "Give me the largest DC POWER value in Plant_2_Generation_Data.",
+  "expected_kind": "grounded",
+  "expected_values": [
+   1420.93
+  ],
+  "gold_documents": [
+   "Dataset card: Plant_2_Generation_Data.csv"
+  ],
+  "tags": [
+   "dataset",
+   "statistic",
+   "max",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `max-solar_plant_plant_2_generation_data-dc_power`. Ground truth unchanged: max of DC_POWER computed over 67698 values."
+ },
+ {
+  "id": "curated-max-voltas_currentvoltage-il2",
+  "question": "What does IL2 top out at in CurrentVoltage?",
+  "expected_kind": "grounded",
+  "expected_values": [
+   253.6
+  ],
+  "gold_documents": [
+   "Dataset card: CurrentVoltage.csv"
+  ],
+  "tags": [
+   "dataset",
+   "statistic",
+   "max",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `max-voltas_currentvoltage-il2`. Ground truth unchanged: max of IL2 computed over 19352 values."
+ },
+ {
+  "id": "curated-max-voltas_totalpower-kwh_i",
+  "question": "Maximum KWH I in the TotalPower table?",
+  "expected_kind": "grounded",
+  "expected_values": [
+   33000.5
+  ],
+  "gold_documents": [
+   "Dataset card: TotalPower.csv"
+  ],
+  "tags": [
+   "dataset",
+   "statistic",
+   "max",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `max-voltas_totalpower-kwh_i`. Ground truth unchanged: max of KWH_I computed over 19248 values."
+ },
+ {
+  "id": "curated-max-vgsales-other_sales",
+  "question": "What's the most Other Sales any title in vgsales achieved?",
+  "expected_kind": "grounded",
+  "expected_values": [
+   10.57
+  ],
+  "gold_documents": [
+   "Dataset card: vgsales.csv"
+  ],
+  "tags": [
+   "dataset",
+   "statistic",
+   "max",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `max-vgsales-other_sales`. Ground truth unchanged: max of Other_Sales computed over 16598 values."
+ },
+ {
+  "id": "curated-max-voltas_power-rval2",
+  "question": "The Power file - what's the ceiling on RVAL2?",
+  "expected_kind": "grounded",
+  "expected_values": [
+   8.9
+  ],
+  "gold_documents": [
+   "Dataset card: Power.csv"
+  ],
+  "tags": [
+   "dataset",
+   "statistic",
+   "max",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `max-voltas_power-rval2`. Ground truth unchanged: max of RVAL2 computed over 19309 values."
+ },
+ {
+  "id": "curated-max-sales_db_test_final-store_id",
+  "question": "What is the highest Store id appearing in TEST_FINAL?",
+  "expected_kind": "grounded",
+  "expected_values": [
+   365.0
+  ],
+  "gold_documents": [
+   "Dataset card: TEST_FINAL.csv"
+  ],
+  "tags": [
+   "dataset",
+   "statistic",
+   "max",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `max-sales_db_test_final-store_id`. Ground truth unchanged: max of Store_id computed over 22265 values."
+ },
+ {
+  "id": "curated-max-voltas_powerfactor-thdvl1",
+  "question": "How large does THDVL1 get in PowerFactor?",
+  "expected_kind": "grounded",
+  "expected_values": [
+   6.2
+  ],
+  "gold_documents": [
+   "Dataset card: PowerFactor.csv"
+  ],
+  "tags": [
+   "dataset",
+   "statistic",
+   "max",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `max-voltas_powerfactor-thdvl1`. Ground truth unchanged: max of THDVL1 computed over 19308 values."
+ },
+ {
+  "id": "curated-max-kc_house_data-waterfront",
+  "question": "What's the maximum value of waterfront in kc_house_data?",
+  "expected_kind": "grounded",
+  "expected_values": [
+   1.0
+  ],
+  "gold_documents": [
+   "Dataset card: kc_house_data.csv"
+  ],
+  "tags": [
+   "dataset",
+   "statistic",
+   "max",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `max-kc_house_data-waterfront`. Ground truth unchanged: max of waterfront computed over 21613 values."
+ },
+ {
+  "id": "curated-max-voltas_powerfactor-pfl2",
+  "question": "PFL2 in PowerFactor - what's its upper bound?",
+  "expected_kind": "grounded",
+  "expected_values": [
+   1.0
+  ],
+  "gold_documents": [
+   "Dataset card: PowerFactor.csv"
+  ],
+  "tags": [
+   "dataset",
+   "statistic",
+   "max",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `max-voltas_powerfactor-pfl2`. Ground truth unchanged: max of PFL2 computed over 19308 values."
+ },
+ {
+  "id": "curated-min-diamonds-price",
+  "question": "What's the cheapest diamond in the diamonds data?",
+  "expected_kind": "grounded",
+  "expected_values": [
+   326.0
+  ],
+  "gold_documents": [
+   "Dataset card: diamonds.csv"
+  ],
+  "tags": [
+   "dataset",
+   "statistic",
+   "min",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `min-diamonds-price`. Ground truth unchanged: min of price computed over 53940 values."
+ },
+ {
+  "id": "curated-min-hr_data_test-age",
+  "question": "How young is the youngest person in the test dataset?",
+  "expected_kind": "grounded",
+  "expected_values": [
+   20.0
+  ],
+  "gold_documents": [
+   "Dataset card: test.csv"
+  ],
+  "tags": [
+   "dataset",
+   "statistic",
+   "min",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `min-hr_data_test-age`. Ground truth unchanged: min of age computed over 23490 values."
+ },
+ {
+  "id": "curated-min-employee_promotion-avg_training_score",
+  "question": "What's the lowest average training score in employee_promotion?",
+  "expected_kind": "grounded",
+  "expected_values": [
+   39.0
+  ],
+  "gold_documents": [
+   "Dataset card: employee_promotion.csv"
+  ],
+  "tags": [
+   "dataset",
+   "statistic",
+   "min",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `min-employee_promotion-avg_training_score`. Ground truth unchanged: min of avg_training_score computed over 52248 values."
+ },
+ {
+  "id": "curated-min-wa_fn_usec_telco_customer_churn-monthlycharges",
+  "question": "What is the smallest monthly charge in WA_Fn-UseC_-Telco-Customer-Churn?",
+  "expected_kind": "grounded",
+  "expected_values": [
+   18.25
+  ],
+  "gold_documents": [
+   "Dataset card: WA_Fn-UseC_-Telco-Customer-Churn.csv"
+  ],
+  "tags": [
+   "dataset",
+   "statistic",
+   "min",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `min-wa_fn_usec_telco_customer_churn-monthlycharges`. Ground truth unchanged: min of MonthlyCharges computed over 7043 values."
+ },
+ {
+  "id": "curated-min-gdp-gdp",
+  "question": "In the GDP data, what's the floor on gdp?",
+  "expected_kind": "grounded",
+  "expected_values": [
+   8824447.0
+  ],
+  "gold_documents": [
+   "Dataset card: GDP.csv"
+  ],
+  "tags": [
+   "dataset",
+   "statistic",
+   "min",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `min-gdp-gdp`. Ground truth unchanged: min of gdp computed over 10134 values."
+ },
+ {
+  "id": "curated-min-voltas_power-rval3",
+  "question": "How low does RVAL3 go in Power?",
+  "expected_kind": "grounded",
+  "expected_values": [
+   -0.0022
+  ],
+  "gold_documents": [
+   "Dataset card: Power.csv"
+  ],
+  "tags": [
+   "dataset",
+   "statistic",
+   "min",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `min-voltas_power-rval3`. Ground truth unchanged: min of RVAL3 computed over 19309 values."
+ },
+ {
+  "id": "curated-min-solar_plant_plant_1_generation_data-daily_yield",
+  "question": "Minimum DAILY YIELD at Plant_1_Generation_Data?",
+  "expected_kind": "grounded",
+  "expected_values": [
+   0.0
+  ],
+  "gold_documents": [
+   "Dataset card: Plant_1_Generation_Data.csv"
+  ],
+  "tags": [
+   "dataset",
+   "statistic",
+   "min",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `min-solar_plant_plant_1_generation_data-daily_yield`. Ground truth unchanged: min of DAILY_YIELD computed over 68778 values."
+ },
+ {
+  "id": "curated-min-diamonds-y",
+  "question": "What's the smallest y measurement among the diamonds?",
+  "expected_kind": "grounded",
+  "expected_values": [
+   0.0
+  ],
+  "gold_documents": [
+   "Dataset card: diamonds.csv"
+  ],
+  "tags": [
+   "dataset",
+   "statistic",
+   "min",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `min-diamonds-y`. Ground truth unchanged: min of y computed over 53940 values."
+ },
+ {
+  "id": "curated-min-zomato-country code",
+  "question": "The zomato table - what's the lowest Country Code in it?",
+  "expected_kind": "grounded",
+  "expected_values": [
+   1.0
+  ],
+  "gold_documents": [
+   "Dataset card: zomato.csv"
+  ],
+  "tags": [
+   "dataset",
+   "statistic",
+   "min",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `min-zomato-country code`. Ground truth unchanged: min of Country Code computed over 9551 values."
+ },
+ {
+  "id": "curated-min-worldwide_crop_consumption-value",
+  "question": "What's the bottom of the Value range in worldwide_crop_consumption?",
+  "expected_kind": "grounded",
+  "expected_values": [
+   0.0
+  ],
+  "gold_documents": [
+   "Dataset card: worldwide_crop_consumption.csv"
+  ],
+  "tags": [
+   "dataset",
+   "statistic",
+   "min",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `min-worldwide_crop_consumption-value`. Ground truth unchanged: min of Value computed over 19842 values."
+ },
+ {
+  "id": "curated-min-employee_promotion-is_promoted",
+  "question": "What is the minimum is promoted value in employee_promotion?",
+  "expected_kind": "grounded",
+  "expected_values": [
+   0.0
+  ],
+  "gold_documents": [
+   "Dataset card: employee_promotion.csv"
+  ],
+  "tags": [
+   "dataset",
+   "statistic",
+   "min",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `min-employee_promotion-is_promoted`. Ground truth unchanged: min of is_promoted computed over 54808 values."
+ },
+ {
+  "id": "curated-min-solar_plant_plant_2_generation_data-ac_power",
+  "question": "Lowest AC POWER reading in Plant_2_Generation_Data?",
+  "expected_kind": "grounded",
+  "expected_values": [
+   0.0
+  ],
+  "gold_documents": [
+   "Dataset card: Plant_2_Generation_Data.csv"
+  ],
+  "tags": [
+   "dataset",
+   "statistic",
+   "min",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `min-solar_plant_plant_2_generation_data-ac_power`. Ground truth unchanged: min of AC_POWER computed over 67698 values."
+ },
+ {
+  "id": "curated-mean-telco_customer_churn-monthlycharges",
+  "question": "On the telco customer churn data - what do customers pay per month on average?",
+  "expected_kind": "grounded",
+  "expected_values": [
+   64.7617
+  ],
+  "gold_documents": [
+   "Dataset card: telco customer churn.csv"
+  ],
+  "tags": [
+   "dataset",
+   "statistic",
+   "mean",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `mean-telco_customer_churn-monthlycharges`. Ground truth unchanged: mean of MonthlyCharges computed over 7043 values."
+ },
+ {
+  "id": "curated-mean-wa_fn_usec_telco_customer_churn-tenure",
+  "question": "What's the average tenure in WA_Fn-UseC_-Telco-Customer-Churn?",
+  "expected_kind": "grounded",
+  "expected_values": [
+   32.3711
+  ],
+  "gold_documents": [
+   "Dataset card: WA_Fn-UseC_-Telco-Customer-Churn.csv"
+  ],
+  "tags": [
+   "dataset",
+   "statistic",
+   "mean",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `mean-wa_fn_usec_telco_customer_churn-tenure`. Ground truth unchanged: mean of tenure computed over 7043 values."
+ },
+ {
+  "id": "curated-mean-kc_house_data-zipcode",
+  "question": "What's the typical zipcode in kc_house_data?",
+  "expected_kind": "grounded",
+  "expected_values": [
+   98077.94
+  ],
+  "gold_documents": [
+   "Dataset card: kc_house_data.csv"
+  ],
+  "tags": [
+   "dataset",
+   "statistic",
+   "mean",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `mean-kc_house_data-zipcode`. Ground truth unchanged: mean of zipcode computed over 21613 values."
+ },
+ {
+  "id": "curated-mean-hr_data_train-no_of_trainings",
+  "question": "How many trainings does someone in the train dataset take on average?",
+  "expected_kind": "grounded",
+  "expected_values": [
+   1.253
+  ],
+  "gold_documents": [
+   "Dataset card: train.csv"
+  ],
+  "tags": [
+   "dataset",
+   "statistic",
+   "mean",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `mean-hr_data_train-no_of_trainings`. Ground truth unchanged: mean of no_of_trainings computed over 54808 values."
+ },
+ {
+  "id": "curated-mean-bank-day",
+  "question": "In the bank data, what's the average day?",
+  "expected_kind": "grounded",
+  "expected_values": [
+   15.658
+  ],
+  "gold_documents": [
+   "Dataset card: bank.csv"
+  ],
+  "tags": [
+   "dataset",
+   "statistic",
+   "mean",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `mean-bank-day`. Ground truth unchanged: mean of day computed over 11162 values."
+ },
+ {
+  "id": "curated-mean-gdp-year",
+  "question": "What year does the GDP dataset average out to?",
+  "expected_kind": "grounded",
+  "expected_values": [
+   1993.58
+  ],
+  "gold_documents": [
+   "Dataset card: GDP.csv"
+  ],
+  "tags": [
+   "dataset",
+   "statistic",
+   "mean",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `mean-gdp-year`. Ground truth unchanged: mean of year computed over 10134 values."
+ },
+ {
+  "id": "curated-mean-zomato-longitude",
+  "question": "Average Longitude across the zomato table?",
+  "expected_kind": "grounded",
+  "expected_values": [
+   64.1104
+  ],
+  "gold_documents": [
+   "Dataset card: zomato.csv"
+  ],
+  "tags": [
+   "dataset",
+   "statistic",
+   "mean",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `mean-zomato-longitude`. Ground truth unchanged: mean of Longitude computed over 9547 values."
+ },
+ {
+  "id": "curated-mean-voltas_overview-wti",
+  "question": "What does WTI average in Overview?",
+  "expected_kind": "grounded",
+  "expected_values": [
+   0.2705
+  ],
+  "gold_documents": [
+   "Dataset card: Overview.csv"
+  ],
+  "tags": [
+   "dataset",
+   "statistic",
+   "mean",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `mean-voltas_overview-wti`. Ground truth unchanged: mean of WTI computed over 20316 values."
+ },
+ {
+  "id": "curated-mean-sales_db_train-store_id",
+  "question": "What's the mean Store id across TRAIN?",
+  "expected_kind": "grounded",
+  "expected_values": [
+   183.0
+  ],
+  "gold_documents": [
+   "Dataset card: TRAIN.csv"
+  ],
+  "tags": [
+   "dataset",
+   "statistic",
+   "mean",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `mean-sales_db_train-store_id`. Ground truth unchanged: mean of Store_id computed over 188340 values."
+ },
+ {
+  "id": "curated-mean-bank-previous",
+  "question": "The bank file - what do the previous values average?",
+  "expected_kind": "grounded",
+  "expected_values": [
+   0.8326
+  ],
+  "gold_documents": [
+   "Dataset card: bank.csv"
+  ],
+  "tags": [
+   "dataset",
+   "statistic",
+   "mean",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `mean-bank-previous`. Ground truth unchanged: mean of previous computed over 11162 values."
+ },
+ {
+  "id": "curated-mean-voltas_totalpower-mkvad",
+  "question": "Give me the average MKVAD in TotalPower.",
+  "expected_kind": "grounded",
+  "expected_values": [
+   95.9217
+  ],
+  "gold_documents": [
+   "Dataset card: TotalPower.csv"
+  ],
+  "tags": [
+   "dataset",
+   "statistic",
+   "mean",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `mean-voltas_totalpower-mkvad`. Ground truth unchanged: mean of MKVAD computed over 19248 values."
+ },
+ {
+  "id": "curated-mean-worldwide_crop_consumption-time",
+  "question": "What's the average TIME in worldwide_crop_consumption?",
+  "expected_kind": "grounded",
+  "expected_values": [
+   2008.11
+  ],
+  "gold_documents": [
+   "Dataset card: worldwide_crop_consumption.csv"
+  ],
+  "tags": [
+   "dataset",
+   "statistic",
+   "mean",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `mean-worldwide_crop_consumption-time`. Ground truth unchanged: mean of TIME computed over 21165 values."
+ },
+ {
+  "id": "curated-mean-hr_data_test-employee_id",
+  "question": "What is the average employee id in the test dataset?",
+  "expected_kind": "grounded",
+  "expected_values": [
+   39041.4
+  ],
+  "gold_documents": [
+   "Dataset card: test.csv"
+  ],
+  "tags": [
+   "dataset",
+   "statistic",
+   "mean",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `mean-hr_data_test-employee_id`. Ground truth unchanged: mean of employee_id computed over 23490 values."
+ },
+ {
+  "id": "curated-mean-sales_db_test_final-holiday",
+  "question": "In TEST_FINAL, what does Holiday come out to on average?",
+  "expected_kind": "grounded",
+  "expected_values": [
+   0.0328
+  ],
+  "gold_documents": [
+   "Dataset card: TEST_FINAL.csv"
+  ],
+  "tags": [
+   "dataset",
+   "statistic",
+   "mean",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `mean-sales_db_test_final-holiday`. Ground truth unchanged: mean of Holiday computed over 22265 values."
+ },
+ {
+  "id": "curated-absent-walmart",
+  "question": "What's the median household income in the walmart data?",
+  "expected_kind": "abstain",
+  "tags": [
+   "dataset",
+   "absent-column",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `absent-walmart`. Ground truth unchanged: walmart.csv has no median_household_income column. Answering with any number is a hallucination."
+ },
+ {
+  "id": "curated-absent-diamonds",
+  "question": "What's the average carbon footprint of a diamond in the diamonds table?",
+  "expected_kind": "abstain",
+  "tags": [
+   "dataset",
+   "absent-column",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `absent-diamonds`. Ground truth unchanged: diamonds.csv has no carbon_footprint column. Answering with any number is a hallucination."
+ },
+ {
+  "id": "curated-absent-hr_data_train",
+  "question": "How does the train dataset score on net promoter?",
+  "expected_kind": "abstain",
+  "tags": [
+   "dataset",
+   "absent-column",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `absent-hr_data_train`. Ground truth unchanged: HR Data/train.csv has no net_promoter_score column. Answering with any number is a hallucination."
+ },
+ {
+  "id": "curated-absent-kc_house_data",
+  "question": "In kc_house_data, what's the typical median household income?",
+  "expected_kind": "abstain",
+  "tags": [
+   "dataset",
+   "absent-column",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `absent-kc_house_data`. Ground truth unchanged: kc_house_data.csv has no median_household_income column. Answering with any number is a hallucination."
+ },
+ {
+  "id": "curated-absent-sales_db_train",
+  "question": "What's employee satisfaction like in TRAIN?",
+  "expected_kind": "abstain",
+  "tags": [
+   "dataset",
+   "absent-column",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `absent-sales_db_train`. Ground truth unchanged: Sales DB/TRAIN.csv has no employee_satisfaction column. Answering with any number is a hallucination."
+ },
+ {
+  "id": "curated-absent-employee_promotion",
+  "question": "Tell me the average median household income in employee_promotion.",
+  "expected_kind": "abstain",
+  "tags": [
+   "dataset",
+   "absent-column",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `absent-employee_promotion`. Ground truth unchanged: employee_promotion.csv has no median_household_income column. Answering with any number is a hallucination."
+ },
+ {
+  "id": "curated-absent-hr_data_test",
+  "question": "How satisfied are the employees in the test dataset, on average?",
+  "expected_kind": "abstain",
+  "tags": [
+   "dataset",
+   "absent-column",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `absent-hr_data_test`. Ground truth unchanged: HR Data/test.csv has no employee_satisfaction column. Answering with any number is a hallucination."
+ },
+ {
+  "id": "curated-absent-solar_plant_plant_1_generation_data",
+  "question": "What is the mean median household income at Plant_1_Generation_Data?",
+  "expected_kind": "abstain",
+  "tags": [
+   "dataset",
+   "absent-column",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `absent-solar_plant_plant_1_generation_data`. Ground truth unchanged: Solar Plant/Plant_1_Generation_Data.csv has no median_household_income column. Answering with any number is a hallucination."
+ },
+ {
+  "id": "curated-absent-voltas_currentvoltage",
+  "question": "What's the churn probability in CurrentVoltage?",
+  "expected_kind": "abstain",
+  "tags": [
+   "dataset",
+   "absent-column",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `absent-voltas_currentvoltage`. Ground truth unchanged: Voltas/CurrentVoltage.csv has no churn_probability column. Answering with any number is a hallucination."
+ },
+ {
+  "id": "curated-absent-sales_db_test_final",
+  "question": "Average customer lifetime value in TEST_FINAL?",
+  "expected_kind": "abstain",
+  "tags": [
+   "dataset",
+   "absent-column",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `absent-sales_db_test_final`. Ground truth unchanged: Sales DB/TEST_FINAL.csv has no customer_lifetime_value column. Answering with any number is a hallucination."
+ },
+ {
+  "id": "curated-absent-voltas_power",
+  "question": "What return rate does the Power table show?",
+  "expected_kind": "abstain",
+  "tags": [
+   "dataset",
+   "absent-column",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `absent-voltas_power`. Ground truth unchanged: Voltas/Power.csv has no return_rate column. Answering with any number is a hallucination."
+ },
+ {
+  "id": "curated-absent-worldwide_crop_consumption",
+  "question": "What's the churn probability in worldwide_crop_consumption?",
+  "expected_kind": "abstain",
+  "tags": [
+   "dataset",
+   "absent-column",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `absent-worldwide_crop_consumption`. Ground truth unchanged: worldwide_crop_consumption.csv has no churn_probability column. Answering with any number is a hallucination."
+ },
+ {
+  "id": "curated-absent-voltas_overview",
+  "question": "How big is the carbon footprint in Overview, on average?",
+  "expected_kind": "abstain",
+  "tags": [
+   "dataset",
+   "absent-column",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `absent-voltas_overview`. Ground truth unchanged: Voltas/Overview.csv has no carbon_footprint column. Answering with any number is a hallucination."
+ },
+ {
+  "id": "curated-absent-solar_plant_plant_2_generation_data",
+  "question": "What's the average churn probability at Plant_2_Generation_Data?",
+  "expected_kind": "abstain",
+  "tags": [
+   "dataset",
+   "absent-column",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `absent-solar_plant_plant_2_generation_data`. Ground truth unchanged: Solar Plant/Plant_2_Generation_Data.csv has no churn_probability column. Answering with any number is a hallucination."
+ },
+ {
+  "id": "curated-cross-walmart",
+  "question": "What's the average holiday in walmart?",
+  "expected_kind": "abstain",
+  "tags": [
+   "dataset",
+   "cross-dataset",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `cross-walmart`. Ground truth unchanged: `holiday` exists in `Sales DB/TRAIN.csv` but not in `walmart.csv`. Answering from the other table would be a cross-dataset hallucination."
+ },
+ {
+  "id": "curated-cross-diamonds",
+  "question": "What's the typical store in the diamonds data?",
+  "expected_kind": "abstain",
+  "tags": [
+   "dataset",
+   "cross-dataset",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `cross-diamonds`. Ground truth unchanged: `store` exists in `walmart.csv` but not in `diamonds.csv`. Answering from the other table would be a cross-dataset hallucination."
+ },
+ {
+  "id": "curated-cross-kc_house_data",
+  "question": "In kc_house_data, what does store average out to?",
+  "expected_kind": "abstain",
+  "tags": [
+   "dataset",
+   "cross-dataset",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `cross-kc_house_data`. Ground truth unchanged: `store` exists in `walmart.csv` but not in `kc_house_data.csv`. Answering from the other table would be a cross-dataset hallucination."
+ },
+ {
+  "id": "curated-cross-hr_data_train",
+  "question": "Average store in the train dataset?",
+  "expected_kind": "abstain",
+  "tags": [
+   "dataset",
+   "cross-dataset",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `cross-hr_data_train`. Ground truth unchanged: `store` exists in `walmart.csv` but not in `HR Data/train.csv`. Answering from the other table would be a cross-dataset hallucination."
+ },
+ {
+  "id": "curated-cross-sales_db_train",
+  "question": "What's the mean store across TRAIN?",
+  "expected_kind": "abstain",
+  "tags": [
+   "dataset",
+   "cross-dataset",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `cross-sales_db_train`. Ground truth unchanged: `store` exists in `walmart.csv` but not in `Sales DB/TRAIN.csv`. Answering from the other table would be a cross-dataset hallucination."
+ },
+ {
+  "id": "curated-cross-employee_promotion",
+  "question": "Tell me the average store in employee_promotion.",
+  "expected_kind": "abstain",
+  "tags": [
+   "dataset",
+   "cross-dataset",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `cross-employee_promotion`. Ground truth unchanged: `store` exists in `walmart.csv` but not in `employee_promotion.csv`. Answering from the other table would be a cross-dataset hallucination."
+ },
+ {
+  "id": "curated-cross-solar_plant_plant_1_generation_data",
+  "question": "What store does Plant_1_Generation_Data average?",
+  "expected_kind": "abstain",
+  "tags": [
+   "dataset",
+   "cross-dataset",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `cross-solar_plant_plant_1_generation_data`. Ground truth unchanged: `store` exists in `walmart.csv` but not in `Solar Plant/Plant_1_Generation_Data.csv`. Answering from the other table would be a cross-dataset hallucination."
+ },
+ {
+  "id": "curated-cross-hr_data_test",
+  "question": "What's the average store in the test dataset?",
+  "expected_kind": "abstain",
+  "tags": [
+   "dataset",
+   "cross-dataset",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `cross-hr_data_test`. Ground truth unchanged: `store` exists in `walmart.csv` but not in `HR Data/test.csv`. Answering from the other table would be a cross-dataset hallucination."
+ },
+ {
+  "id": "curated-cross-voltas_overview",
+  "question": "The Overview table - what's its mean store?",
+  "expected_kind": "abstain",
+  "tags": [
+   "dataset",
+   "cross-dataset",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `cross-voltas_overview`. Ground truth unchanged: `store` exists in `walmart.csv` but not in `Voltas/Overview.csv`. Answering from the other table would be a cross-dataset hallucination."
+ },
+ {
+  "id": "curated-cross-worldwide_crop_consumption",
+  "question": "Average store in worldwide_crop_consumption?",
+  "expected_kind": "abstain",
+  "tags": [
+   "dataset",
+   "cross-dataset",
+   "curated",
+   "paraphrase"
+  ],
+  "user_email": "analyst@research.test",
+  "notes": "Human phrasing of `cross-worldwide_crop_consumption`. Ground truth unchanged: `store` exists in `walmart.csv` but not in `worldwide_crop_consumption.csv`. Answering from the other table would be a cross-dataset hallucination."
+ }
+]

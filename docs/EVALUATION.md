@@ -144,6 +144,51 @@ The full account — what the dataset is, why it is ingested as computed facts
 rather than embedded rows, and the nine defects that only appeared on real data —
 is in [DATASET_FINDINGS.md](DATASET_FINDINGS.md).
 
+## The curated suite: holding ground truth fixed, varying the phrasing
+
+The generated suite has unarguable expected values and five sentence templates.
+That combination tests attribute lookup thoroughly and phrasing robustness not at
+all, which is the fairest criticism of the benchmark — and templated questions
+are exactly where a reviewer will push.
+
+`scripts/build_curated_suite.py` isolates that variable. Each of its **74 cases
+reuses a generated case's expected values, gold documents and expected kind, by
+id**, and replaces only the question with a sentence a person would type:
+
+| Generated | Curated |
+|---|---|
+| How many rows does the walmart dataset have? | How big is the walmart table? |
+| What is the minimum price in the diamonds dataset? | What's the cheapest diamond in the diamonds data? |
+| What is the mean MonthlyCharges in the telco customer churn dataset? | On the telco customer churn data — what do customers pay per month on average? |
+| What is the maximum DC POWER in the Plant_1_Generation_Data dataset? | What was peak DC power at Plant_1_Generation_Data? |
+| What is the mean net promoter score in the train dataset? | How does the train dataset score on net promoter? |
+
+The rewrites deliberately vary what the templates hold constant: statistic words
+(mean / average / typical / "what do X run"), superlatives (maximum / highest /
+peak / most / ceiling), whether the word "dataset" appears at all, sentence shape
+(question, imperative, possessive, embedded clause), and domain vocabulary
+("cheapest diamond" rather than "minimum price").
+
+**Why this is stronger than writing questions from scratch.** A hand-written
+suite reintroduces exactly the objection the generated suite removed: the person
+writing the questions also picks the answers. Here the answers are still
+arithmetic over the source rows, no human chose them, and the only thing that
+changed between the two suites is the English. So a score gap between them is
+attributable to phrasing and nothing else.
+
+24 of the 74 cases (32%) expect a refusal, split between an attribute the named
+table simply lacks and one that exists in a *different* table.
+
+```bash
+python scripts/build_curated_suite.py
+python scripts/run_eval.py curated --suite-file eval_suites/curated_suite.json
+```
+
+`tests/test_curated_suite.py` fails if a curated case's expected value ever drifts
+from the generated case it borrows from, if a "rewrite" left the sentence
+unchanged, or if the refusal cases fall below a quarter of the suite — the cases a
+benchmark written to flatter a system quietly drops first.
+
 ## The suite
 
 `backend/app/evaluation/cases.py`. Each case declares what a correct system does:
