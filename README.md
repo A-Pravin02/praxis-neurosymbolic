@@ -127,7 +127,34 @@ architecture. From an actual run (`python scripts/run_eval.py`):
 | False abstention rate | 0.867 | 0.000 | 0.000 | 0.000 |
 | Mean latency (ms) | 0 | 10.7 | 11.8 | 21.5 |
 
-**Read this honestly.** The suite is 23 cases that I wrote against a corpus I also
+
+### On a real dataset
+
+The same comparison over the supplied dataset — 70 tables, 1.24 M rows — using
+**278 cases whose expected answers are recomputed from the source rows by
+arithmetic**, so nobody chose them to flatter the system:
+
+| Metric | llm_only | llm_rag | llm_rag_verify | **neurosymbolic** |
+|---|---|---|---|---|
+| Factual accuracy | 0.000 | 0.384 | 0.359 | **0.657** |
+| Citation accuracy | n/a | 0.543 | 0.543 | **0.687** |
+| Abstention accuracy | 1.000 | 0.775 | 0.887 | **0.938** |
+| Hallucination rate | 0.000 | 0.058 | 0.029 | **0.014** |
+| False abstention rate | 1.000 | 0.369 | 0.495 | **0.298** |
+| Mean latency (ms) | 0.2 | 30.5 | 46.8 | 291.1 |
+
+Hallucination fell **76% relative** (0.058 → 0.014) *while* false abstention also
+fell. Both directions at once is the result worth having: refusing more often is a
+trivial way to suppress hallucination, and it would have shown up here as a worse
+false-abstention rate.
+
+Getting there took finding nine defects that 294 passing tests against the demo
+corpus had not — a lexical search that ANDed every query term, a fact rounded
+differently from the sentence evidencing it, and a refusal that reported itself as
+a confident answer among them. Each is written up, with its regression test, in
+[DATASET_FINDINGS.md](docs/DATASET_FINDINGS.md).
+
+**Read this honestly.** The demo suite is 23 cases that I wrote against a corpus I also
 wrote — it demonstrates behaviours, it is not an independent benchmark. The
 `llm_only` row shows *false abstention* rather than fabrication because the
 offline model refuses instead of inventing; with a cloud model that row would
@@ -238,6 +265,7 @@ rules, evaluation ground truth — or several of those at once.
 | [POLICY_ENGINE.md](docs/POLICY_ENGINE.md) | PDP, constraint language, seeded policies |
 | [EVALUATION.md](docs/EVALUATION.md) | Methodology, metrics, results, caveats |
 | [DATASET_INGESTION.md](docs/DATASET_INGESTION.md) | Bringing your own data |
+| [DATASET_FINDINGS.md](docs/DATASET_FINDINGS.md) | What the real dataset exposed, and the measured result |
 | [API.md](docs/API.md) | Endpoints, payloads, errors, streaming |
 | [DEVELOPMENT.md](docs/DEVELOPMENT.md) | Local setup, tests, migrations, layout |
 | [DEPLOYMENT.md](docs/DEPLOYMENT.md) | Docker, configuration, production checklist |
@@ -270,8 +298,10 @@ about itself.
 - **Fact extraction is conservative by design.** It only mints known predicates
   and skips qualified sentences. It will miss things; a missing fact is
   recoverable, a wrong fact is treated as ground truth by the engine.
-- **The evaluation suite is small and self-authored.** It demonstrates
-  behaviours. It is not an independent benchmark.
+- **The demo suite is small and self-authored.** It demonstrates behaviours; it
+  is not an independent benchmark. The 278-case dataset suite has machine-derived
+  ground truth, but its questions are templated, so it tests attribute lookup
+  well and phrasing variety poorly.
 - **No semantic entailment.** Support is lexical and numeric. A paraphrase that
   changes meaning while keeping the words can pass.
 - **Rate limiting is in-process**, so each API replica keeps its own window.

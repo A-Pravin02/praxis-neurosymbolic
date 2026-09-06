@@ -16,7 +16,7 @@ import uuid
 from dataclasses import dataclass, field
 from typing import Any, Iterator
 
-from sqlalchemy import select
+from sqlalchemy import and_, or_, select
 from sqlalchemy.orm import Session
 
 from app.config import settings
@@ -25,6 +25,7 @@ from app.core.errors import ProviderError
 from app.core.logging import get_logger, log_event
 from app.db.models.knowledge import Fact
 from app.knowledge import store as knowledge_store
+from app.knowledge.resolver import Resolution, resolve
 from app.knowledge.schema import FactDTO, FactKind, render_value, unwrap
 from app.neuro.heuristics import extract_numbers as _numbers
 from app.neuro.heuristics import phrase_fact
@@ -35,6 +36,8 @@ from app.neuro.registry import get_fallback_llm, get_llm
 from app.orchestrator.router import Plan, Route, route_for_mode
 from app.policy import service as policy_service
 from app.policy.pdp import Decision, Resource
+from app.db.models.rag import Chunk, Document
+from app.neuro.heuristics import coverage
 from app.rag.retriever import EvidenceSpan, HybridRetriever, RetrievalQuery
 from app.symbolic.engine import (
     Contradiction, InferenceResult, InferenceStep, SymbolicEngine, check_constraints,
@@ -118,6 +121,7 @@ class Orchestrator:
         self.session = session
         self.principal = principal
         self.llm = get_llm()
+        self.resolution = Resolution()
 
     # -- public ------------------------------------------------------------
     def answer(self, question: str, *, history: list[dict[str, str]] | None = None,
@@ -129,7 +133,8 @@ class Orchestrator:
         with _Timer(turn, "understand"):
             frame = parse_intent(question, history)
             plan = route_for_mode(frame, pipeline_mode)
-        turn.intent = frame.as_dict()
+            resolution = self._resolve_target(frame, plan, question, pipeline_mode)
+        turn.intent = {**frame.as_dict(), "resolution": resolution.as_dict()}
         turn.plan = plan.as_dict()
         turn.route = plan.route.value
 
@@ -151,7 +156,7 @@ class Orchestrator:
         inference = InferenceResult()
         if plan.extract_knowledge:
             with _Timer(turn, "knowledge") as timer:
-                facts = self._collect_facts(spans, frame)
+                facts = self._collect_facts(spans, frame, plan.goal_subject)
                 timer.detail = {"facts": len(facts)}
 
         if plan.reason and facts:
@@ -164,6 +169,15 @@ class Orchestrator:
             inference.facts = facts
 
         conclusion_fact = self._conclusion_fact(plan, frame, inference)
+
+        if conclusion_fact is not None and plan.retrieve:
+            with _Timer(turn, "evidence_backfill") as timer:
+                added = self._backfill_evidence(spans, conclusion_fact)
+                timer.detail = {"added": len(added)}
+            if added:
+                spans = spans + added
+                turn.citations = citations = _citations(spans)
+
         blocking = self._relevant_contradictions(inference, frame, conclusion_fact)
         aside = self._non_blocking_contradictions(inference, blocking)
         claims = self._build_claims(question, plan, frame, spans, inference,
@@ -193,8 +207,12 @@ class Orchestrator:
                 gate = gate_module.evaluate(
                     report, spans, require_evidence=plan.require_evidence,
                     contradictions=blocking,
-                    symbolic_conclusion=conclusion_fact is not None
-                    and conclusion_fact.kind is FactKind.INFERRED,
+                    # A computed statistic is as deterministic as a derived one:
+                    # both are values the system produced, not text it read.
+                    symbolic_conclusion=conclusion_fact is not None and (
+                        conclusion_fact.kind is FactKind.INFERRED
+                        or conclusion_fact.provenance.source_kind == "record"
+                    ),
                 )
             else:
                 gate = gate_module.GateResult(
@@ -244,6 +262,55 @@ class Orchestrator:
 
     # -- stages ------------------------------------------------------------
 
+    def _resolve_target(self, frame: IntentFrame, plan: Plan, question: str,
+                        pipeline_mode: str) -> "Resolution":
+        """Bind the question to a subject and predicate this workspace really has.
+
+        The hand-written predicate vocabulary cannot cover an arbitrary dataset,
+        so when it fails the workspace itself is consulted. A hit upgrades the
+        plan to the symbolic route, because a question that names a stored
+        attribute is a value question however it happens to be phrased.
+
+        Ablation modes are left alone: their whole purpose is to run without this.
+        """
+        blank = Resolution()
+        if pipeline_mode != "neurosymbolic" or plan.check_policy:
+            return blank
+        if frame.intent in ("smalltalk", "contradiction_analysis"):
+            return blank
+
+        resolution = resolve(self.session, self.principal, question)
+        self.resolution = resolution
+        if resolution.subject:
+            # Even a subject-only match matters. "The median income in the walmart
+            # dataset" names a table that has no income column; binding the subject
+            # confines the answer to that table's own sources, so the question is
+            # refused rather than answered from a supermarket table that happens to
+            # have one.
+            plan.goal_subject = resolution.subject
+        if not resolution.resolved:
+            return resolution
+
+        if frame.intent == "document_lookup":
+            # "What does the handbook say about X" asks what a source states, not
+            # what the stored value is. The subject is already bound above for
+            # scoping; deriving a conclusion here would answer a different question.
+            return resolution
+
+        frame.target_attribute = frame.target_attribute or resolution.predicate
+        plan.goal_predicate = plan.goal_predicate or resolution.predicate
+        if plan.route in (Route.DIRECT_RESPONSE, Route.RAG_QUERY):
+            plan.route = Route.RAG_PLUS_SYMBOLIC
+            plan.retrieve = True
+            plan.extract_knowledge = True
+            plan.reason = True
+            plan.require_evidence = True
+            plan.rationale = (
+                "The question names an attribute this workspace stores, so it is "
+                "answered from the recorded value rather than from prose."
+            )
+        return resolution
+
     def _retrieve(self, question: str, frame: IntentFrame) -> list[EvidenceSpan]:
         retriever = HybridRetriever(self.session, self.principal)
         query = question
@@ -255,8 +322,8 @@ class Orchestrator:
                                                    top_k=settings.rerank_top_k))
         return result.spans
 
-    def _collect_facts(self, spans: list[EvidenceSpan],
-                       frame: IntentFrame) -> list[FactDTO]:
+    def _collect_facts(self, spans: list[EvidenceSpan], frame: IntentFrame,
+                       goal_subject: str | None = None) -> list[FactDTO]:
         """Facts the caller may see, restricted to what this question is about."""
         facts: list[FactDTO] = []
 
@@ -266,14 +333,24 @@ class Orchestrator:
             facts.extend(knowledge_store.subject_facts_for_user(
                 user.id, user.attributes or {}, user.email))
 
-        # 2. Facts extracted from the passages that were actually retrieved.
+        # 2. Facts from the passages that were retrieved, and from the documents
+        #    those passages belong to. Facts computed at ingest time (statistics
+        #    over a table, for instance) attach to the document rather than to any
+        #    one chunk, so a chunk-only lookup finds none of them.
         chunk_ids = [s.chunk_id for s in spans if not s.quarantined]
-        if chunk_ids:
+        document_ids = {s.document_id for s in spans if not s.quarantined}
+        if chunk_ids or document_ids:
+            conditions = []
+            if chunk_ids:
+                conditions.append(Fact.source_chunk_id.in_(chunk_ids))
+            if document_ids:
+                conditions.append(and_(Fact.source_chunk_id.is_(None),
+                                       Fact.source_document_id.in_(document_ids)))
             rows = self.session.scalars(
                 select(Fact).where(
                     policy_service.fact_filter(self.session, self.principal),
-                    Fact.source_chunk_id.in_(chunk_ids),
-                )
+                    or_(*conditions),
+                ).limit(4000)
             ).all()
             facts.extend(knowledge_store.fact_to_dto(r) for r in rows)
 
@@ -281,13 +358,14 @@ class Orchestrator:
         #    contradiction between two documents is visible even when retrieval
         #    surfaced only one of them.
         if frame.target_attribute:
-            rows = self.session.scalars(
-                select(Fact).where(
-                    policy_service.fact_filter(self.session, self.principal),
-                    Fact.predicate == frame.target_attribute,
-                ).limit(50)
-            ).all()
-            facts.extend(knowledge_store.fact_to_dto(r) for r in rows)
+            stmt = select(Fact).where(
+                policy_service.fact_filter(self.session, self.principal),
+                Fact.predicate == frame.target_attribute,
+            )
+            if goal_subject:
+                stmt = stmt.where(Fact.subject == goal_subject)
+            facts.extend(knowledge_store.fact_to_dto(r)
+                         for r in self.session.scalars(stmt.limit(50)).all())
 
         # De-duplicate by identity, preserving order.
         seen: set[str] = set()
@@ -299,6 +377,51 @@ class Orchestrator:
             seen.add(key)
             unique.append(fact)
         return unique
+
+    def _backfill_evidence(self, spans: list[EvidenceSpan],
+                           conclusion_fact: FactDTO) -> list[EvidenceSpan]:
+        """Put the conclusion's own source passage into the evidence set.
+
+        A fact computed at ingest time is attached to the document that describes
+        it, but retrieval ranks passages by wording and can easily miss that
+        document while surfacing a longer, chattier one. The result is an
+        abstention on a value the system can prove, which is a false refusal, not
+        a safe one.
+
+        This is not manufacturing support: it fetches the passage the fact
+        actually came from, so the user can check it. If that passage does not
+        contain the value, verification will still fail - as it should.
+        """
+        document_id = conclusion_fact.provenance.document_id
+        if document_id is None or any(s.document_id == document_id for s in spans):
+            return []
+
+        rows = self.session.execute(
+            select(Chunk.id, Chunk.document_id, Chunk.text, Chunk.section, Chunk.page,
+                   Chunk.injection_flagged, Chunk.injection_patterns, Document.title,
+                   Document.collection, Document.sensitivity, Document.effective_date,
+                   Document.version_label)
+            .join(Document, Document.id == Chunk.document_id)
+            .where(policy_service.retrieval_filter(self.session, self.principal),
+                   Chunk.document_id == document_id)
+            .limit(60)
+        ).all()
+        if not rows:
+            return []
+
+        # Choose the passage that actually states the value.
+        target = conclusion_fact.render()
+        wanted = {round(n, 6) for n in _numbers(render_value(conclusion_fact.object))}
+        best_row, best_score = None, 0.0
+        for row in rows:
+            score = coverage(target, row.text)
+            if wanted and wanted & {round(n, 6) for n in _numbers(row.text)}:
+                score += 1.0
+            if score > best_score:
+                best_row, best_score = row, score
+        if best_row is None or best_score <= 0:
+            return []
+        return [HybridRetriever._to_span(best_row, lexical_score=0.5)]
 
     def _reason(self, facts: list[FactDTO]) -> InferenceResult:
         rules, problems = knowledge_store.load_rules(self.session,
@@ -327,7 +450,7 @@ class Orchestrator:
         predicate = plan.goal_predicate
         if not predicate:
             return None
-        for subject in ("self", plan.goal_subject, "policy"):
+        for subject in (plan.goal_subject, "self", "policy"):
             fact = inference.value_of(subject, predicate)
             if fact is not None:
                 return fact
@@ -401,6 +524,11 @@ class Orchestrator:
 
         if plan.route in (Route.RAG_QUERY, Route.RAG_PLUS_SYMBOLIC,
                           Route.CONTRADICTION_ANALYSIS, Route.DIRECT_RESPONSE):
+            # When the question named a specific subject, only that subject's own
+            # sources may answer it. Otherwise "the median income in the walmart
+            # dataset" gets answered from a supermarket table that happens to have
+            # an income column - fluent, cited, and about the wrong thing.
+            allowed_documents = self._subject_documents(plan.goal_subject, inference)
             existing = {c.text.lower() for c in claims}
             span_claims: list[Claim] = []
             focus = _focus_terms(frame, conclusion_fact)
@@ -425,11 +553,45 @@ class Orchestrator:
                 # reads as a contradiction to the user even when it is not one.
                 if conclusion_value is not None and numbers and                         conclusion_value not in numbers:
                     continue
+                if allowed_documents is not None:
+                    chunk_documents = {
+                        str(span.document_id) for span in spans
+                        if str(span.chunk_id) in claim.supporting_chunk_ids
+                    }
+                    if chunk_documents and not (chunk_documents & allowed_documents):
+                        continue
                 span_claims.append(claim)
             span_claims.sort(key=lambda c: -c.relevance)
             limit = 2 if conclusion_fact is not None else 4
             claims.extend(span_claims[:limit])
         return claims[:10]
+
+    def _subject_documents(self, goal_subject: str | None,
+                           inference: InferenceResult) -> set[str] | None:
+        """Documents that the resolved subject's facts come from.
+
+        Returns None when no subject was identified, which leaves claim selection
+        unrestricted - the ordinary case for a general document question.
+        """
+        if not goal_subject or goal_subject == "self":
+            return None
+        documents = {
+            str(fact.provenance.document_id) for fact in inference.facts
+            if fact.subject == goal_subject and fact.provenance.document_id
+        }
+        if documents:
+            return documents
+        # The subject's facts may not have been loaded, because retrieval never
+        # surfaced their document. Ask the store directly rather than silently
+        # dropping the restriction.
+        rows = self.session.scalars(
+            select(Fact.source_document_id).where(
+                policy_service.fact_filter(self.session, self.principal),
+                Fact.subject == goal_subject,
+                Fact.source_document_id.isnot(None),
+            ).distinct().limit(20)
+        ).all()
+        return {str(r) for r in rows} or None
 
     def _reasoning_trace(self, frame: IntentFrame, inference: InferenceResult,
                          conclusion_fact: FactDTO | None, spans: list[EvidenceSpan],
@@ -533,6 +695,30 @@ class Orchestrator:
             return
 
         supported = [c.as_dict() for c in report.supported_claims]
+
+        ambiguous = self._ambiguous_sources(report, spans, conclusion_fact)
+        if ambiguous:
+            listing = "\n".join(f"- {title}: {value}"
+                                for title, value in ambiguous[:4])
+            turn.answer = (
+                "Several datasets report a different value for that, so naming one "
+                "would be a guess:\n\n"
+                f"{listing}\n\n"
+                "Tell me which dataset you mean and I will answer from it."
+            )
+            turn.gate_decision = gate_module.GateDecision.ABSTAIN.value
+            turn.verification_status = VerificationStatus.INSUFFICIENT_EVIDENCE.value
+            turn.confidence = 0.0
+            turn.warnings.append(
+                f"{len(ambiguous)} datasets report different values for this "
+                f"attribute; the question does not say which is meant."
+            )
+            audit.record(self.session, audit.ANSWER_ABSTAINED,
+                         tenant_id=self.principal.tenant_id,
+                         actor_user_id=self.principal.user_id, outcome="abstained",
+                         detail={"reason": "ambiguous_across_sources",
+                                 "sources": [t for t, _ in ambiguous][:5]})
+            return
         context = {
             "question": question,
             "claims": supported,
@@ -557,6 +743,36 @@ class Orchestrator:
         }
 
         reporting_conflict = gate.decision is gate_module.GateDecision.REPORT_CONFLICT
+        named_subject = self.resolution.subject
+        if (not supported and not context["conclusion"] and not reporting_conflict
+                and named_subject and not self.resolution.resolved):
+            # The question named a dataset this workspace holds, but nothing in it
+            # matches the attribute asked for. Saying so is more useful than a
+            # generic refusal, and far better than answering from a table that
+            # happens to have a similarly named column.
+            label = named_subject.split(":", 1)[-1]
+            turn.answer = (
+                f"The `{label}` dataset does not record that. I can see its columns "
+                f"and computed statistics, and none of them match what you asked "
+                f"for, so I would be answering from a different dataset if I "
+                f"answered at all."
+            )
+            turn.warnings.append(
+                f"Question scoped to `{label}`; no matching attribute exists there."
+            )
+            # This is a refusal, and the envelope has to say so. Leaving the gate
+            # decision as an answer makes a refusal look like a confident reply to
+            # every consumer of the API - including the evaluation harness.
+            turn.gate_decision = gate_module.GateDecision.ABSTAIN.value
+            turn.verification_status = VerificationStatus.INSUFFICIENT_EVIDENCE.value
+            turn.confidence = 0.0
+            audit.record(self.session, audit.ANSWER_ABSTAINED,
+                         tenant_id=self.principal.tenant_id,
+                         actor_user_id=self.principal.user_id, outcome="abstained",
+                         detail={"reason": "attribute_absent_from_named_subject",
+                                 "subject": named_subject})
+            return
+
         if not supported and not context["conclusion"] and not reporting_conflict:
             turn.answer = self._compose(Task.DIRECT_ANSWER, question, history,
                                         context=context,
@@ -631,6 +847,40 @@ class Orchestrator:
             ]
             out.append(entry)
         return out
+
+    def _ambiguous_sources(self, report: VerificationReport, spans: list[EvidenceSpan],
+                           conclusion_fact: FactDTO | None) -> list[tuple[str, str]]:
+        """Different documents offering different numbers for the same question.
+
+        Retrieval happily returns an income column from three unrelated tables. A
+        single "mean income" answer assembled from them is fluent, cited, and
+        meaningless. When a value question draws competing numbers from separate
+        sources and nothing identifies which source is meant, that is ambiguity -
+        and the honest response is to say so and ask.
+
+        A derived conclusion settles the question, so this does not apply to it.
+        """
+        if conclusion_fact is not None:
+            return []
+        by_document: dict[str, tuple[str, float]] = {}
+        titles = {str(span.chunk_id): (str(span.document_id), span.document_title)
+                  for span in spans}
+        for claim in report.supported_claims:
+            values = _numbers(claim.text)
+            if not values:
+                continue
+            for chunk_id in claim.supporting_chunk_ids:
+                entry = titles.get(chunk_id)
+                if entry is None:
+                    continue
+                document_id, title = entry
+                by_document.setdefault(document_id, (title, values[0]))
+        if len(by_document) < 2:
+            return []
+        distinct = {round(value, 6) for _, value in by_document.values()}
+        if len(distinct) < 2:
+            return []
+        return [(title, f"{value:g}") for title, value in by_document.values()]
 
     def _conclusion_sentence(self, fact: FactDTO | None, plan: Plan) -> str:
         if fact is None:

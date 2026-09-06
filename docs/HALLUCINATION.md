@@ -21,6 +21,17 @@ marketing. "Unsupported claims are refused by a deterministic gate, and here is
 the measured difference against the same model without it" is an engineering
 claim you can check, and disprove.
 
+### What the measurement says
+
+On 278 questions over a real 70-table dataset, with machine-derived ground truth
+and the same model throughout, hallucination fell from **0.058 (RAG alone) to
+0.014 (full pipeline)** — a 76% relative reduction — while *false* abstention fell
+too, 0.369 to 0.298. That second number is the one that keeps the first honest:
+any system can drive hallucination to zero by refusing everything, and that would
+show up here as a worse false-abstention rate rather than a better one. Full
+tables and caveats in [EVALUATION.md](EVALUATION.md) and
+[DATASET_FINDINGS.md](DATASET_FINDINGS.md).
+
 ## Where hallucinations come from
 
 Three different failure modes, which need three different controls:

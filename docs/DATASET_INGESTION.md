@@ -82,6 +82,61 @@ Also available as `POST /api/documents/upload` (multipart) and
 Omit `--mapping` and the ingester infers one, taking the first id-like column as
 the subject. Fine for exploration; specify a mapping for anything real.
 
+## A worked example: the merged dataset adapter
+
+`backend/app/ingestion/merged_dataset.py` is the adapter written for the real
+dataset supplied for this project, and it is the pattern to copy for a corpus
+that does not look like prose.
+
+That file is a meta-CSV — `category,source_file,line_number,content`, one row per
+*line* of 70 underlying files — so the adapter first reconstructs the originals,
+streaming the whole 190 MB once:
+
+```bash
+python scripts/profile_merged.py --csv merged_dataset_body_00.csv     # decide first
+python scripts/ingest_merged_dataset.py --csv merged_dataset_body_00.csv \
+    --tenant acme --as admin@acme.test
+python scripts/build_dataset_suite.py --csv merged_dataset_body_00.csv # ground truth
+```
+
+For each reconstructed table it produces:
+
+- a **dataset card**: prose naming the table, its row count, its columns, and its
+  per-column statistics. This is what retrieval searches and what answers cite.
+- **schema facts**: `dataset:walmart.column_count = 5`, `.has_column_weekly_sales`.
+- **statistic facts**: `dataset:walmart.weekly_sales_max = 693099.36`, whose
+  provenance reads "Computed over 423,325 values of Weekly_Sales in walmart.csv".
+- **entity facts**, but only where a column is a genuine key — at least 98%
+  distinct, in a table under 2,000 rows. A repeating `MarketID` is a group label,
+  and keying triples on it makes many facts share a subject and predicate, which
+  the contradiction detector then correctly reports as a conflict.
+
+Everything is bounded: statistics accumulate incrementally, categorical counters
+cap at 200 distinct values, entity triples cap at 8,000 per table, and medians use
+a sample of up to 20,000 values (counts, minima, maxima and means stay exact).
+Ingesting the full file takes about four minutes in a few hundred megabytes.
+
+Two rules from that exercise generalise to any adapter you write:
+
+1. **The card and the facts must agree digit for digit.** A fact rounded
+   differently from the sentence that evidences it can never be verified, and the
+   system will abstain on values it computed itself.
+2. **Identity comes from the full path, not the filename.** `HR Data/train.csv`
+   and `Sales DB/TRAIN.csv` both slug to `train` and silently merge into one
+   subject holding two tables' contradictory facts.
+
+The measured outcome on this dataset is in
+[DATASET_FINDINGS.md](DATASET_FINDINGS.md).
+
+## Re-ingesting safely
+
+Delete documents through `app.rag.ingest.delete_document`, never by deleting the
+`Document` row. `Fact.source_document_id` is deliberately not a foreign key (facts
+outlive the transient documents that evidence them), so a direct delete leaves
+orphaned facts behind — and re-ingesting then produces two generations of the same
+fact, which the contradiction detector correctly reports as the corpus disagreeing
+with itself. `purge_orphaned_facts` cleans up after an earlier mistake.
+
 ## Extending the vocabulary
 
 Free-text extraction only mints facts for predicates it knows, because predicates

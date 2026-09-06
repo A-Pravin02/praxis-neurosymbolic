@@ -149,3 +149,59 @@ loosely. Text extraction now requires a match in `PREDICATE_HINTS` (longest hint
 skips sentences carrying qualifiers ("during", "target", "unless"), and treats
 conditional sentences as rule candidates rather than facts. A missing fact is recoverable;
 a wrong fact is treated as ground truth by the reasoning engine.
+
+## ADR-026 — A table of numbers is ingested as computed facts, not as embedded rows
+The supplied dataset is 1.24 M rows of tabular ML data. Embedding those rows would have
+cost a great deal and bought nothing: retrieving `143,69,217,5.9,0.58` as "evidence"
+answers no question and cites nothing a person can check. The adapter instead emits, per
+table, one prose **dataset card** (the retrievable, citable evidence) and a set of
+**computed facts** — schema, statistics, and row-level triples where a genuine key
+exists. A statistic fact carries "Computed over 423,325 values of Weekly_Sales" as its
+provenance, which is a stronger guarantee than any text extractor can give. Consequence:
+the system answers *about* the data rather than quoting it, and the whole file streams
+through in one pass under bounded memory.
+
+## ADR-027 — Facts are stored at the precision their evidence prints
+A fact holding `34.803915` whose dataset card prints `34.8039` can never be matched to
+its own source, so the system abstained on a value it had computed itself. Two changes,
+because either alone is fragile: statistics are canonicalised at ingest to the precision
+the card renders, and `numbers_agree` treats two figures as the same quantity when one is
+a correct rounding of the other. Numeric extraction also learned thousands separators —
+`423,325` had been read as two numbers, 423 and 325.
+
+## ADR-028 — Target resolution reads the workspace's own vocabulary
+Hard-coding which questions map to which predicates does not survive contact with an
+arbitrary dataset. `app/knowledge/resolver.py` instead queries the tenant's actual
+subjects and predicates and scores the question against them. A predicate that does not
+exist cannot be resolved, so no plausible-sounding attribute can be invented. Three
+guards were added after real failures: subject-name tokens are subtracted before column
+matching (so "the Plant_1_Generation_Data dataset" stops matching a `plant_id` column),
+stopwords are filtered (so "What **is** the net promoter score" stops matching
+`is_promoted`), and a column must cover at least half the asked-for attribute tokens (so
+"net promoter score" stops matching `avg_training_score` on the single word "score").
+
+## ADR-029 — A named subject confines the search to itself
+"The median income in the walmart dataset" was answered from a supermarket table, because
+retrieval found a real passage containing a real median income. When a question names a
+dataset, only that dataset's own sources may answer it; if it holds no matching
+attribute, the system says so by name. Answering from a neighbouring table is the most
+convincing failure mode this architecture has, because the reply is fluent, cited and
+about the wrong thing.
+
+## ADR-030 — A refusal must report itself as a refusal
+The informative "this dataset does not record that" reply left `gate_decision` at
+`ANSWER_WITH_CAVEAT`, so every consumer — the UI, the API, the evaluation harness — read
+a refusal as a confident answer. Refusals now set `ABSTAIN` / `INSUFFICIENT_EVIDENCE` /
+confidence 0.0 regardless of how helpfully they are worded. The machine-readable
+decision, not the prose, is what downstream systems trust.
+
+## ADR-031 — Competing values from different sources are ambiguity, not an answer
+Three surveys each stating a different mean income are not a contradiction to resolve by
+date and not a value to average; they are a question that has not been narrowed enough.
+The system lists the candidates with their sources and asks which is meant, rather than
+picking the best-ranked one.
+
+## ADR-032 — Unmeasured metrics report `n/a`, never 0.000
+A suite with no contradiction cases used to print `contradiction_detection: 0.000`, which
+reads as total failure at something nothing measured. Ratios with a zero denominator are
+now `None` and render as `n/a`, and rows that are `n/a` for every mode are omitted.

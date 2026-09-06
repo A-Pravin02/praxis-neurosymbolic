@@ -388,18 +388,20 @@ class EvalRunRequest(BaseModel):
 class EvalModeMetricsOut(BaseModel):
     mode: str
     cases: int
-    factual_accuracy: float
-    groundedness: float
-    citation_accuracy: float
-    unsupported_claim_rate: float
-    hallucination_rate: float
-    contradiction_rate: float
-    symbolic_accuracy: float
-    abstention_accuracy: float
-    retrieval_precision: float
-    retrieval_recall: float
-    mean_latency_ms: float
-    p95_latency_ms: float
+    # None means the suite contained no case of that kind, which is different
+    # from a measured zero.
+    factual_accuracy: float | None = None
+    groundedness: float | None = None
+    citation_accuracy: float | None = None
+    unsupported_claim_rate: float | None = None
+    hallucination_rate: float | None = None
+    contradiction_rate: float | None = None
+    symbolic_accuracy: float | None = None
+    abstention_accuracy: float | None = None
+    retrieval_precision: float | None = None
+    retrieval_recall: float | None = None
+    mean_latency_ms: float = 0.0
+    p95_latency_ms: float = 0.0
 
 
 class EvalRunOut(BaseModel):

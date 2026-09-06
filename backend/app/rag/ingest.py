@@ -247,6 +247,29 @@ def _extract(parsed: ParsedDocument, chunk_rows: list[Chunk], document: Document
     return combined
 
 
+def purge_orphaned_facts(session: Session, tenant_id: uuid.UUID) -> int:
+    """Remove facts whose source document no longer exists.
+
+    `Fact.source_document_id` is deliberately not a foreign key - a fact may
+    outlive the document it was extracted from, and inference produces facts with
+    no document at all. The cost of that freedom is that a document deleted
+    outside `delete_document` leaves its facts behind, where they later collide
+    with their own replacements and read as a contradiction.
+    """
+    from app.db.models.knowledge import Fact
+
+    live = select(Document.id).where(Document.tenant_id == tenant_id).scalar_subquery()
+    orphans = session.scalars(
+        select(Fact).where(Fact.tenant_id == tenant_id,
+                           Fact.source_document_id.isnot(None),
+                           Fact.source_document_id.notin_(live))
+    ).all()
+    for fact in orphans:
+        session.delete(fact)
+    session.flush()
+    return len(orphans)
+
+
 def delete_document(session: Session, principal: Principal,
                     document_id: uuid.UUID) -> None:
     from app.db.models.knowledge import Fact

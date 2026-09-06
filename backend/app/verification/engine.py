@@ -129,15 +129,39 @@ def evidence_relevance(question: str, spans: list[EvidenceSpan]) -> float:
     return round(0.65 * best + 0.35 * mean_top, 4)
 
 
+def _decimals(value: float) -> int:
+    """Decimal places the value is stated to. 1234567.0 is stated to none."""
+    if float(value).is_integer():
+        return 0
+    text = repr(float(value))
+    return len(text.split(".")[1]) if "." in text else 0
+
+
+def numbers_agree(a: float, b: float) -> bool:
+    """True when two figures denote the same quantity at their stated precision.
+
+    Documents round: a table computed at 34.803915 is written as "34.8039", and a
+    report of 1,234,567.4 becomes "1,234,567". Exact comparison rejects both and
+    produces a false abstention. Agreement therefore means *one value is a correct
+    rounding of the other*, which still separates 20 from 25 and 24 from 36.
+    """
+    if a == b:
+        return True
+    precision = min(_decimals(a), _decimals(b))
+    return round(a, precision) == round(b, precision)
+
+
 def _numeric_agreement(claim_text: str, span_text: str) -> float | None:
     """If the claim states a number, the evidence must state the same number."""
-    claim_numbers = {round(n, 6) for n in extract_numbers(claim_text)}
+    claim_numbers = [round(n, 6) for n in extract_numbers(claim_text)]
     if not claim_numbers:
         return None
-    span_numbers = {round(n, 6) for n in extract_numbers(span_text)}
+    span_numbers = [round(n, 6) for n in extract_numbers(span_text)]
     if not span_numbers:
         return 0.0
-    return 1.0 if claim_numbers & span_numbers else 0.0
+    matched = sum(1 for c in claim_numbers
+                  if any(numbers_agree(c, s) for s in span_numbers))
+    return 1.0 if matched == len(claim_numbers) else 0.0
 
 
 def support_for(claim_text: str, spans: list[EvidenceSpan]) -> tuple[float, list[int]]:
@@ -462,7 +486,8 @@ def check_grounding(answer: str, approved_claims: list[Claim],
         # Citation markers such as [2] are references, not asserted values.
         bare = _CITATION_MARK.sub(" ", sentence)
         numbers = {round(n, 6) for n in extract_numbers(bare)}
-        missing_numbers = numbers - haystack_numbers
+        missing_numbers = {n for n in numbers
+                           if not any(numbers_agree(n, h) for h in haystack_numbers)}
         if missing_numbers:
             report.unsupported_numbers.extend(sorted(missing_numbers))
             report.unsupported_sentences.append(sentence[:240])

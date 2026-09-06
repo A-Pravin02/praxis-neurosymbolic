@@ -116,7 +116,20 @@ def evaluate(
             "Rephrase using wording that appears in your documents",
         ])
 
-    if require_evidence and report.evidence_relevance < settings.evidence_relevance_threshold:
+    # The relevance floor asks "did retrieval find the right thing?". When a
+    # conclusion was derived for the subject that was asked about and its own
+    # source passage is present and supports it, that question is already
+    # answered, and the floor would only produce a false refusal.
+    conclusion_backed = symbolic_conclusion and bool(supported)
+    if conclusion_backed:
+        signals["relevance_floor_waived"] = True
+        reasons.append(
+            "Retrieval relevance was low, but the answer is a value derived for the "
+            "subject asked about and its own source passage supports it."
+        )
+
+    if (require_evidence and not conclusion_backed
+            and report.evidence_relevance < settings.evidence_relevance_threshold):
         reasons.append(
             f"The closest passages are only weakly related to the question "
             f"(relevance {report.evidence_relevance:.2f} < "

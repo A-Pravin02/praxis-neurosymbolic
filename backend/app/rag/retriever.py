@@ -20,7 +20,7 @@ from sqlalchemy.orm import Session
 from app.config import settings
 from app.core.logging import get_logger, log_event
 from app.db.models.rag import Chunk, Document
-from app.neuro.heuristics import coverage, normalize, weighted_overlap
+from app.neuro.heuristics import coverage, lower_words, normalize, weighted_overlap
 from app.policy import service as policy_service
 from app.rag.embeddings import get_embedder
 from app.tenancy.context import Principal
@@ -156,9 +156,27 @@ class HybridRetriever:
             spans.append(self._to_span(row, vector_score=similarity))
         return spans
 
+    @staticmethod
+    def _tsquery(query_text: str):
+        """An OR query over the question's terms, ranked by how many match.
+
+        `plainto_tsquery` ANDs every term, so one incidental word sinks the whole
+        search: "how many rows does the walmart dataset have" becomes
+        'mani' & 'row' & 'walmart' & 'dataset', and because no card contains
+        "many" the lexical arm returns nothing at all. OR semantics with
+        `ts_rank_cd` ordering is what a search engine actually wants.
+
+        Terms are reduced to alphanumerics before being bound, so no tsquery
+        operator can be smuggled in; the value is still a bound parameter.
+        """
+        terms = [t for t in {w for w in lower_words(query_text) if len(w) > 1}][:24]
+        if not terms:
+            return func.plainto_tsquery("english", query_text)
+        return func.to_tsquery("english", " | ".join(terms))
+
     def _lexical_search(self, query_text: str, limit: int, auth_filter,
                         collection: str | None) -> list[EvidenceSpan]:
-        tsquery = func.plainto_tsquery("english", query_text)
+        tsquery = self._tsquery(query_text)
         rank = func.ts_rank_cd(Chunk.tsv, tsquery).cast(Float).label("rank")
         stmt = (
             select(*self._base_columns(), rank)

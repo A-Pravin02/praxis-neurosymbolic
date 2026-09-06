@@ -1,0 +1,4378 @@
+[
+  {
+    "id": "rows-walmart",
+    "question": "How many rows does the walmart dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      423325.0
+    ],
+    "gold_documents": [
+      "Dataset card: walmart.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from walmart.csv."
+  },
+  {
+    "id": "max-walmart-fuel_price",
+    "question": "What is the maximum Fuel Price in the walmart dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      4.468
+    ],
+    "gold_documents": [
+      "Dataset card: walmart.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "max"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "max of Fuel_Price computed over 423325 values."
+  },
+  {
+    "id": "max-walmart-cpi",
+    "question": "What is the maximum CPI in the walmart dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      228.9765
+    ],
+    "gold_documents": [
+      "Dataset card: walmart.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "max"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "max of CPI computed over 422740 values."
+  },
+  {
+    "id": "absent-walmart",
+    "question": "What is the mean median household income in the walmart dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "walmart.csv has no median_household_income column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-sales_db_train",
+    "question": "How many rows does the TRAIN dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      188340.0
+    ],
+    "gold_documents": [
+      "Dataset card: TRAIN.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from Sales DB/TRAIN.csv."
+  },
+  {
+    "id": "mean-sales_db_train-store_id",
+    "question": "What is the mean Store id in the TRAIN dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      183.0
+    ],
+    "gold_documents": [
+      "Dataset card: TRAIN.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of Store_id computed over 188340 values."
+  },
+  {
+    "id": "min-sales_db_train-holiday",
+    "question": "What is the minimum Holiday in the TRAIN dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      0.0
+    ],
+    "gold_documents": [
+      "Dataset card: TRAIN.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "min"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "min of Holiday computed over 188340 values."
+  },
+  {
+    "id": "absent-sales_db_train",
+    "question": "What is the mean employee satisfaction in the TRAIN dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Sales DB/TRAIN.csv has no employee_satisfaction column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-solar_plant_plant_1_generation_data",
+    "question": "How many rows does the Plant_1_Generation_Data dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      68778.0
+    ],
+    "gold_documents": [
+      "Dataset card: Plant_1_Generation_Data.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from Solar Plant/Plant_1_Generation_Data.csv."
+  },
+  {
+    "id": "max-solar_plant_plant_1_generation_data-dc_power",
+    "question": "What is the maximum DC POWER in the Plant_1_Generation_Data dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      14471.12
+    ],
+    "gold_documents": [
+      "Dataset card: Plant_1_Generation_Data.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "max"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "max of DC_POWER computed over 68778 values."
+  },
+  {
+    "id": "min-solar_plant_plant_1_generation_data-daily_yield",
+    "question": "What is the minimum DAILY YIELD in the Plant_1_Generation_Data dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      0.0
+    ],
+    "gold_documents": [
+      "Dataset card: Plant_1_Generation_Data.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "min"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "min of DAILY_YIELD computed over 68778 values."
+  },
+  {
+    "id": "absent-solar_plant_plant_1_generation_data",
+    "question": "What is the mean median household income in the Plant_1_Generation_Data dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Solar Plant/Plant_1_Generation_Data.csv has no median_household_income column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-solar_plant_plant_2_generation_data",
+    "question": "How many rows does the Plant_2_Generation_Data dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      67698.0
+    ],
+    "gold_documents": [
+      "Dataset card: Plant_2_Generation_Data.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from Solar Plant/Plant_2_Generation_Data.csv."
+  },
+  {
+    "id": "min-solar_plant_plant_2_generation_data-ac_power",
+    "question": "What is the minimum AC POWER in the Plant_2_Generation_Data dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      0.0
+    ],
+    "gold_documents": [
+      "Dataset card: Plant_2_Generation_Data.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "min"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "min of AC_POWER computed over 67698 values."
+  },
+  {
+    "id": "max-solar_plant_plant_2_generation_data-dc_power",
+    "question": "What is the maximum DC POWER in the Plant_2_Generation_Data dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      1420.93
+    ],
+    "gold_documents": [
+      "Dataset card: Plant_2_Generation_Data.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "max"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "max of DC_POWER computed over 67698 values."
+  },
+  {
+    "id": "absent-solar_plant_plant_2_generation_data",
+    "question": "What is the mean churn probability in the Plant_2_Generation_Data dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Solar Plant/Plant_2_Generation_Data.csv has no churn_probability column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-hr_data_train",
+    "question": "How many rows does the train dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      54808.0
+    ],
+    "gold_documents": [
+      "Dataset card: train.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from HR Data/train.csv."
+  },
+  {
+    "id": "max-hr_data_train-is_promoted",
+    "question": "What is the maximum is promoted in the train dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      1.0
+    ],
+    "gold_documents": [
+      "Dataset card: train.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "max"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "max of is_promoted computed over 54808 values."
+  },
+  {
+    "id": "mean-hr_data_train-no_of_trainings",
+    "question": "What is the mean no of trainings in the train dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      1.253
+    ],
+    "gold_documents": [
+      "Dataset card: train.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of no_of_trainings computed over 54808 values."
+  },
+  {
+    "id": "absent-hr_data_train",
+    "question": "What is the mean net promoter score in the train dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "HR Data/train.csv has no net_promoter_score column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-employee_promotion",
+    "question": "How many rows does the employee_promotion dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      54808.0
+    ],
+    "gold_documents": [
+      "Dataset card: employee_promotion.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from employee_promotion.csv."
+  },
+  {
+    "id": "min-employee_promotion-avg_training_score",
+    "question": "What is the minimum avg training score in the employee_promotion dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      39.0
+    ],
+    "gold_documents": [
+      "Dataset card: employee_promotion.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "min"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "min of avg_training_score computed over 52248 values."
+  },
+  {
+    "id": "min-employee_promotion-is_promoted",
+    "question": "What is the minimum is promoted in the employee_promotion dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      0.0
+    ],
+    "gold_documents": [
+      "Dataset card: employee_promotion.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "min"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "min of is_promoted computed over 54808 values."
+  },
+  {
+    "id": "absent-employee_promotion",
+    "question": "What is the mean median household income in the employee_promotion dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "employee_promotion.csv has no median_household_income column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-diamonds",
+    "question": "How many rows does the diamonds dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      53940.0
+    ],
+    "gold_documents": [
+      "Dataset card: diamonds.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from diamonds.csv."
+  },
+  {
+    "id": "min-diamonds-price",
+    "question": "What is the minimum price in the diamonds dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      326.0
+    ],
+    "gold_documents": [
+      "Dataset card: diamonds.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "min"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "min of price computed over 53940 values."
+  },
+  {
+    "id": "min-diamonds-y",
+    "question": "What is the minimum y in the diamonds dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      0.0
+    ],
+    "gold_documents": [
+      "Dataset card: diamonds.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "min"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "min of y computed over 53940 values."
+  },
+  {
+    "id": "absent-diamonds",
+    "question": "What is the mean carbon footprint in the diamonds dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "diamonds.csv has no carbon_footprint column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-hr_data_test",
+    "question": "How many rows does the test dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      23490.0
+    ],
+    "gold_documents": [
+      "Dataset card: test.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from HR Data/test.csv."
+  },
+  {
+    "id": "min-hr_data_test-age",
+    "question": "What is the minimum age in the test dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      20.0
+    ],
+    "gold_documents": [
+      "Dataset card: test.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "min"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "min of age computed over 23490 values."
+  },
+  {
+    "id": "mean-hr_data_test-employee_id",
+    "question": "What is the mean employee id in the test dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      39041.4
+    ],
+    "gold_documents": [
+      "Dataset card: test.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of employee_id computed over 23490 values."
+  },
+  {
+    "id": "absent-hr_data_test",
+    "question": "What is the mean employee satisfaction in the test dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "HR Data/test.csv has no employee_satisfaction column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-sales_db_test_final",
+    "question": "How many rows does the TEST_FINAL dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      22265.0
+    ],
+    "gold_documents": [
+      "Dataset card: TEST_FINAL.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from Sales DB/TEST_FINAL.csv."
+  },
+  {
+    "id": "max-sales_db_test_final-store_id",
+    "question": "What is the maximum Store id in the TEST_FINAL dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      365.0
+    ],
+    "gold_documents": [
+      "Dataset card: TEST_FINAL.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "max"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "max of Store_id computed over 22265 values."
+  },
+  {
+    "id": "mean-sales_db_test_final-holiday",
+    "question": "What is the mean Holiday in the TEST_FINAL dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      0.0328
+    ],
+    "gold_documents": [
+      "Dataset card: TEST_FINAL.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of Holiday computed over 22265 values."
+  },
+  {
+    "id": "absent-sales_db_test_final",
+    "question": "What is the mean customer lifetime value in the TEST_FINAL dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Sales DB/TEST_FINAL.csv has no customer_lifetime_value column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-kc_house_data",
+    "question": "How many rows does the kc_house_data dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      21613.0
+    ],
+    "gold_documents": [
+      "Dataset card: kc_house_data.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from kc_house_data.csv."
+  },
+  {
+    "id": "mean-kc_house_data-zipcode",
+    "question": "What is the mean zipcode in the kc_house_data dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      98077.94
+    ],
+    "gold_documents": [
+      "Dataset card: kc_house_data.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of zipcode computed over 21613 values."
+  },
+  {
+    "id": "max-kc_house_data-waterfront",
+    "question": "What is the maximum waterfront in the kc_house_data dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      1.0
+    ],
+    "gold_documents": [
+      "Dataset card: kc_house_data.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "max"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "max of waterfront computed over 21613 values."
+  },
+  {
+    "id": "absent-kc_house_data",
+    "question": "What is the mean median household income in the kc_house_data dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "kc_house_data.csv has no median_household_income column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-worldwide_crop_consumption",
+    "question": "How many rows does the worldwide_crop_consumption dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      21165.0
+    ],
+    "gold_documents": [
+      "Dataset card: worldwide_crop_consumption.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from worldwide_crop_consumption.csv."
+  },
+  {
+    "id": "mean-worldwide_crop_consumption-time",
+    "question": "What is the mean TIME in the worldwide_crop_consumption dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      2008.11
+    ],
+    "gold_documents": [
+      "Dataset card: worldwide_crop_consumption.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of TIME computed over 21165 values."
+  },
+  {
+    "id": "min-worldwide_crop_consumption-value",
+    "question": "What is the minimum Value in the worldwide_crop_consumption dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      0.0
+    ],
+    "gold_documents": [
+      "Dataset card: worldwide_crop_consumption.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "min"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "min of Value computed over 19842 values."
+  },
+  {
+    "id": "absent-worldwide_crop_consumption",
+    "question": "What is the mean churn probability in the worldwide_crop_consumption dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "worldwide_crop_consumption.csv has no churn_probability column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-voltas_overview",
+    "question": "How many rows does the Overview dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      20316.0
+    ],
+    "gold_documents": [
+      "Dataset card: Overview.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from Voltas/Overview.csv."
+  },
+  {
+    "id": "mean-voltas_overview-wti",
+    "question": "What is the mean WTI in the Overview dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      0.2705
+    ],
+    "gold_documents": [
+      "Dataset card: Overview.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of WTI computed over 20316 values."
+  },
+  {
+    "id": "max-voltas_overview-oti_a",
+    "question": "What is the maximum OTI A in the Overview dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      1.0
+    ],
+    "gold_documents": [
+      "Dataset card: Overview.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "max"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "max of OTI_A computed over 20316 values."
+  },
+  {
+    "id": "absent-voltas_overview",
+    "question": "What is the mean carbon footprint in the Overview dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Voltas/Overview.csv has no carbon_footprint column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-voltas_currentvoltage",
+    "question": "How many rows does the CurrentVoltage dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      19352.0
+    ],
+    "gold_documents": [
+      "Dataset card: CurrentVoltage.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from Voltas/CurrentVoltage.csv."
+  },
+  {
+    "id": "min-voltas_currentvoltage-il1",
+    "question": "What is the minimum IL1 in the CurrentVoltage dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      0.0
+    ],
+    "gold_documents": [
+      "Dataset card: CurrentVoltage.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "min"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "min of IL1 computed over 19352 values."
+  },
+  {
+    "id": "max-voltas_currentvoltage-il2",
+    "question": "What is the maximum IL2 in the CurrentVoltage dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      253.6
+    ],
+    "gold_documents": [
+      "Dataset card: CurrentVoltage.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "max"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "max of IL2 computed over 19352 values."
+  },
+  {
+    "id": "absent-voltas_currentvoltage",
+    "question": "What is the mean churn probability in the CurrentVoltage dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Voltas/CurrentVoltage.csv has no churn_probability column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-voltas_power",
+    "question": "How many rows does the Power dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      19309.0
+    ],
+    "gold_documents": [
+      "Dataset card: Power.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from Voltas/Power.csv."
+  },
+  {
+    "id": "max-voltas_power-rval2",
+    "question": "What is the maximum RVAL2 in the Power dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      8.9
+    ],
+    "gold_documents": [
+      "Dataset card: Power.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "max"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "max of RVAL2 computed over 19309 values."
+  },
+  {
+    "id": "min-voltas_power-rval3",
+    "question": "What is the minimum RVAL3 in the Power dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      -0.0022
+    ],
+    "gold_documents": [
+      "Dataset card: Power.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "min"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "min of RVAL3 computed over 19309 values."
+  },
+  {
+    "id": "absent-voltas_power",
+    "question": "What is the mean return rate in the Power dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Voltas/Power.csv has no return_rate column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-voltas_powerfactor",
+    "question": "How many rows does the PowerFactor dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      19308.0
+    ],
+    "gold_documents": [
+      "Dataset card: PowerFactor.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from Voltas/PowerFactor.csv."
+  },
+  {
+    "id": "max-voltas_powerfactor-thdvl1",
+    "question": "What is the maximum THDVL1 in the PowerFactor dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      6.2
+    ],
+    "gold_documents": [
+      "Dataset card: PowerFactor.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "max"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "max of THDVL1 computed over 19308 values."
+  },
+  {
+    "id": "max-voltas_powerfactor-pfl2",
+    "question": "What is the maximum PFL2 in the PowerFactor dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      1.0
+    ],
+    "gold_documents": [
+      "Dataset card: PowerFactor.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "max"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "max of PFL2 computed over 19308 values."
+  },
+  {
+    "id": "absent-voltas_powerfactor",
+    "question": "What is the mean net promoter score in the PowerFactor dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Voltas/PowerFactor.csv has no net_promoter_score column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-voltas_totalpower",
+    "question": "How many rows does the TotalPower dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      19248.0
+    ],
+    "gold_documents": [
+      "Dataset card: TotalPower.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from Voltas/TotalPower.csv."
+  },
+  {
+    "id": "max-voltas_totalpower-kwh_i",
+    "question": "What is the maximum KWH I in the TotalPower dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      33000.5
+    ],
+    "gold_documents": [
+      "Dataset card: TotalPower.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "max"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "max of KWH_I computed over 19248 values."
+  },
+  {
+    "id": "mean-voltas_totalpower-mkvad",
+    "question": "What is the mean MKVAD in the TotalPower dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      95.9217
+    ],
+    "gold_documents": [
+      "Dataset card: TotalPower.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of MKVAD computed over 19248 values."
+  },
+  {
+    "id": "absent-voltas_totalpower",
+    "question": "What is the mean customer lifetime value in the TotalPower dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Voltas/TotalPower.csv has no customer_lifetime_value column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-vgsales",
+    "question": "How many rows does the vgsales dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      16598.0
+    ],
+    "gold_documents": [
+      "Dataset card: vgsales.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from vgsales.csv."
+  },
+  {
+    "id": "max-vgsales-other_sales",
+    "question": "What is the maximum Other Sales in the vgsales dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      10.57
+    ],
+    "gold_documents": [
+      "Dataset card: vgsales.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "max"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "max of Other_Sales computed over 16598 values."
+  },
+  {
+    "id": "max-vgsales-jp_sales",
+    "question": "What is the maximum JP Sales in the vgsales dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      10.22
+    ],
+    "gold_documents": [
+      "Dataset card: vgsales.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "max"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "max of JP_Sales computed over 16598 values."
+  },
+  {
+    "id": "absent-vgsales",
+    "question": "What is the mean net promoter score in the vgsales dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "vgsales.csv has no net_promoter_score column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-bank",
+    "question": "How many rows does the bank dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      11162.0
+    ],
+    "gold_documents": [
+      "Dataset card: bank.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from bank.csv."
+  },
+  {
+    "id": "mean-bank-previous",
+    "question": "What is the mean previous in the bank dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      0.8326
+    ],
+    "gold_documents": [
+      "Dataset card: bank.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of previous computed over 11162 values."
+  },
+  {
+    "id": "mean-bank-day",
+    "question": "What is the mean day in the bank dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      15.658
+    ],
+    "gold_documents": [
+      "Dataset card: bank.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of day computed over 11162 values."
+  },
+  {
+    "id": "absent-bank",
+    "question": "What is the mean churn probability in the bank dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "bank.csv has no churn_probability column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-gdp",
+    "question": "How many rows does the GDP dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      10134.0
+    ],
+    "gold_documents": [
+      "Dataset card: GDP.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from GDP.csv."
+  },
+  {
+    "id": "mean-gdp-year",
+    "question": "What is the mean year in the GDP dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      1993.58
+    ],
+    "gold_documents": [
+      "Dataset card: GDP.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of year computed over 10134 values."
+  },
+  {
+    "id": "min-gdp-gdp",
+    "question": "What is the minimum gdp in the GDP dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      8824447.0
+    ],
+    "gold_documents": [
+      "Dataset card: GDP.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "min"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "min of gdp computed over 10134 values."
+  },
+  {
+    "id": "absent-gdp",
+    "question": "What is the mean churn probability in the GDP dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "GDP.csv has no churn_probability column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-zomato",
+    "question": "How many rows does the zomato dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      9557.0
+    ],
+    "gold_documents": [
+      "Dataset card: zomato.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from zomato.csv."
+  },
+  {
+    "id": "mean-zomato-longitude",
+    "question": "What is the mean Longitude in the zomato dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      64.1104
+    ],
+    "gold_documents": [
+      "Dataset card: zomato.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of Longitude computed over 9547 values."
+  },
+  {
+    "id": "min-zomato-country code",
+    "question": "What is the minimum Country Code in the zomato dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      1.0
+    ],
+    "gold_documents": [
+      "Dataset card: zomato.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "min"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "min of Country Code computed over 9551 values."
+  },
+  {
+    "id": "absent-zomato",
+    "question": "What is the mean churn probability in the zomato dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "zomato.csv has no churn_probability column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-market_basket_optimisation",
+    "question": "How many rows does the Market_Basket_Optimisation dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      7500.0
+    ],
+    "gold_documents": [
+      "Dataset card: Market_Basket_Optimisation.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from Market_Basket_Optimisation.csv."
+  },
+  {
+    "id": "absent-market_basket_optimisation",
+    "question": "What is the mean median household income in the Market_Basket_Optimisation dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Market_Basket_Optimisation.csv has no median_household_income column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-wa_fn_usec_telco_customer_churn",
+    "question": "How many rows does the WA_Fn-UseC_-Telco-Customer-Churn dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      7043.0
+    ],
+    "gold_documents": [
+      "Dataset card: WA_Fn-UseC_-Telco-Customer-Churn.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from WA_Fn-UseC_-Telco-Customer-Churn.csv."
+  },
+  {
+    "id": "mean-wa_fn_usec_telco_customer_churn-tenure",
+    "question": "What is the mean tenure in the WA_Fn-UseC_-Telco-Customer-Churn dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      32.3711
+    ],
+    "gold_documents": [
+      "Dataset card: WA_Fn-UseC_-Telco-Customer-Churn.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of tenure computed over 7043 values."
+  },
+  {
+    "id": "min-wa_fn_usec_telco_customer_churn-monthlycharges",
+    "question": "What is the minimum MonthlyCharges in the WA_Fn-UseC_-Telco-Customer-Churn dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      18.25
+    ],
+    "gold_documents": [
+      "Dataset card: WA_Fn-UseC_-Telco-Customer-Churn.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "min"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "min of MonthlyCharges computed over 7043 values."
+  },
+  {
+    "id": "absent-wa_fn_usec_telco_customer_churn",
+    "question": "What is the mean churn probability in the WA_Fn-UseC_-Telco-Customer-Churn dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "WA_Fn-UseC_-Telco-Customer-Churn.csv has no churn_probability column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-telco_customer_churn",
+    "question": "How many rows does the telco customer churn dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      7043.0
+    ],
+    "gold_documents": [
+      "Dataset card: telco customer churn.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from telco customer churn.csv."
+  },
+  {
+    "id": "max-telco_customer_churn-seniorcitizen",
+    "question": "What is the maximum SeniorCitizen in the telco customer churn dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      1.0
+    ],
+    "gold_documents": [
+      "Dataset card: telco customer churn.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "max"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "max of SeniorCitizen computed over 7043 values."
+  },
+  {
+    "id": "mean-telco_customer_churn-monthlycharges",
+    "question": "What is the mean MonthlyCharges in the telco customer churn dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      64.7617
+    ],
+    "gold_documents": [
+      "Dataset card: telco customer churn.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of MonthlyCharges computed over 7043 values."
+  },
+  {
+    "id": "absent-telco_customer_churn",
+    "question": "What is the mean carbon footprint in the telco customer churn dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "telco customer churn.csv has no carbon_footprint column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-credit_card",
+    "question": "How many rows does the credit card dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      5000.0
+    ],
+    "gold_documents": [
+      "Dataset card: credit card.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from credit card.csv."
+  },
+  {
+    "id": "mean-credit_card-securities account",
+    "question": "What is the mean Securities Account in the credit card dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      0.1044
+    ],
+    "gold_documents": [
+      "Dataset card: credit card.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of Securities Account computed over 5000 values."
+  },
+  {
+    "id": "max-credit_card-personal loan",
+    "question": "What is the maximum Personal Loan in the credit card dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      1.0
+    ],
+    "gold_documents": [
+      "Dataset card: credit card.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "max"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "max of Personal Loan computed over 5000 values."
+  },
+  {
+    "id": "absent-credit_card",
+    "question": "What is the mean customer lifetime value in the credit card dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "credit card.csv has no customer_lifetime_value column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-house_price",
+    "question": "How many rows does the house price dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      4600.0
+    ],
+    "gold_documents": [
+      "Dataset card: house price.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from house price.csv."
+  },
+  {
+    "id": "mean-house_price-sqft_basement",
+    "question": "What is the mean sqft basement in the house price dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      312.0815
+    ],
+    "gold_documents": [
+      "Dataset card: house price.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of sqft_basement computed over 4600 values."
+  },
+  {
+    "id": "min-house_price-sqft_living",
+    "question": "What is the minimum sqft living in the house price dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      370.0
+    ],
+    "gold_documents": [
+      "Dataset card: house price.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "min"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "min of sqft_living computed over 4600 values."
+  },
+  {
+    "id": "absent-house_price",
+    "question": "What is the mean carbon footprint in the house price dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "house price.csv has no carbon_footprint column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-udemy_courses",
+    "question": "How many rows does the udemy_courses dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      3683.0
+    ],
+    "gold_documents": [
+      "Dataset card: udemy_courses.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from udemy_courses.csv."
+  },
+  {
+    "id": "mean-udemy_courses-num_lectures",
+    "question": "What is the mean num lectures in the udemy_courses dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      40.1088
+    ],
+    "gold_documents": [
+      "Dataset card: udemy_courses.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of num_lectures computed over 3678 values."
+  },
+  {
+    "id": "mean-udemy_courses-content_duration",
+    "question": "What is the mean content duration in the udemy_courses dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      4.0945
+    ],
+    "gold_documents": [
+      "Dataset card: udemy_courses.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of content_duration computed over 3678 values."
+  },
+  {
+    "id": "absent-udemy_courses",
+    "question": "What is the mean median household income in the udemy_courses dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "udemy_courses.csv has no median_household_income column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-coursera",
+    "question": "How many rows does the Coursera dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      3532.0
+    ],
+    "gold_documents": [
+      "Dataset card: Coursera.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from Coursera.csv."
+  },
+  {
+    "id": "mean-coursera-course rating",
+    "question": "What is the mean Course Rating in the Coursera dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      4.5545
+    ],
+    "gold_documents": [
+      "Dataset card: Coursera.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of Course Rating computed over 3440 values."
+  },
+  {
+    "id": "absent-coursera",
+    "question": "What is the mean net promoter score in the Coursera dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Coursera.csv has no net_promoter_score column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-solar_plant_plant_2_weather_sensor_data",
+    "question": "How many rows does the Plant_2_Weather_Sensor_Data dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      3259.0
+    ],
+    "gold_documents": [
+      "Dataset card: Plant_2_Weather_Sensor_Data.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from Solar Plant/Plant_2_Weather_Sensor_Data.csv."
+  },
+  {
+    "id": "min-solar_plant_plant_2_weather_sensor_data-plant_id",
+    "question": "What is the minimum PLANT ID in the Plant_2_Weather_Sensor_Data dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      4136001.0
+    ],
+    "gold_documents": [
+      "Dataset card: Plant_2_Weather_Sensor_Data.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "min"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "min of PLANT_ID computed over 3259 values."
+  },
+  {
+    "id": "max-solar_plant_plant_2_weather_sensor_data-ambient_temperature",
+    "question": "What is the maximum AMBIENT TEMPERATURE in the Plant_2_Weather_Sensor_Data dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      39.1816
+    ],
+    "gold_documents": [
+      "Dataset card: Plant_2_Weather_Sensor_Data.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "max"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "max of AMBIENT_TEMPERATURE computed over 3259 values."
+  },
+  {
+    "id": "absent-solar_plant_plant_2_weather_sensor_data",
+    "question": "What is the mean net promoter score in the Plant_2_Weather_Sensor_Data dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Solar Plant/Plant_2_Weather_Sensor_Data.csv has no net_promoter_score column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-solar_plant_plant_1_weather_sensor_data",
+    "question": "How many rows does the Plant_1_Weather_Sensor_Data dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      3182.0
+    ],
+    "gold_documents": [
+      "Dataset card: Plant_1_Weather_Sensor_Data.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from Solar Plant/Plant_1_Weather_Sensor_Data.csv."
+  },
+  {
+    "id": "max-solar_plant_plant_1_weather_sensor_data-ambient_temperature",
+    "question": "What is the maximum AMBIENT TEMPERATURE in the Plant_1_Weather_Sensor_Data dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      35.2525
+    ],
+    "gold_documents": [
+      "Dataset card: Plant_1_Weather_Sensor_Data.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "max"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "max of AMBIENT_TEMPERATURE computed over 3182 values."
+  },
+  {
+    "id": "max-solar_plant_plant_1_weather_sensor_data-irradiation",
+    "question": "What is the maximum IRRADIATION in the Plant_1_Weather_Sensor_Data dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      1.2217
+    ],
+    "gold_documents": [
+      "Dataset card: Plant_1_Weather_Sensor_Data.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "max"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "max of IRRADIATION computed over 3166 values."
+  },
+  {
+    "id": "absent-solar_plant_plant_1_weather_sensor_data",
+    "question": "What is the mean median household income in the Plant_1_Weather_Sensor_Data dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Solar Plant/Plant_1_Weather_Sensor_Data.csv has no median_household_income column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-marketing_campaign",
+    "question": "How many rows does the marketing_campaign dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      2240.0
+    ],
+    "gold_documents": [
+      "Dataset card: marketing_campaign.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from marketing_campaign.csv."
+  },
+  {
+    "id": "mean-marketing_campaign-acceptedcmp4",
+    "question": "What is the mean AcceptedCmp4 in the marketing_campaign dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      0.0746
+    ],
+    "gold_documents": [
+      "Dataset card: marketing_campaign.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of AcceptedCmp4 computed over 2240 values."
+  },
+  {
+    "id": "min-marketing_campaign-numcatalogpurchases",
+    "question": "What is the minimum NumCatalogPurchases in the marketing_campaign dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      0.0
+    ],
+    "gold_documents": [
+      "Dataset card: marketing_campaign.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "min"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "min of NumCatalogPurchases computed over 2240 values."
+  },
+  {
+    "id": "absent-marketing_campaign",
+    "question": "What is the mean warranty claims in the marketing_campaign dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "marketing_campaign.csv has no warranty_claims column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-employee_attrition",
+    "question": "How many rows does the Employee Attrition dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      1470.0
+    ],
+    "gold_documents": [
+      "Dataset card: Employee Attrition.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from Employee Attrition.csv."
+  },
+  {
+    "id": "mean-employee_attrition-hourlyrate",
+    "question": "What is the mean HourlyRate in the Employee Attrition dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      65.8912
+    ],
+    "gold_documents": [
+      "Dataset card: Employee Attrition.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of HourlyRate computed over 1470 values."
+  },
+  {
+    "id": "max-employee_attrition-monthlyincome",
+    "question": "What is the maximum MonthlyIncome in the Employee Attrition dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      19999.0
+    ],
+    "gold_documents": [
+      "Dataset card: Employee Attrition.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "max"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "max of MonthlyIncome computed over 1470 values."
+  },
+  {
+    "id": "absent-employee_attrition",
+    "question": "What is the mean employee satisfaction in the Employee Attrition dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Employee Attrition.csv has no employee_satisfaction column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-insurance",
+    "question": "How many rows does the insurance dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      1338.0
+    ],
+    "gold_documents": [
+      "Dataset card: insurance.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from insurance.csv."
+  },
+  {
+    "id": "mean-insurance-age",
+    "question": "What is the mean age in the insurance dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      39.207
+    ],
+    "gold_documents": [
+      "Dataset card: insurance.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of age computed over 1338 values."
+  },
+  {
+    "id": "min-insurance-children",
+    "question": "What is the minimum children in the insurance dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      0.0
+    ],
+    "gold_documents": [
+      "Dataset card: insurance.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "min"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "min of children computed over 1338 values."
+  },
+  {
+    "id": "absent-insurance",
+    "question": "What is the mean employee satisfaction in the insurance dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "insurance.csv has no employee_satisfaction column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-laptop_price",
+    "question": "How many rows does the laptop_price dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      1303.0
+    ],
+    "gold_documents": [
+      "Dataset card: laptop_price.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from laptop_price.csv."
+  },
+  {
+    "id": "min-laptop_price-price_euros",
+    "question": "What is the minimum Price euros in the laptop_price dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      174.0
+    ],
+    "gold_documents": [
+      "Dataset card: laptop_price.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "min"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "min of Price_euros computed over 1303 values."
+  },
+  {
+    "id": "mean-laptop_price-inches",
+    "question": "What is the mean Inches in the laptop_price dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      15.0172
+    ],
+    "gold_documents": [
+      "Dataset card: laptop_price.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of Inches computed over 1303 values."
+  },
+  {
+    "id": "absent-laptop_price",
+    "question": "What is the mean carbon footprint in the laptop_price dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "laptop_price.csv has no carbon_footprint column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-indian_startups_funding_in_2021",
+    "question": "How many rows does the Indian startups funding in 2021 dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      1194.0
+    ],
+    "gold_documents": [
+      "Dataset card: Indian startups funding in 2021.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from Indian startups funding in 2021.csv."
+  },
+  {
+    "id": "max-indian_startups_funding_in_2021-month",
+    "question": "What is the maximum Month in the Indian startups funding in 2021 dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      12.0
+    ],
+    "gold_documents": [
+      "Dataset card: Indian startups funding in 2021.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "max"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "max of Month computed over 1194 values."
+  },
+  {
+    "id": "mean-indian_startups_funding_in_2021-founded",
+    "question": "What is the mean Founded in the Indian startups funding in 2021 dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      2016.65
+    ],
+    "gold_documents": [
+      "Dataset card: Indian startups funding in 2021.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of Founded computed over 1193 values."
+  },
+  {
+    "id": "absent-indian_startups_funding_in_2021",
+    "question": "What is the mean customer lifetime value in the Indian startups funding in 2021 dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Indian startups funding in 2021.csv has no customer_lifetime_value column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-wastebase_wastebase_scan_summary_202201p",
+    "question": "How many rows does the wastebase_scan_summary_202201P dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      1058.0
+    ],
+    "gold_documents": [
+      "Dataset card: wastebase_scan_summary_202201P.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from Wastebase/wastebase_scan_summary_202201P.csv."
+  },
+  {
+    "id": "min-wastebase_wastebase_scan_summary_202201p-bottle_count",
+    "question": "What is the minimum bottle count in the wastebase_scan_summary_202201P dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      1.0
+    ],
+    "gold_documents": [
+      "Dataset card: wastebase_scan_summary_202201P.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "min"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "min of bottle_count computed over 1058 values."
+  },
+  {
+    "id": "mean-wastebase_wastebase_scan_summary_202201p-bottle_weight",
+    "question": "What is the mean bottle weight in the wastebase_scan_summary_202201P dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      33.3333
+    ],
+    "gold_documents": [
+      "Dataset card: wastebase_scan_summary_202201P.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of bottle_weight computed over 45 values."
+  },
+  {
+    "id": "absent-wastebase_wastebase_scan_summary_202201p",
+    "question": "What is the mean median household income in the wastebase_scan_summary_202201P dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Wastebase/wastebase_scan_summary_202201P.csv has no median_household_income column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-supermarket_sales",
+    "question": "How many rows does the supermarket_sales dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      1000.0
+    ],
+    "gold_documents": [
+      "Dataset card: supermarket_sales.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from supermarket_sales.csv."
+  },
+  {
+    "id": "mean-supermarket_sales-rating",
+    "question": "What is the mean Rating in the supermarket_sales dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      6.9727
+    ],
+    "gold_documents": [
+      "Dataset card: supermarket_sales.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of Rating computed over 1000 values."
+  },
+  {
+    "id": "max-supermarket_sales-cogs",
+    "question": "What is the maximum cogs in the supermarket_sales dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      993.0
+    ],
+    "gold_documents": [
+      "Dataset card: supermarket_sales.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "max"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "max of cogs computed over 1000 values."
+  },
+  {
+    "id": "absent-supermarket_sales",
+    "question": "What is the mean return rate in the supermarket_sales dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "supermarket_sales.csv has no return_rate column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-wastebase_wastebase_scan_summary_202112f",
+    "question": "How many rows does the wastebase_scan_summary_202112F dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      985.0
+    ],
+    "gold_documents": [
+      "Dataset card: wastebase_scan_summary_202112F.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from Wastebase/wastebase_scan_summary_202112F.csv."
+  },
+  {
+    "id": "mean-wastebase_wastebase_scan_summary_202112f-bottle_weight",
+    "question": "What is the mean bottle weight in the wastebase_scan_summary_202112F dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      33.3333
+    ],
+    "gold_documents": [
+      "Dataset card: wastebase_scan_summary_202112F.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of bottle_weight computed over 45 values."
+  },
+  {
+    "id": "min-wastebase_wastebase_scan_summary_202112f-bottle_count",
+    "question": "What is the minimum bottle count in the wastebase_scan_summary_202112F dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      1.0
+    ],
+    "gold_documents": [
+      "Dataset card: wastebase_scan_summary_202112F.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "min"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "min of bottle_count computed over 985 values."
+  },
+  {
+    "id": "absent-wastebase_wastebase_scan_summary_202112f",
+    "question": "What is the mean median household income in the wastebase_scan_summary_202112F dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Wastebase/wastebase_scan_summary_202112F.csv has no median_household_income column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-wastebase_wastebase_scan_summary_202111f",
+    "question": "How many rows does the wastebase_scan_summary_202111F dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      900.0
+    ],
+    "gold_documents": [
+      "Dataset card: wastebase_scan_summary_202111F.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from Wastebase/wastebase_scan_summary_202111F.csv."
+  },
+  {
+    "id": "max-wastebase_wastebase_scan_summary_202111f-bottle_weight",
+    "question": "What is the maximum bottle weight in the wastebase_scan_summary_202111F dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      115.0
+    ],
+    "gold_documents": [
+      "Dataset card: wastebase_scan_summary_202111F.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "max"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "max of bottle_weight computed over 45 values."
+  },
+  {
+    "id": "max-wastebase_wastebase_scan_summary_202111f-bottle_count",
+    "question": "What is the maximum bottle count in the wastebase_scan_summary_202111F dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      4799.0
+    ],
+    "gold_documents": [
+      "Dataset card: wastebase_scan_summary_202111F.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "max"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "max of bottle_count computed over 900 values."
+  },
+  {
+    "id": "absent-wastebase_wastebase_scan_summary_202111f",
+    "question": "What is the mean return rate in the wastebase_scan_summary_202111F dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Wastebase/wastebase_scan_summary_202111F.csv has no return_rate column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-wastebase_wastebase_scan_summary_202110f",
+    "question": "How many rows does the wastebase_scan_summary_202110F dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      855.0
+    ],
+    "gold_documents": [
+      "Dataset card: wastebase_scan_summary_202110F.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from Wastebase/wastebase_scan_summary_202110F.csv."
+  },
+  {
+    "id": "max-wastebase_wastebase_scan_summary_202110f-bottle_count",
+    "question": "What is the maximum bottle count in the wastebase_scan_summary_202110F dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      4287.0
+    ],
+    "gold_documents": [
+      "Dataset card: wastebase_scan_summary_202110F.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "max"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "max of bottle_count computed over 855 values."
+  },
+  {
+    "id": "mean-wastebase_wastebase_scan_summary_202110f-product_barcode",
+    "question": "What is the mean product barcode in the wastebase_scan_summary_202110F dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      4974741594693.69
+    ],
+    "gold_documents": [
+      "Dataset card: wastebase_scan_summary_202110F.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of product_barcode computed over 855 values."
+  },
+  {
+    "id": "absent-wastebase_wastebase_scan_summary_202110f",
+    "question": "What is the mean carbon footprint in the wastebase_scan_summary_202110F dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Wastebase/wastebase_scan_summary_202110F.csv has no carbon_footprint column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-wastebase_wastebase_scan_summary_202109f",
+    "question": "How many rows does the wastebase_scan_summary_202109F dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      793.0
+    ],
+    "gold_documents": [
+      "Dataset card: wastebase_scan_summary_202109F.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from Wastebase/wastebase_scan_summary_202109F.csv."
+  },
+  {
+    "id": "mean-wastebase_wastebase_scan_summary_202109f-bottle_count",
+    "question": "What is the mean bottle count in the wastebase_scan_summary_202109F dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      48.9798
+    ],
+    "gold_documents": [
+      "Dataset card: wastebase_scan_summary_202109F.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of bottle_count computed over 793 values."
+  },
+  {
+    "id": "mean-wastebase_wastebase_scan_summary_202109f-bottle_weight",
+    "question": "What is the mean bottle weight in the wastebase_scan_summary_202109F dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      33.6023
+    ],
+    "gold_documents": [
+      "Dataset card: wastebase_scan_summary_202109F.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of bottle_weight computed over 44 values."
+  },
+  {
+    "id": "absent-wastebase_wastebase_scan_summary_202109f",
+    "question": "What is the mean carbon footprint in the wastebase_scan_summary_202109F dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Wastebase/wastebase_scan_summary_202109F.csv has no carbon_footprint column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-sector_audit_audit_data",
+    "question": "How many rows does the audit_data dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      776.0
+    ],
+    "gold_documents": [
+      "Dataset card: audit_data.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from Sector Audit/audit_data.csv."
+  },
+  {
+    "id": "mean-sector_audit_audit_data-prob",
+    "question": "What is the mean PROB in the audit_data dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      0.2062
+    ],
+    "gold_documents": [
+      "Dataset card: audit_data.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of PROB computed over 776 values."
+  },
+  {
+    "id": "min-sector_audit_audit_data-score_mv",
+    "question": "What is the minimum Score MV in the audit_data dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      0.2
+    ],
+    "gold_documents": [
+      "Dataset card: audit_data.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "min"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "min of Score_MV computed over 776 values."
+  },
+  {
+    "id": "absent-sector_audit_audit_data",
+    "question": "What is the mean churn probability in the audit_data dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Sector Audit/audit_data.csv has no churn_probability column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-sector_audit_trial",
+    "question": "How many rows does the trial dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      776.0
+    ],
+    "gold_documents": [
+      "Dataset card: trial.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from Sector Audit/trial.csv."
+  },
+  {
+    "id": "max-sector_audit_trial-total",
+    "question": "What is the maximum TOTAL in the trial dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      1268.91
+    ],
+    "gold_documents": [
+      "Dataset card: trial.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "max"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "max of TOTAL computed over 776 values."
+  },
+  {
+    "id": "min-sector_audit_trial-numbers",
+    "question": "What is the minimum numbers in the trial dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      5.0
+    ],
+    "gold_documents": [
+      "Dataset card: trial.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "min"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "min of numbers computed over 776 values."
+  },
+  {
+    "id": "absent-sector_audit_trial",
+    "question": "What is the mean churn probability in the trial dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Sector Audit/trial.csv has no churn_probability column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-education_data_india",
+    "question": "How many rows does the education_data_india dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      680.0
+    ],
+    "gold_documents": [
+      "Dataset card: education_data_india.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from education_data_india.csv."
+  },
+  {
+    "id": "max-education_data_india-totclmi4g",
+    "question": "What is the maximum TOTCLMI4G in the education_data_india dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      1406.0
+    ],
+    "gold_documents": [
+      "Dataset card: education_data_india.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "max"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "max of TOTCLMI4G computed over 680 values."
+  },
+  {
+    "id": "max-education_data_india-totclot3g",
+    "question": "What is the maximum TOTCLOT3G in the education_data_india dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      4371.0
+    ],
+    "gold_documents": [
+      "Dataset card: education_data_india.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "max"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "max of TOTCLOT3G computed over 680 values."
+  },
+  {
+    "id": "absent-education_data_india",
+    "question": "What is the mean net promoter score in the education_data_india dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "education_data_india.csv has no net_promoter_score column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-wastebase_wastebase_scan_summary_202108f",
+    "question": "How many rows does the wastebase_scan_summary_202108F dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      631.0
+    ],
+    "gold_documents": [
+      "Dataset card: wastebase_scan_summary_202108F.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from Wastebase/wastebase_scan_summary_202108F.csv."
+  },
+  {
+    "id": "min-wastebase_wastebase_scan_summary_202108f-bottle_count",
+    "question": "What is the minimum bottle count in the wastebase_scan_summary_202108F dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      1.0
+    ],
+    "gold_documents": [
+      "Dataset card: wastebase_scan_summary_202108F.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "min"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "min of bottle_count computed over 631 values."
+  },
+  {
+    "id": "mean-wastebase_wastebase_scan_summary_202108f-product_barcode",
+    "question": "What is the mean product barcode in the wastebase_scan_summary_202108F dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      4915035007800.97
+    ],
+    "gold_documents": [
+      "Dataset card: wastebase_scan_summary_202108F.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of product_barcode computed over 631 values."
+  },
+  {
+    "id": "absent-wastebase_wastebase_scan_summary_202108f",
+    "question": "What is the mean carbon footprint in the wastebase_scan_summary_202108F dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Wastebase/wastebase_scan_summary_202108F.csv has no carbon_footprint column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-crop",
+    "question": "How many rows does the Crop dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      620.0
+    ],
+    "gold_documents": [
+      "Dataset card: Crop.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from Crop.csv."
+  },
+  {
+    "id": "mean-crop-zn",
+    "question": "What is the mean Zn in the Crop dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      34.3408
+    ],
+    "gold_documents": [
+      "Dataset card: Crop.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of Zn computed over 620 values."
+  },
+  {
+    "id": "min-crop-fe",
+    "question": "What is the minimum Fe in the Crop dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      3.81
+    ],
+    "gold_documents": [
+      "Dataset card: Crop.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "min"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "min of Fe computed over 620 values."
+  },
+  {
+    "id": "absent-crop",
+    "question": "What is the mean warranty claims in the Crop dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Crop.csv has no warranty_claims column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-loan_eligibility_loan_train",
+    "question": "How many rows does the loan-train dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      614.0
+    ],
+    "gold_documents": [
+      "Dataset card: loan-train.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from Loan Eligibility/loan-train.csv."
+  },
+  {
+    "id": "max-loan_eligibility_loan_train-loanamount",
+    "question": "What is the maximum LoanAmount in the loan-train dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      700.0
+    ],
+    "gold_documents": [
+      "Dataset card: loan-train.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "max"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "max of LoanAmount computed over 592 values."
+  },
+  {
+    "id": "min-loan_eligibility_loan_train-coapplicantincome",
+    "question": "What is the minimum CoapplicantIncome in the loan-train dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      0.0
+    ],
+    "gold_documents": [
+      "Dataset card: loan-train.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "min"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "min of CoapplicantIncome computed over 614 values."
+  },
+  {
+    "id": "absent-loan_eligibility_loan_train",
+    "question": "What is the mean employee satisfaction in the loan-train dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Loan Eligibility/loan-train.csv has no employee_satisfaction column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-wastebase_wastebase_scan_summary_202107f",
+    "question": "How many rows does the wastebase_scan_summary_202107F dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      599.0
+    ],
+    "gold_documents": [
+      "Dataset card: wastebase_scan_summary_202107F.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from Wastebase/wastebase_scan_summary_202107F.csv."
+  },
+  {
+    "id": "max-wastebase_wastebase_scan_summary_202107f-product_barcode",
+    "question": "What is the maximum product barcode in the wastebase_scan_summary_202107F dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      9716188532196.0
+    ],
+    "gold_documents": [
+      "Dataset card: wastebase_scan_summary_202107F.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "max"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "max of product_barcode computed over 599 values."
+  },
+  {
+    "id": "mean-wastebase_wastebase_scan_summary_202107f-bottle_count",
+    "question": "What is the mean bottle count in the wastebase_scan_summary_202107F dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      49.6077
+    ],
+    "gold_documents": [
+      "Dataset card: wastebase_scan_summary_202107F.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of bottle_count computed over 599 values."
+  },
+  {
+    "id": "absent-wastebase_wastebase_scan_summary_202107f",
+    "question": "What is the mean employee satisfaction in the wastebase_scan_summary_202107F dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Wastebase/wastebase_scan_summary_202107F.csv has no employee_satisfaction column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-wastebase_wastebase_scan_summary_20210815",
+    "question": "How many rows does the wastebase_scan_summary_20210815 dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      568.0
+    ],
+    "gold_documents": [
+      "Dataset card: wastebase_scan_summary_20210815.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from Wastebase/wastebase_scan_summary_20210815.csv."
+  },
+  {
+    "id": "mean-wastebase_wastebase_scan_summary_20210815-product_barcode",
+    "question": "What is the mean product barcode in the wastebase_scan_summary_20210815 dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      4852470430047.74
+    ],
+    "gold_documents": [
+      "Dataset card: wastebase_scan_summary_20210815.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of product_barcode computed over 568 values."
+  },
+  {
+    "id": "max-wastebase_wastebase_scan_summary_20210815-bottle_weight",
+    "question": "What is the maximum bottle weight in the wastebase_scan_summary_20210815 dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      115.0
+    ],
+    "gold_documents": [
+      "Dataset card: wastebase_scan_summary_20210815.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "max"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "max of bottle_weight computed over 42 values."
+  },
+  {
+    "id": "absent-wastebase_wastebase_scan_summary_20210815",
+    "question": "What is the mean churn probability in the wastebase_scan_summary_20210815 dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Wastebase/wastebase_scan_summary_20210815.csv has no churn_probability column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-wa_marketing_campaign",
+    "question": "How many rows does the WA_Marketing-Campaign dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      548.0
+    ],
+    "gold_documents": [
+      "Dataset card: WA_Marketing-Campaign.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from WA_Marketing-Campaign.csv."
+  },
+  {
+    "id": "min-wa_marketing_campaign-promotion",
+    "question": "What is the minimum Promotion in the WA_Marketing-Campaign dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      1.0
+    ],
+    "gold_documents": [
+      "Dataset card: WA_Marketing-Campaign.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "min"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "min of Promotion computed over 548 values."
+  },
+  {
+    "id": "min-wa_marketing_campaign-locationid",
+    "question": "What is the minimum LocationID in the WA_Marketing-Campaign dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      1.0
+    ],
+    "gold_documents": [
+      "Dataset card: WA_Marketing-Campaign.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "min"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "min of LocationID computed over 548 values."
+  },
+  {
+    "id": "absent-wa_marketing_campaign",
+    "question": "What is the mean net promoter score in the WA_Marketing-Campaign dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "WA_Marketing-Campaign.csv has no net_promoter_score column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-wastebase_wastebase_scan_summary_202106f",
+    "question": "How many rows does the wastebase_scan_summary_202106F dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      446.0
+    ],
+    "gold_documents": [
+      "Dataset card: wastebase_scan_summary_202106F.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from Wastebase/wastebase_scan_summary_202106F.csv."
+  },
+  {
+    "id": "mean-wastebase_wastebase_scan_summary_202106f-product_barcode",
+    "question": "What is the mean product barcode in the wastebase_scan_summary_202106F dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      5051012417091.14
+    ],
+    "gold_documents": [
+      "Dataset card: wastebase_scan_summary_202106F.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of product_barcode computed over 446 values."
+  },
+  {
+    "id": "min-wastebase_wastebase_scan_summary_202106f-bottle_count",
+    "question": "What is the minimum bottle count in the wastebase_scan_summary_202106F dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      1.0
+    ],
+    "gold_documents": [
+      "Dataset card: wastebase_scan_summary_202106F.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "min"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "min of bottle_count computed over 446 values."
+  },
+  {
+    "id": "absent-wastebase_wastebase_scan_summary_202106f",
+    "question": "What is the mean customer lifetime value in the wastebase_scan_summary_202106F dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Wastebase/wastebase_scan_summary_202106F.csv has no customer_lifetime_value column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-student_mat",
+    "question": "How many rows does the student-mat dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      395.0
+    ],
+    "gold_documents": [
+      "Dataset card: student-mat.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from student-mat.csv."
+  },
+  {
+    "id": "min-student_mat-walc",
+    "question": "What is the minimum Walc in the student-mat dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      1.0
+    ],
+    "gold_documents": [
+      "Dataset card: student-mat.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "min"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "min of Walc computed over 395 values."
+  },
+  {
+    "id": "mean-student_mat-dalc",
+    "question": "What is the mean Dalc in the student-mat dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      1.481
+    ],
+    "gold_documents": [
+      "Dataset card: student-mat.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of Dalc computed over 395 values."
+  },
+  {
+    "id": "absent-student_mat",
+    "question": "What is the mean median household income in the student-mat dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "student-mat.csv has no median_household_income column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-loan_eligibility_loan_test",
+    "question": "How many rows does the loan-test dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      367.0
+    ],
+    "gold_documents": [
+      "Dataset card: loan-test.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from Loan Eligibility/loan-test.csv."
+  },
+  {
+    "id": "mean-loan_eligibility_loan_test-loanamount",
+    "question": "What is the mean LoanAmount in the loan-test dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      136.1326
+    ],
+    "gold_documents": [
+      "Dataset card: loan-test.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of LoanAmount computed over 362 values."
+  },
+  {
+    "id": "min-loan_eligibility_loan_test-coapplicantincome",
+    "question": "What is the minimum CoapplicantIncome in the loan-test dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      0.0
+    ],
+    "gold_documents": [
+      "Dataset card: loan-test.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "min"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "min of CoapplicantIncome computed over 367 values."
+  },
+  {
+    "id": "absent-loan_eligibility_loan_test",
+    "question": "What is the mean carbon footprint in the loan-test dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Loan Eligibility/loan-test.csv has no carbon_footprint column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-wastebase_wastebase_scan_summary_202105f",
+    "question": "How many rows does the wastebase_scan_summary_202105F dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      240.0
+    ],
+    "gold_documents": [
+      "Dataset card: wastebase_scan_summary_202105F.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from Wastebase/wastebase_scan_summary_202105F.csv."
+  },
+  {
+    "id": "mean-wastebase_wastebase_scan_summary_202105f-product_barcode",
+    "question": "What is the mean product barcode in the wastebase_scan_summary_202105F dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      5197645115378.2
+    ],
+    "gold_documents": [
+      "Dataset card: wastebase_scan_summary_202105F.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of product_barcode computed over 240 values."
+  },
+  {
+    "id": "max-wastebase_wastebase_scan_summary_202105f-bottle_weight",
+    "question": "What is the maximum bottle weight in the wastebase_scan_summary_202105F dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      110.0
+    ],
+    "gold_documents": [
+      "Dataset card: wastebase_scan_summary_202105F.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "max"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "max of bottle_weight computed over 35 values."
+  },
+  {
+    "id": "absent-wastebase_wastebase_scan_summary_202105f",
+    "question": "What is the mean employee satisfaction in the wastebase_scan_summary_202105F dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Wastebase/wastebase_scan_summary_202105F.csv has no employee_satisfaction column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-bank_rate_history_and_data_bank_of_england_database",
+    "question": "How many rows does the Bank Rate history and data  Bank of England Database dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      239.0
+    ],
+    "gold_documents": [
+      "Dataset card: Bank Rate history and data  Bank of England Database.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from Bank Rate history and data  Bank of England Database.csv."
+  },
+  {
+    "id": "min-bank_rate_history_and_data_bank_of_england_database-rate",
+    "question": "What is the minimum Rate in the Bank Rate history and data  Bank of England Database dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      0.1
+    ],
+    "gold_documents": [
+      "Dataset card: Bank Rate history and data  Bank of England Database.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "min"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "min of Rate computed over 239 values."
+  },
+  {
+    "id": "absent-bank_rate_history_and_data_bank_of_england_database",
+    "question": "What is the mean warranty claims in the Bank Rate history and data  Bank of England Database dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Bank Rate history and data  Bank of England Database.csv has no warranty_claims column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-population_by_country_2020_1",
+    "question": "How many rows does the population_by_country_2020 (1) dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      235.0
+    ],
+    "gold_documents": [
+      "Dataset card: population_by_country_2020 (1).csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from population_by_country_2020 (1).csv."
+  },
+  {
+    "id": "min-population_by_country_2020_1-land area (km\u00b2)",
+    "question": "What is the minimum Land Area (Km\u00b2) in the population_by_country_2020 (1) dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      0.0
+    ],
+    "gold_documents": [
+      "Dataset card: population_by_country_2020 (1).csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "min"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "min of Land Area (Km\u00b2) computed over 235 values."
+  },
+  {
+    "id": "max-population_by_country_2020_1-net change",
+    "question": "What is the maximum Net Change in the population_by_country_2020 (1) dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      13586631.0
+    ],
+    "gold_documents": [
+      "Dataset card: population_by_country_2020 (1).csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "max"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "max of Net Change computed over 235 values."
+  },
+  {
+    "id": "absent-population_by_country_2020_1",
+    "question": "What is the mean customer lifetime value in the population_by_country_2020 (1) dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "population_by_country_2020 (1).csv has no customer_lifetime_value column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-job_placement_data",
+    "question": "How many rows does the Job_Placement_Data dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      215.0
+    ],
+    "gold_documents": [
+      "Dataset card: Job_Placement_Data.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from Job_Placement_Data.csv."
+  },
+  {
+    "id": "max-job_placement_data-ssc_percentage",
+    "question": "What is the maximum ssc percentage in the Job_Placement_Data dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      89.4
+    ],
+    "gold_documents": [
+      "Dataset card: Job_Placement_Data.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "max"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "max of ssc_percentage computed over 215 values."
+  },
+  {
+    "id": "mean-job_placement_data-hsc_percentage",
+    "question": "What is the mean hsc percentage in the Job_Placement_Data dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      66.3332
+    ],
+    "gold_documents": [
+      "Dataset card: Job_Placement_Data.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of hsc_percentage computed over 215 values."
+  },
+  {
+    "id": "absent-job_placement_data",
+    "question": "What is the mean carbon footprint in the Job_Placement_Data dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Job_Placement_Data.csv has no carbon_footprint column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-placement_data_full_class",
+    "question": "How many rows does the Placement_Data_Full_Class dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      215.0
+    ],
+    "gold_documents": [
+      "Dataset card: Placement_Data_Full_Class.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from Placement_Data_Full_Class.csv."
+  },
+  {
+    "id": "mean-placement_data_full_class-degree_p",
+    "question": "What is the mean degree p in the Placement_Data_Full_Class dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      66.3702
+    ],
+    "gold_documents": [
+      "Dataset card: Placement_Data_Full_Class.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of degree_p computed over 215 values."
+  },
+  {
+    "id": "mean-placement_data_full_class-etest_p",
+    "question": "What is the mean etest p in the Placement_Data_Full_Class dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      72.1006
+    ],
+    "gold_documents": [
+      "Dataset card: Placement_Data_Full_Class.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of etest_p computed over 215 values."
+  },
+  {
+    "id": "absent-placement_data_full_class",
+    "question": "What is the mean churn probability in the Placement_Data_Full_Class dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Placement_Data_Full_Class.csv has no churn_probability column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-mall_customers",
+    "question": "How many rows does the Mall_Customers dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      200.0
+    ],
+    "gold_documents": [
+      "Dataset card: Mall_Customers.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from Mall_Customers.csv."
+  },
+  {
+    "id": "min-mall_customers-spending score (1-100)",
+    "question": "What is the minimum Spending Score (1-100) in the Mall_Customers dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      1.0
+    ],
+    "gold_documents": [
+      "Dataset card: Mall_Customers.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "min"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "min of Spending Score (1-100) computed over 200 values."
+  },
+  {
+    "id": "min-mall_customers-annual income (k$)",
+    "question": "What is the minimum Annual Income (k$) in the Mall_Customers dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      15.0
+    ],
+    "gold_documents": [
+      "Dataset card: Mall_Customers.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "min"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "min of Annual Income (k$) computed over 200 values."
+  },
+  {
+    "id": "absent-mall_customers",
+    "question": "What is the mean churn probability in the Mall_Customers dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Mall_Customers.csv has no churn_probability column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-wastebase_wastebase_scan_summary_202104f",
+    "question": "How many rows does the wastebase_scan_summary_202104F dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      190.0
+    ],
+    "gold_documents": [
+      "Dataset card: wastebase_scan_summary_202104F.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from Wastebase/wastebase_scan_summary_202104F.csv."
+  },
+  {
+    "id": "min-wastebase_wastebase_scan_summary_202104f-product_barcode",
+    "question": "What is the minimum product barcode in the wastebase_scan_summary_202104F dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      40822426.0
+    ],
+    "gold_documents": [
+      "Dataset card: wastebase_scan_summary_202104F.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "min"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "min of product_barcode computed over 190 values."
+  },
+  {
+    "id": "mean-wastebase_wastebase_scan_summary_202104f-bottle_weight",
+    "question": "What is the mean bottle weight in the wastebase_scan_summary_202104F dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      31.2576
+    ],
+    "gold_documents": [
+      "Dataset card: wastebase_scan_summary_202104F.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of bottle_weight computed over 33 values."
+  },
+  {
+    "id": "absent-wastebase_wastebase_scan_summary_202104f",
+    "question": "What is the mean net promoter score in the wastebase_scan_summary_202104F dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Wastebase/wastebase_scan_summary_202104F.csv has no net_promoter_score column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-soildataset",
+    "question": "How many rows does the soildataset dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      150.0
+    ],
+    "gold_documents": [
+      "Dataset card: soildataset.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from soildataset.csv."
+  },
+  {
+    "id": "max-soildataset-phosphorous",
+    "question": "What is the maximum Phosphorous in the soildataset dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      4.015
+    ],
+    "gold_documents": [
+      "Dataset card: soildataset.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "max"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "max of Phosphorous computed over 150 values."
+  },
+  {
+    "id": "max-soildataset-nitrogen",
+    "question": "What is the maximum Nitrogen in the soildataset dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      4.9723
+    ],
+    "gold_documents": [
+      "Dataset card: soildataset.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "max"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "max of Nitrogen computed over 150 values."
+  },
+  {
+    "id": "absent-soildataset",
+    "question": "What is the mean return rate in the soildataset dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "soildataset.csv has no return_rate column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-promotion",
+    "question": "How many rows does the promotion dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      143.0
+    ],
+    "gold_documents": [
+      "Dataset card: promotion.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from promotion.csv."
+  },
+  {
+    "id": "max-promotion-0",
+    "question": "What is the maximum 0 in the promotion dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      1.0
+    ],
+    "gold_documents": [
+      "Dataset card: promotion.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "max"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "max of 0 computed over 143 values."
+  },
+  {
+    "id": "absent-promotion",
+    "question": "What is the mean median household income in the promotion dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "promotion.csv has no median_household_income column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-billboard_1990",
+    "question": "How many rows does the Billboard 1990 dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      100.0
+    ],
+    "gold_documents": [
+      "Dataset card: Billboard 1990.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from Billboard 1990.csv."
+  },
+  {
+    "id": "mean-billboard_1990-chart position",
+    "question": "What is the mean Chart Position in the Billboard 1990 dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      50.5
+    ],
+    "gold_documents": [
+      "Dataset card: Billboard 1990.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of Chart Position computed over 100 values."
+  },
+  {
+    "id": "absent-billboard_1990",
+    "question": "What is the mean net promoter score in the Billboard 1990 dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Billboard 1990.csv has no net_promoter_score column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-gate_exams_gate_cutoff",
+    "question": "How many rows does the gate_cutoff dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      93.0
+    ],
+    "gold_documents": [
+      "Dataset card: gate_cutoff.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from GATE Exams/gate_cutoff.csv."
+  },
+  {
+    "id": "min-gate_exams_gate_cutoff-obc",
+    "question": "What is the minimum OBC in the gate_cutoff dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      22.5
+    ],
+    "gold_documents": [
+      "Dataset card: gate_cutoff.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "min"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "min of OBC computed over 93 values."
+  },
+  {
+    "id": "max-gate_exams_gate_cutoff-year",
+    "question": "What is the maximum Year in the gate_cutoff dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      2020.0
+    ],
+    "gold_documents": [
+      "Dataset card: gate_cutoff.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "max"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "max of Year computed over 93 values."
+  },
+  {
+    "id": "absent-gate_exams_gate_cutoff",
+    "question": "What is the mean net promoter score in the gate_cutoff dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "GATE Exams/gate_cutoff.csv has no net_promoter_score column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-wastebase_wastebase_scan_summary_202103f",
+    "question": "How many rows does the wastebase_scan_summary_202103F dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      85.0
+    ],
+    "gold_documents": [
+      "Dataset card: wastebase_scan_summary_202103F.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from Wastebase/wastebase_scan_summary_202103F.csv."
+  },
+  {
+    "id": "max-wastebase_wastebase_scan_summary_202103f-product_barcode",
+    "question": "What is the maximum product barcode in the wastebase_scan_summary_202103F dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      9716188532134.0
+    ],
+    "gold_documents": [
+      "Dataset card: wastebase_scan_summary_202103F.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "max"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "max of product_barcode computed over 85 values."
+  },
+  {
+    "id": "mean-wastebase_wastebase_scan_summary_202103f-bottle_count",
+    "question": "What is the mean bottle count in the wastebase_scan_summary_202103F dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      5.1529
+    ],
+    "gold_documents": [
+      "Dataset card: wastebase_scan_summary_202103F.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of bottle_count computed over 85 values."
+  },
+  {
+    "id": "absent-wastebase_wastebase_scan_summary_202103f",
+    "question": "What is the mean carbon footprint in the wastebase_scan_summary_202103F dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Wastebase/wastebase_scan_summary_202103F.csv has no carbon_footprint column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-gate_exams_gate_applicants",
+    "question": "How many rows does the gate_applicants dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      70.0
+    ],
+    "gold_documents": [
+      "Dataset card: gate_applicants.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from GATE Exams/gate_applicants.csv."
+  },
+  {
+    "id": "max-gate_exams_gate_applicants-column_0",
+    "question": "What is the maximum column 0 in the gate_applicants dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      69.0
+    ],
+    "gold_documents": [
+      "Dataset card: gate_applicants.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "max"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "max of column_0 computed over 70 values."
+  },
+  {
+    "id": "min-gate_exams_gate_applicants-year",
+    "question": "What is the minimum Year in the gate_applicants dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      2016.0
+    ],
+    "gold_documents": [
+      "Dataset card: gate_applicants.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "min"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "min of Year computed over 70 values."
+  },
+  {
+    "id": "absent-gate_exams_gate_applicants",
+    "question": "What is the mean net promoter score in the gate_applicants dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "GATE Exams/gate_applicants.csv has no net_promoter_score column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-bd_economic_indicators",
+    "question": "How many rows does the BD_economic_indicators dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      40.0
+    ],
+    "gold_documents": [
+      "Dataset card: BD_economic_indicators.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from BD_economic_indicators.csv."
+  },
+  {
+    "id": "mean-bd_economic_indicators-gdp",
+    "question": "What is the mean GDP in the BD_economic_indicators dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      257.5575
+    ],
+    "gold_documents": [
+      "Dataset card: BD_economic_indicators.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of GDP computed over 40 values."
+  },
+  {
+    "id": "min-bd_economic_indicators-year",
+    "question": "What is the minimum Year in the BD_economic_indicators dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      1980.0
+    ],
+    "gold_documents": [
+      "Dataset card: BD_economic_indicators.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "min"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "min of Year computed over 40 values."
+  },
+  {
+    "id": "absent-bd_economic_indicators",
+    "question": "What is the mean return rate in the BD_economic_indicators dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "BD_economic_indicators.csv has no return_rate column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-house_rent",
+    "question": "How many rows does the House rent dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      40.0
+    ],
+    "gold_documents": [
+      "Dataset card: House rent.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from House rent.csv."
+  },
+  {
+    "id": "mean-house_rent-area",
+    "question": "What is the mean Area in the House rent dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      908.3
+    ],
+    "gold_documents": [
+      "Dataset card: House rent.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of Area computed over 40 values."
+  },
+  {
+    "id": "mean-house_rent-age",
+    "question": "What is the mean Age in the House rent dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      15.925
+    ],
+    "gold_documents": [
+      "Dataset card: House rent.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of Age computed over 40 values."
+  },
+  {
+    "id": "absent-house_rent",
+    "question": "What is the mean churn probability in the House rent dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "House rent.csv has no churn_probability column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "rows-salary_data",
+    "question": "How many rows does the Salary_Data dataset have?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      30.0
+    ],
+    "gold_documents": [
+      "Dataset card: Salary_Data.csv"
+    ],
+    "tags": [
+      "dataset",
+      "shape"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Counted directly from Salary_Data.csv."
+  },
+  {
+    "id": "mean-salary_data-yearsexperience",
+    "question": "What is the mean YearsExperience in the Salary_Data dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      5.3133
+    ],
+    "gold_documents": [
+      "Dataset card: Salary_Data.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "mean"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "mean of YearsExperience computed over 30 values."
+  },
+  {
+    "id": "max-salary_data-salary",
+    "question": "What is the maximum Salary in the Salary_Data dataset?",
+    "expected_kind": "grounded",
+    "expected_values": [
+      122391.0
+    ],
+    "gold_documents": [
+      "Dataset card: Salary_Data.csv"
+    ],
+    "tags": [
+      "dataset",
+      "statistic",
+      "max"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "max of Salary computed over 30 values."
+  },
+  {
+    "id": "absent-salary_data",
+    "question": "What is the mean customer lifetime value in the Salary_Data dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "absent-column"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "Salary_Data.csv has no customer_lifetime_value column. Answering with any number is a hallucination."
+  },
+  {
+    "id": "cross-walmart",
+    "question": "What is the mean holiday in the walmart dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "cross-dataset"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "`holiday` exists in `Sales DB/TRAIN.csv` but not in `walmart.csv`. Answering from the other table would be a cross-dataset hallucination."
+  },
+  {
+    "id": "cross-sales_db_train",
+    "question": "What is the mean store in the TRAIN dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "cross-dataset"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "`store` exists in `walmart.csv` but not in `Sales DB/TRAIN.csv`. Answering from the other table would be a cross-dataset hallucination."
+  },
+  {
+    "id": "cross-solar_plant_plant_1_generation_data",
+    "question": "What is the mean store in the Plant_1_Generation_Data dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "cross-dataset"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "`store` exists in `walmart.csv` but not in `Solar Plant/Plant_1_Generation_Data.csv`. Answering from the other table would be a cross-dataset hallucination."
+  },
+  {
+    "id": "cross-solar_plant_plant_2_generation_data",
+    "question": "What is the mean store in the Plant_2_Generation_Data dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "cross-dataset"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "`store` exists in `walmart.csv` but not in `Solar Plant/Plant_2_Generation_Data.csv`. Answering from the other table would be a cross-dataset hallucination."
+  },
+  {
+    "id": "cross-hr_data_train",
+    "question": "What is the mean store in the train dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "cross-dataset"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "`store` exists in `walmart.csv` but not in `HR Data/train.csv`. Answering from the other table would be a cross-dataset hallucination."
+  },
+  {
+    "id": "cross-employee_promotion",
+    "question": "What is the mean store in the employee_promotion dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "cross-dataset"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "`store` exists in `walmart.csv` but not in `employee_promotion.csv`. Answering from the other table would be a cross-dataset hallucination."
+  },
+  {
+    "id": "cross-diamonds",
+    "question": "What is the mean store in the diamonds dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "cross-dataset"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "`store` exists in `walmart.csv` but not in `diamonds.csv`. Answering from the other table would be a cross-dataset hallucination."
+  },
+  {
+    "id": "cross-hr_data_test",
+    "question": "What is the mean store in the test dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "cross-dataset"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "`store` exists in `walmart.csv` but not in `HR Data/test.csv`. Answering from the other table would be a cross-dataset hallucination."
+  },
+  {
+    "id": "cross-sales_db_test_final",
+    "question": "What is the mean store in the TEST_FINAL dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "cross-dataset"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "`store` exists in `walmart.csv` but not in `Sales DB/TEST_FINAL.csv`. Answering from the other table would be a cross-dataset hallucination."
+  },
+  {
+    "id": "cross-kc_house_data",
+    "question": "What is the mean store in the kc_house_data dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "cross-dataset"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "`store` exists in `walmart.csv` but not in `kc_house_data.csv`. Answering from the other table would be a cross-dataset hallucination."
+  },
+  {
+    "id": "cross-worldwide_crop_consumption",
+    "question": "What is the mean store in the worldwide_crop_consumption dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "cross-dataset"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "`store` exists in `walmart.csv` but not in `worldwide_crop_consumption.csv`. Answering from the other table would be a cross-dataset hallucination."
+  },
+  {
+    "id": "cross-voltas_overview",
+    "question": "What is the mean store in the Overview dataset?",
+    "expected_kind": "abstain",
+    "tags": [
+      "dataset",
+      "cross-dataset"
+    ],
+    "user_email": "analyst@research.test",
+    "notes": "`store` exists in `walmart.csv` but not in `Voltas/Overview.csv`. Answering from the other table would be a cross-dataset hallucination."
+  }
+]

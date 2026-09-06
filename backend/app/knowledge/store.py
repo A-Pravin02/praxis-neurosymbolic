@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from app.core.errors import RuleError
 from app.db.models.knowledge import Entity, Fact
 from app.db.models.symbolic import ConstraintRule, Rule
+from app.knowledge import resolver
 from app.knowledge.schema import FactDTO, FactKind, Provenance, typed_value
 from app.policy import service as policy_service
 from app.symbolic.schema import CompiledRule, compile_rule
@@ -97,6 +98,8 @@ def save_facts(session: Session, tenant_id: uuid.UUID, facts: Iterable[FactDTO],
         rows.append(row)
         dto.fact_id = str(row.id)
     session.flush()
+    if rows or replace_from_document is not None:
+        resolver.invalidate(tenant_id)
     return rows
 
 

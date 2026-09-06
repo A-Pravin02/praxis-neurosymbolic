@@ -201,3 +201,54 @@ def test_ablation_modes_change_behaviour(alice):
 def test_llm_only_mode_has_no_citations(alice):
     turn = ask(alice, "What does the handbook say about sick leave?", mode="llm_only")
     assert turn.citations == []
+
+
+# --- ambiguity across sources (found on the real dataset) ------------------
+
+def test_competing_values_from_different_sources_are_not_averaged_into_an_answer(
+        admin_acme):
+    """Three tables with an income column is ambiguity, not an answer.
+
+    Retrieval happily returns a matching passage from each. Assembling them into
+    one reply is fluent, cited, and meaningless; the honest response names the
+    conflict and asks which source is meant.
+    """
+    from app.db.session import tenant_session
+    from app.rag.ingest import IngestOptions, ingest_text
+
+    with tenant_session(admin_acme.tenant_id, admin_acme.user_id) as db:
+        for name, value in (("Alpha survey", 41000), ("Beta survey", 52000),
+                            ("Gamma survey", 67000)):
+            ingest_text(db, admin_acme,
+                        f"# {name}\n\nThe mean respondent income is {value} USD.",
+                        title=f"{name} report",
+                        options=IngestOptions(collection="surveys",
+                                              extract_facts=False))
+        db.commit()
+
+    turn = ask(admin_acme, "What is the mean respondent income?")
+    # Two controls can catch this - the ambiguity check before generation and the
+    # grounding check after it. Which one fires is an implementation detail; that
+    # no single figure is presented as *the* answer is the property that matters.
+    assert turn.gate_decision == GateDecision.ABSTAIN.value
+    assert turn.confidence == 0.0
+    stated = numbers(turn.answer)
+    assert not ({41000.0, 52000.0, 67000.0} & stated), (
+        f"a competing figure was asserted as the answer: {stated}")
+
+
+def test_a_refusal_reports_itself_as_a_refusal(admin_acme):
+    """A refusing answer with an ANSWER gate decision misleads every consumer."""
+    from app.db.session import tenant_session
+    from app.knowledge import store as knowledge_store
+    from app.knowledge.schema import make_fact
+
+    with tenant_session(admin_acme.tenant_id, admin_acme.user_id) as db:
+        knowledge_store.save_facts(db, admin_acme.tenant_id, [
+            make_fact("dataset:zeta", "row_count", 12)])
+        db.commit()
+
+    turn = ask(admin_acme, "What is the mean carbon footprint in the zeta dataset?")
+    assert turn.gate_decision == GateDecision.ABSTAIN.value
+    assert turn.confidence == 0.0
+    assert turn.verification_status == "INSUFFICIENT_EVIDENCE"

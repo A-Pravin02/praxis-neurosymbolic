@@ -103,6 +103,10 @@ def weighted_overlap(query: str, document: str) -> float:
 
 _ISO_DATE = re.compile(r"\b\d{4}-\d{2}-\d{2}\b")
 _IDENTIFIER = re.compile(r"\b[A-Za-z]{1,4}[-_]?\d{1,4}\b")
+# Grouped digits are matched first so "423,325" is one number rather than 423 and
+# 325. Each group must be exactly three digits, so a list like "1,2,3" is still
+# read as three separate values.
+_GROUPED_NUMBER = re.compile(r"(?<![\w.\-])-?\d{1,3}(?:,\d{3})+(?:\.\d+)?")
 _NUMBER = re.compile(r"(?<![\w.\-])-?\d+(?:\.\d+)?")
 
 
@@ -112,9 +116,20 @@ def extract_numbers(text: str) -> list[float]:
     Dates and identifiers (rule codes such as R12, employee ids such as E-1002)
     are stripped first: they are labels, not quantities, and scoring them as
     quantities makes the grounding check reject correct answers.
+
+    Thousands separators are handled explicitly. Without that, a document saying
+    "423,325 rows" yields 423 and 325, never matches a fact holding 423325, and
+    the system abstains on something it can prove.
     """
     cleaned = _IDENTIFIER.sub(" ", _ISO_DATE.sub(" ", text or ""))
     out: list[float] = []
+    for token in _GROUPED_NUMBER.findall(cleaned):
+        try:
+            out.append(float(token.replace(",", "")))
+        except ValueError:
+            continue
+    # Blank the grouped matches so the plain pattern cannot re-read their parts.
+    cleaned = _GROUPED_NUMBER.sub(" ", cleaned)
     for token in _NUMBER.findall(cleaned):
         try:
             out.append(float(token))

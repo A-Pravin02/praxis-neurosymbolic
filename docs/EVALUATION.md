@@ -105,6 +105,45 @@ noticing that two documents disagree. Measured hallucination goes from 0.130 to
   proportionally larger here than it would be in production because the offline
   model responds instantly; with a real model, generation dominates.
 
+## Measured result on the real dataset
+
+278 generated cases over `merged_dataset_body_00.csv` (70 tables, 1.24 M rows),
+`LLM_PROVIDER=mock`. Reproduce with:
+
+```bash
+python scripts/ingest_merged_dataset.py --csv path/to/merged_dataset_body_00.csv
+python scripts/build_dataset_suite.py --csv path/to/merged_dataset_body_00.csv
+python scripts/run_eval.py dataset --suite-file eval_suites/dataset_suite.json
+```
+
+Unlike the demo suite, the expected values here are **recomputed from the source
+rows by arithmetic**, not chosen by whoever wrote the question.
+
+| Metric | llm_only | llm_rag | llm_rag_verify | neurosymbolic | better |
+|---|---|---|---|---|---|
+| Factual accuracy | 0.000 | 0.384 | 0.359 | **0.657** | higher |
+| Citation accuracy | n/a | 0.543 | 0.543 | **0.687** | higher |
+| Abstention accuracy | 1.000 | 0.775 | 0.887 | **0.938** | higher |
+| Groundedness | 1.000 | 1.000 | 1.000 | 1.000 | higher |
+| Retrieval recall | n/a | 1.000 | 1.000 | 1.000 | higher |
+| Retrieval precision | n/a | 0.159 | 0.159 | 0.148 | higher |
+| Hallucination rate | 0.000 | 0.058 | 0.029 | **0.014** | lower |
+| Unsupported claim rate | n/a | 0.000 | 0.251 | 0.020 | lower |
+| False abstention rate | 1.000 | 0.369 | 0.495 | **0.298** | lower |
+| Mean latency (ms) | 0.2 | 30.5 | 46.8 | 291.1 | lower |
+
+Hallucination fell **0.058 to 0.014, a 76% relative reduction**, while false
+abstention *also* fell (0.369 to 0.298). Both moving in the right direction at
+once is the claim worth making: refusing more often is a trivial way to suppress
+hallucination, and it would have shown up here as a worse false-abstention rate.
+
+`n/a` means no case in the suite exercised that metric; the harness prints `n/a`
+rather than 0.000 so an unmeasured metric is never read as a perfect score.
+
+The full account — what the dataset is, why it is ingested as computed facts
+rather than embedded rows, and the nine defects that only appeared on real data —
+is in [DATASET_FINDINGS.md](DATASET_FINDINGS.md).
+
 ## The suite
 
 `backend/app/evaluation/cases.py`. Each case declares what a correct system does:

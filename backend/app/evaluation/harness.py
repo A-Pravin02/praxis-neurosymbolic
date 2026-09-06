@@ -85,18 +85,18 @@ class CaseOutcome:
 class ModeMetrics:
     mode: str
     cases: int = 0
-    factual_accuracy: float = 0.0
-    groundedness: float = 0.0
-    citation_accuracy: float = 0.0
-    unsupported_claim_rate: float = 0.0
-    hallucination_rate: float = 0.0
-    contradiction_detection_rate: float = 0.0
-    symbolic_accuracy: float = 0.0
-    abstention_accuracy: float = 0.0
-    false_abstention_rate: float = 0.0
-    forbidden_content_rate: float = 0.0
-    retrieval_precision: float = 0.0
-    retrieval_recall: float = 0.0
+    factual_accuracy: float | None = None
+    groundedness: float | None = None
+    citation_accuracy: float | None = None
+    unsupported_claim_rate: float | None = None
+    hallucination_rate: float | None = None
+    contradiction_detection_rate: float | None = None
+    symbolic_accuracy: float | None = None
+    abstention_accuracy: float | None = None
+    false_abstention_rate: float | None = None
+    forbidden_content_rate: float | None = None
+    retrieval_precision: float | None = None
+    retrieval_recall: float | None = None
     mean_latency_ms: float = 0.0
     p95_latency_ms: float = 0.0
 
@@ -285,8 +285,14 @@ def aggregate(mode: str, outcomes: list[CaseOutcome]) -> ModeMetrics:
                   if o.expected_kind in ("grounded", "symbolic", "general")]
     retrieval = [o for o in outcomes if o.retrieval_recall or o.retrieval_precision]
 
-    def ratio(numerator: int, denominator: int) -> float:
-        return round(numerator / denominator, 4) if denominator else 0.0
+    def ratio(numerator: int, denominator: int) -> float | None:
+        """None when the suite has no case of this kind.
+
+        Reporting 0.000 for a metric nothing measured reads as total failure. A
+        suite of table statistics contains no contradiction cases, and saying so
+        is not the same as saying the system detected none.
+        """
+        return round(numerator / denominator, 4) if denominator else None
 
     metrics.factual_accuracy = ratio(sum(o.correct for o in factual), len(factual))
     metrics.symbolic_accuracy = ratio(sum(o.correct for o in symbolic), len(symbolic))
@@ -446,8 +452,16 @@ def render_markdown(report: EvaluationReport) -> str:
     ]
     for key, label, direction in _ROWS:
         values = [getattr(report.metrics[m], key) for m in modes]
-        formatted = [f"{v:.3f}" if isinstance(v, float) and v < 1000 else f"{v:.0f}"
-                     for v in values]
+        if all(v is None for v in values):
+            continue          # nothing in this suite measures it
+        formatted = []
+        for value in values:
+            if value is None:
+                formatted.append("n/a")
+            elif isinstance(value, float) and value < 1000:
+                formatted.append(f"{value:.3f}")
+            else:
+                formatted.append(f"{value:.0f}")
         lines.append(f"| {label} | " + " | ".join(formatted) + f" | {direction} |")
 
     lines += ["", "## Cases where the modes disagree", ""]
