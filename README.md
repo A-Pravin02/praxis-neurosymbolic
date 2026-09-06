@@ -106,8 +106,8 @@ origin, the inference steps, any conflicts, and the stage timings.
 | **Frontend** | React + TypeScript, SSE streaming, clickable citations, evidence and reasoning panels, confidence and verification badges |
 | **Ops** | Docker Compose, Alembic migrations, seeding, structured JSON logging |
 
-**292 tests** — unit, integration, security regression and end-to-end — run
-against a real PostgreSQL instance in about 20 seconds.
+**312 tests** — unit, integration, security regression and end-to-end — run
+against a real PostgreSQL instance in about 35 seconds.
 
 ---
 
