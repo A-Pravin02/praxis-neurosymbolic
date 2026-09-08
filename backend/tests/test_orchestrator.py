@@ -252,3 +252,38 @@ def test_a_refusal_reports_itself_as_a_refusal(admin_acme):
     assert turn.gate_decision == GateDecision.ABSTAIN.value
     assert turn.confidence == 0.0
     assert turn.verification_status == "INSUFFICIENT_EVIDENCE"
+
+
+# --- exploratory questions ---------------------------------------------------
+
+def test_a_broad_question_gets_a_grounded_overview(alice):
+    """"Tell me about X" has no single answering sentence.
+
+    Scoring passages by how much of the question they cover - the right test for
+    "what is the notice period" - discarded all eight retrieved spans, so the
+    system abstained while citing the very handbook it had just thrown away.
+    """
+    turn = ask(alice, "Tell me about the company's leave policies")
+    assert turn.gate_decision in (GateDecision.ANSWER.value,
+                                  GateDecision.ANSWER_WITH_CAVEAT.value)
+    assert 20.0 in numbers(turn.answer) or 10.0 in numbers(turn.answer)
+    assert turn.citations, "an overview must still cite what it drew on"
+
+
+def test_a_broad_question_with_no_evidence_still_abstains(alice):
+    """The relaxation is about relevance, never about inventing support."""
+    turn = ask(alice, "Tell me about the company's submarine maintenance policies")
+    assert turn.gate_decision == GateDecision.ABSTAIN.value
+    assert turn.confidence == 0.0
+
+
+def test_a_general_word_matching_a_dataset_name_does_not_hijack_the_question(alice):
+    """The workspace holds a CSV literally named `policy`.
+
+    "What are the new policies in the company" once matched it and answered "the
+    `policy` dataset does not record that" - a refusal about a spreadsheet, to a
+    question about a handbook that had already been retrieved.
+    """
+    turn = ask(alice, "What are the new policies in the company?")
+    assert "dataset does not record" not in turn.answer.lower()
+    assert turn.citations

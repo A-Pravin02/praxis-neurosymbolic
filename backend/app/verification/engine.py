@@ -221,7 +221,8 @@ def _looks_like_heading(sentence: str) -> bool:
 
 def claims_from_spans(question: str, spans: list[EvidenceSpan],
                       max_claims: int = 6, *, focus_terms: list[str] | None = None,
-                      prefer_numeric: bool = False) -> list[Claim]:
+                      prefer_numeric: bool = False,
+                      exploratory: bool = False) -> list[Claim]:
     """For a document lookup, the claim *is* the cited sentence.
 
     `focus_terms` are the words that identify what was asked about (the canonical
@@ -267,7 +268,20 @@ def claims_from_spans(question: str, spans: list[EvidenceSpan],
     # Keep only sentences that are competitive with the best one; a passage that
     # merely shares common words is evidence, not an answer.
     best = max(c.relevance for c in out)
-    cutoff = max(0.35, best * 0.8)
+    if exploratory:
+        # "Tell me about the leave policies" has no single answering sentence, so
+        # scoring passages by how much of the question they cover - the right test
+        # for "what is the notice period" - discarded all eight retrieved spans and
+        # answered nothing, while citing the handbook it had just thrown away.
+        #
+        # The *relative* cutoff still applies, so only passages competitive with
+        # the best survive. Dropping the absolute floor cannot introduce
+        # fabrication: these claims are verbatim retrieved sentences carrying
+        # their own citations. The risk it accepts is a less relevant passage,
+        # which the answer discloses by presenting itself as an overview.
+        cutoff = best * 0.6
+    else:
+        cutoff = max(0.35, best * 0.8)
     out = [c for c in out if c.relevance >= cutoff]
     out.sort(key=lambda c: -c.relevance)
     return out[:max_claims]
@@ -285,6 +299,7 @@ def verify(
     inference_steps: list[InferenceStep] | None = None,
     contradictions: list[Contradiction] | None = None,
     require_evidence: bool = True,
+    exploratory: bool = False,
 ) -> VerificationReport:
     report = VerificationReport(claims=claims, contradictions=list(contradictions or []))
     report.evidence_relevance = evidence_relevance(question, spans)
@@ -381,7 +396,18 @@ def verify(
         if fact is None:
             # A span-derived claim: it is quoted evidence, so support is not in
             # question; relevance is.
-            if claim.relevance >= settings.claim_support_threshold:
+            #
+            # An exploratory question ("tell me about the leave policies") spreads
+            # its relevance across several passages, so each one scores below the
+            # bar a value question must clear - and every passage lands as WEAK,
+            # leaving nothing supported and an abstention beside citations of the
+            # very document that answered it. These claims already survived a
+            # relative competitiveness cutoff during selection, and each is a
+            # verbatim retrieved sentence carrying its own citation, so the lower
+            # bar admits a less pointed passage, never an unevidenced one.
+            bar = (settings.claim_support_threshold * 0.6 if exploratory
+                   else settings.claim_support_threshold)
+            if claim.relevance >= bar:
                 claim.status = ClaimStatus.SUPPORTED
             elif claim.relevance > 0:
                 claim.status = ClaimStatus.WEAK

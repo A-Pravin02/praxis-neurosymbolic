@@ -28,6 +28,7 @@ from app.knowledge import store as knowledge_store
 from app.knowledge.resolver import Resolution, resolve
 from app.knowledge.schema import FactDTO, FactKind, render_value, unwrap
 from app.neuro.heuristics import extract_numbers as _numbers
+from app.neuro.heuristics import is_exploratory
 from app.neuro.heuristics import phrase_fact
 from app.neuro import prompts
 from app.neuro.base import CompletionRequest, Message, Role, Task
@@ -122,6 +123,7 @@ class Orchestrator:
         self.principal = principal
         self.llm = get_llm()
         self.resolution = Resolution()
+        self.last_finish_reason = "stop"
 
     # -- public ------------------------------------------------------------
     def answer(self, question: str, *, history: list[dict[str, str]] | None = None,
@@ -190,6 +192,7 @@ class Orchestrator:
                     inference_steps=inference.steps,
                     contradictions=blocking,
                     require_evidence=plan.require_evidence,
+                    exploratory=is_exploratory(question),
                 )
             else:
                 # Ablation modes: no verification. Claims pass through unchecked.
@@ -539,6 +542,7 @@ class Orchestrator:
                 question, spans, focus_terms=focus,
                 prefer_numeric=frame.intent in ("attribute_lookup", "eligibility_check",
                                                 "document_lookup"),
+                exploratory=is_exploratory(question),
             ):
                 if claim.text.lower() in existing:
                     continue
@@ -772,7 +776,8 @@ class Orchestrator:
                                  "candidates": list(self.resolution.ambiguous_subjects)})
             return
         if (not supported and not context["conclusion"] and not reporting_conflict
-                and named_subject and not self.resolution.resolved):
+                and named_subject and not self.resolution.resolved
+                and self.resolution.dataset_scoped):
             # The question named a dataset this workspace holds, but nothing in it
             # matches the attribute asked for. Saying so is more useful than a
             # generic refusal, and far better than answering from a table that
@@ -804,6 +809,21 @@ class Orchestrator:
             turn.answer = self._compose(Task.DIRECT_ANSWER, question, history,
                                         context=context,
                                         system=prompts.DIRECT_SYSTEM, grounded=False)
+            if self.last_finish_reason == "no_answer":
+                # The model declined. Reporting that as ANSWER_WITH_CAVEAT is the
+                # same defect as the dataset refusal that called itself an answer:
+                # the prose says "I don't have a grounded answer" while the
+                # machine-readable decision says otherwise, and every consumer
+                # trusts the decision.
+                turn.gate_decision = gate_module.GateDecision.ABSTAIN.value
+                turn.verification_status = VerificationStatus.INSUFFICIENT_EVIDENCE.value
+                turn.confidence = 0.0
+                audit.record(self.session, audit.ANSWER_ABSTAINED,
+                             tenant_id=self.principal.tenant_id,
+                             actor_user_id=self.principal.user_id,
+                             outcome="abstained",
+                             detail={"reason": "model_declined_general_answer"})
+                return
             turn.warnings.append(
                 "Answered from general model knowledge, not from your workspace "
                 "documents. It is not evidence-backed."
@@ -929,12 +949,16 @@ class Orchestrator:
         request = CompletionRequest(messages=messages, task=task,
                                     system=system or system_prompt, context=context)
         try:
-            return self.llm.complete(request).text.strip()
+            completion = self.llm.complete(request)
         except ProviderError:
             # Never fabricate: fall back to the deterministic composer, which can
             # only restate approved material.
             log_event(logger, 30, "llm provider failed; using deterministic composer")
-            return get_fallback_llm().complete(request).text.strip()
+            completion = get_fallback_llm().complete(request)
+        # A provider that declines says so here. Kept so the caller can label the
+        # turn a refusal without having to recognise the refusal's wording.
+        self.last_finish_reason = completion.finish_reason
+        return completion.text.strip()
 
     def _post_check(self, turn: AssistantTurn, report: VerificationReport,
                     spans: list[EvidenceSpan],

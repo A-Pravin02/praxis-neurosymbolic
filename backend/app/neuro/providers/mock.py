@@ -135,6 +135,10 @@ class MockLLMProvider(BaseProvider):
             text=text, model=self.model, provider=self.name,
             prompt_tokens=estimate_tokens("x" * prompt_chars),
             completion_tokens=estimate_tokens(text),
+            # Declining is a distinct outcome from answering, and saying so here is
+            # what lets the gate label it a refusal instead of inferring intent
+            # from the wording.
+            finish_reason="no_answer" if text == NO_ANSWER_TEXT else "stop",
         )
 
     def stream(self, request: CompletionRequest) -> Iterator[str]:
@@ -331,6 +335,18 @@ def compose_inference_explanation(ctx: dict) -> str:
     return "\n".join(parts)
 
 
+# The provider declining, as a named value rather than a sentence callers have to
+# recognise by its wording. A refusal that reaches the gate as prose gets labelled
+# ANSWER_WITH_CAVEAT, and then every consumer - the UI, the API, the harness -
+# reads "I don't have a grounded answer" as a confident reply.
+NO_ANSWER_TEXT = (
+    "I don't have a grounded answer for that. This looks like general knowledge rather "
+    "than something in your workspace's knowledge base, and the offline model I'm "
+    "running has only a small built-in glossary. Configure a cloud or local model "
+    "provider for open-domain answers, or ask me something covered by your documents."
+)
+
+
 def compose_direct_answer(question: str) -> str:
     subject = definition_subject(question)
     key = (subject or normalize(question)).lower().strip(" ?.")
@@ -350,9 +366,4 @@ def compose_direct_answer(question: str) -> str:
             "reasoning behind my answer - or tell you plainly when I don't have enough to "
             "go on."
         )
-    return (
-        "I don't have a grounded answer for that. This looks like general knowledge rather "
-        "than something in your workspace's knowledge base, and the offline model I'm "
-        "running has only a small built-in glossary. Configure a cloud or local model "
-        "provider for open-domain answers, or ask me something covered by your documents."
-    )
+    return NO_ANSWER_TEXT

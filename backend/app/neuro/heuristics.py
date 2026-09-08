@@ -163,6 +163,17 @@ _CONTRADICTION = re.compile(
 _AUTHORIZATION = re.compile(
     r"\b(can (this |the )?user (access|read|view)|is .* (authori[sz]ed|permitted|allowed) to|"
     r"who can (access|see|read)|do i have (access|permission))\b", re.I)
+# Questions that ask to be told *about* something rather than asking for one
+# specific fact. They have no single answering sentence, so scoring passages by
+# how much of the question they cover - the right test for "what is the notice
+# period" - discards every passage and answers nothing.
+_EXPLORATORY = re.compile(
+    r"\b(tell me about|what can you tell me|summar(y|ise|ize)|overview of|"
+    r"describe|walk me through|what do you know about|what are the (new |current )?"
+    r"(policies|policy|rules|guidelines|benefits|procedures)|"
+    r"anything (else )?about|more about|brief me)\b",
+    re.IGNORECASE)
+
 _DEFINITION = re.compile(r"^\s*(what|who) (is|are|was|were)\s+(a |an |the )?([\w\s\-+.#]{2,60})\??\s*$",
                          re.I)
 _GREETING = re.compile(r"^\s*(hi|hello|hey|good (morning|afternoon|evening)|thanks|thank you|"
@@ -271,6 +282,17 @@ def question_shape(text: str) -> str:
     if _DEFINITION.match(t):
         return "definition"
     return "open"
+
+
+def is_exploratory(text: str) -> bool:
+    """True when the question asks for an account of a topic, not one value.
+
+    The distinction matters to claim selection, not to trust: an exploratory
+    answer is still assembled only from retrieved, cited sentences. What changes
+    is that several passages may each be partly relevant, where a value question
+    has exactly one sentence that answers it.
+    """
+    return bool(_EXPLORATORY.search(normalize(text) or ""))
 
 
 def definition_subject(text: str) -> str | None:

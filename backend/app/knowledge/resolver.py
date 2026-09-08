@@ -63,6 +63,8 @@ class Resolution:
     # Subjects the question's name matched equally well. Populated only when the
     # question does not say which of them is meant.
     ambiguous_subjects: list[str] = field(default_factory=list)
+    # Whether the question is framed as being about a table at all.
+    dataset_scoped: bool = False
 
     @property
     def resolved(self) -> bool:
@@ -75,6 +77,7 @@ class Resolution:
             "candidates": [{"predicate": p, "score": round(s, 4)}
                            for p, s in self.candidates[:5]],
             "ambiguous_subjects": list(self.ambiguous_subjects),
+            "dataset_scoped": self.dataset_scoped,
         }
 
 
@@ -103,6 +106,17 @@ def question_tokens_of(question: str) -> set[str]:
             if len(lowered) > 1 and lowered not in STOPWORDS:
                 tokens.add(stem(lowered))
     return tokens
+
+
+# Words that frame a question as being *about a table* rather than about the
+# world. A workspace can hold both a company handbook and 70 CSVs, and without
+# this the word "policies" in "what are the new policies in the company" matches
+# a dataset literally named `policy` - and the question gets answered, or
+# refused, as though it were about a spreadsheet.
+DATASET_MARKERS = {
+    "dataset", "table", "csv", "file", "column", "row", "record", "data",
+    "spreadsheet",
+}
 
 
 def _statistic_in(question_tokens: set[str]) -> str | None:
@@ -173,6 +187,12 @@ def resolve(session: Session, principal: Principal, question: str,
 
     subjects = load_subjects(session, principal.tenant_id)
     statistic = _statistic_in(question_tokens)
+    # Is this asked as a data question at all? Either the wording names a table,
+    # or it asks for a computed figure. A question with neither is ordinary
+    # prose - it may still match a dataset name by coincidence, but that match
+    # must not be allowed to speak for the whole question.
+    dataset_scoped = bool(question_tokens & {stem(w) for w in DATASET_MARKERS}
+                          ) or statistic is not None
 
     # --- candidate subjects ----------------------------------------------
     subject_scores: list[tuple[str, float]] = []
@@ -216,7 +236,8 @@ def resolve(session: Session, principal: Principal, question: str,
         top_score = subject_scores[0][1]
         tied = [s for s, score in subject_scores if score == top_score]
         if len(tied) > 1 and not any(score >= 1.0 for _, score in subject_scores):
-            return Resolution(statistic=statistic, ambiguous_subjects=sorted(tied))
+            return Resolution(statistic=statistic, ambiguous_subjects=sorted(tied),
+                              dataset_scoped=dataset_scoped)
 
     best: tuple[str | None, str, float] | None = None
     all_scored: list[tuple[str, float]] = []
@@ -240,15 +261,18 @@ def resolve(session: Session, principal: Principal, question: str,
 
     fallback_subject = named[0] if named else None
     if best is None:
-        return Resolution(subject=fallback_subject, statistic=statistic)
+        return Resolution(subject=fallback_subject, statistic=statistic,
+                          dataset_scoped=dataset_scoped)
 
     best_subject, best_predicate, best_score = best
     best_subject = best_subject or fallback_subject
     if best_score < min_score:
         return Resolution(subject=best_subject or fallback_subject,
-                          statistic=statistic, candidates=all_scored[:5])
+                          statistic=statistic, candidates=all_scored[:5],
+                          dataset_scoped=dataset_scoped)
     return Resolution(subject=best_subject, predicate=best_predicate, score=best_score,
-                      statistic=statistic, candidates=all_scored[:5])
+                      statistic=statistic, candidates=all_scored[:5],
+                      dataset_scoped=dataset_scoped)
 
 
 # Words that describe the shape of a question rather than the attribute it asks
