@@ -25,7 +25,7 @@ from app.core.errors import ProviderError
 from app.core.logging import get_logger, log_event
 from app.db.models.knowledge import Fact
 from app.knowledge import store as knowledge_store
-from app.knowledge.resolver import Resolution, resolve
+from app.knowledge.resolver import Resolution, question_tokens_of, resolve
 from app.knowledge.schema import FactDTO, FactKind, render_value, unwrap
 from app.neuro.heuristics import extract_numbers as _numbers
 from app.neuro.heuristics import is_exploratory
@@ -49,6 +49,11 @@ from app.verification.engine import (
     Claim, ClaimStatus, VerificationReport, VerificationStatus, check_grounding,
     claims_from_facts, claims_from_spans, verify,
 )
+
+def _terms_of(value: str) -> set[str]:
+    """Subject or predicate name split into the same stems a question produces."""
+    return question_tokens_of((value or "").replace(":", " ").replace("_", " "))
+
 
 logger = get_logger("praxis.orchestrator")
 
@@ -181,7 +186,7 @@ class Orchestrator:
                 turn.citations = citations = _citations(spans)
 
         blocking = self._relevant_contradictions(inference, frame, conclusion_fact)
-        aside = self._non_blocking_contradictions(inference, blocking)
+        aside = self._non_blocking_contradictions(inference, blocking, question)
         claims = self._build_claims(question, plan, frame, spans, inference,
                                     conclusion_fact, inference.contradictions)
 
@@ -499,10 +504,31 @@ class Orchestrator:
     @staticmethod
     def _non_blocking_contradictions(
         inference: InferenceResult, blocking: list[Contradiction],
+        question: str = "",
     ) -> list[Contradiction]:
+        """Conflicts worth mentioning beside this answer.
+
+        Every disagreement anywhere in the loaded fact set used to be surfaced,
+        so a question about who to call about a password warned about a version
+        conflict on annual leave and another on warranty months. That is noise,
+        and noise beside an abstention reads as though the two were connected.
+
+        The full set stays in the reasoning trace either way; this only decides
+        what is worth saying out loud, which is the conflicts touching what was
+        actually asked about.
+        """
         blocking_keys = {(c.subject, c.predicate) for c in blocking}
-        return [c for c in inference.contradictions
-                if (c.subject, c.predicate) not in blocking_keys]
+        aside = [c for c in inference.contradictions
+                 if (c.subject, c.predicate) not in blocking_keys]
+        if not question:
+            return aside
+        asked = question_tokens_of(question)
+        related = []
+        for contradiction in aside:
+            terms = _terms_of(contradiction.predicate) | _terms_of(contradiction.subject)
+            if terms & asked:
+                related.append(contradiction)
+        return related
 
     def _build_claims(self, question: str, plan: Plan, frame: IntentFrame,
                       spans: list[EvidenceSpan], inference: InferenceResult,
@@ -810,6 +836,19 @@ class Orchestrator:
                                         context=context,
                                         system=prompts.DIRECT_SYSTEM, grounded=False)
             if self.last_finish_reason == "no_answer":
+                # Say why there is no answer. The provider's own wording blames
+                # the model ("configure a cloud provider"), which is misleading
+                # when the real reason is that the corpus does not cover the
+                # topic - the user goes looking for a settings problem instead of
+                # adding the document that would answer them.
+                if spans:
+                    turn.answer = (
+                        "I don't have anything in your workspace documents that "
+                        "answers that. I searched and found the closest passages, "
+                        "but none of them cover it - so rather than guess, I would "
+                        "rather tell you it isn't there. If it should be, the "
+                        "document holding it hasn't been added yet."
+                    )
                 # The model declined. Reporting that as ANSWER_WITH_CAVEAT is the
                 # same defect as the dataset refusal that called itself an answer:
                 # the prose says "I don't have a grounded answer" while the

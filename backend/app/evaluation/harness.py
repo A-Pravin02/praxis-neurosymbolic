@@ -44,6 +44,7 @@ ABSTAIN_MARKERS = (
     "do not have enough information",
     "insufficient evidence",
     "i don't have a grounded answer",
+    "don't have anything in your workspace documents",
     "cannot determine",
     "not enough to go on",
 )
