@@ -165,8 +165,19 @@ class FactGrounding:
         # a description that contradicts every candidate is a new case, and a
         # contradiction is only "misleading" when the person named the record.
         own = self._candidates(actor, subject_type, interpretation)
+        products = [m.entity_id for m in mentions.products]
+        if products and subject_type == "order" and not own and actor.entity is not None:
+            # A product the person never ordered: the question is about that product in
+            # general ("can I return a gift card that arrived damaged?").
+            self._make_case(grounding, subject_type, actor)
+            grounding.stated[(grounding.subjects[0], "contains")] = products[0]
+            return
         relevant = [e for e in own if self._relevant(goal_name, e)]
         previous = context.get("subjects", {}).get(subject_type)
+        states_details = any(
+            i.predicate in self.program.inputs
+            and self.program.inputs[i.predicate][0].subject_type == subject_type
+            for i in interpretation.inputs)
 
         if previous and previous in own and (mentions.deictic or not mentions.products):
             grounding.subjects = [previous]
@@ -192,9 +203,15 @@ class FactGrounding:
         if len(consistent) > 1:
             grounding.clarification = self._clarify(consistent, subject_type)
             return
-        if relevant and subject_type in CASE_LINKS:
-            # Every candidate contradicts the description: it is about something else.
+        if subject_type in CASE_LINKS and actor.entity is not None and \
+                (relevant or (own and states_details)):
+            # Every candidate contradicts the description, or none of the person's records
+            # is the kind the question can apply to while they describe a case: "can I
+            # return shoes 40 days after delivery" from someone whose shoes haven't
+            # shipped is a question about the policy, not about that order.
             self._make_case(grounding, subject_type, actor)
+            if products and subject_type == "order":
+                grounding.stated[(grounding.subjects[0], "contains")] = products[0]
             return
         if not own and subject_type in CASE_LINKS and actor.entity is not None:
             self._make_case(grounding, subject_type, actor)
@@ -232,10 +249,14 @@ class FactGrounding:
         records = [e.id for e in self.graph.records_of(actor.entity.id, subject_type)]
         products = {m.entity_id for m in interpretation.mentions.products}
         if products and subject_type == "order":
-            narrowed = [r for r in records
-                        if set(map(str, self.graph.values(r, "contains"))) & products]
-            if narrowed:
-                return narrowed
+            # A named product narrows to the orders containing it - and if there are
+            # none, to nothing, rather than silently back to every order.
+            return [r for r in records
+                    if set(map(str, self.graph.values(r, "contains"))) & products]
+        if products and subject_type == "return":
+            return [r for r in records
+                    if set(map(str, self.graph.values(self.graph.values(r, "return_for")[0],
+                                                      "contains"))) & products]
         return records
 
     def _relevant(self, goal_name: str, entity_id: str) -> bool:

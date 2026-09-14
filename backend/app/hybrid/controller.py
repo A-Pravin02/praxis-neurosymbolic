@@ -519,6 +519,24 @@ class NeuroSymbolicController:
                 # some of them are only assumed. The requirements are the honest reason.
                 c.reasons = []
                 c.conditions = _assumptions(lead) if lead else []
+                # When the conditional path is an exception, what happens without it is
+                # half the answer: "only if it arrived damaged - grocery items can't be
+                # returned for change of mind" rather than a bare "provisionally yes".
+                default = program.defaults.get(goal.name)
+                failures = _failures(result)
+                if failures and default is not None and \
+                        repr(default.value) != repr(result.value):
+                    c.notes.insert(0, f"Otherwise the answer is "
+                                      f"{_verdict(default.value, value_type, graph, program)}: "
+                                      f"{failures[0]}")
+            return c
+
+        if result.status == "absent" and result.refutations():
+            # Every rule that could produce the result was refuted: the answer is that
+            # nothing applies, and the refutations say why.
+            c.status = "determined"
+            c.headline = f"that doesn't apply to your {subject_label}"
+            c.reasons = _failures(result)[:2]
             return c
 
         c.status = "unknown"

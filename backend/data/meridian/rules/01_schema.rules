@@ -149,3 +149,4 @@ default free_delivery = false
 default same_day_product = false
 default senior_leave_eligible = false
 default travel_claim_eligible = false
+default delay_compensation = 0

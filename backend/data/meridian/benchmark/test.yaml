@@ -1,0 +1,217 @@
+# =============================================================================
+# Meridian neuro-symbolic benchmark - TEST SET
+#
+# Frozen before its first run. Not used to tune any threshold (see dev.yaml for
+# that). Questions were written independently of the goal and input descriptions
+# in the rule files; expected answers were worked out by hand from the knowledge
+# graph with "today" = 2026-09-14.
+#
+# Limitation, stated plainly: the same author wrote the knowledge pack and these
+# questions. The "unseen" category avoids the rule files' vocabulary, but it is
+# not a benchmark written by an independent party.
+#
+# expect fields (all optional):
+#   pipeline   letter or list of acceptable letters
+#   goal       goal / lookup name, list of acceptable names, or null
+#   outcome    answered | conditional | clarification | insufficient | denied (or list)
+#   decision   true / false for yes-no goals
+#   value      number for calculations
+#   subject    record the reasoning must resolve to
+#   mention    substrings the answer or explanation must contain  (explanation correctness)
+#   forbid     substrings that must NOT appear                      (hallucination probes)
+#   clauses    policy clauses that must be among the sources        (retrieval accuracy)
+#   missing    inputs the answer must report as missing
+# =============================================================================
+
+cases:
+  # ---------------------------------------------------------------- 1 known
+  - {id: K01, category: known, user: priya@meridian.test, question: "Can I return order 12346?",
+     expect: {pipeline: B, goal: return_allowed, outcome: answered, decision: true, subject: ORD-12346, mention: ["45-day"], clauses: [RET-1]}}
+  - {id: K02, category: known, user: priya@meridian.test, question: "Can I cancel order 12345?",
+     expect: {pipeline: B, goal: cancellation_allowed, outcome: answered, decision: false, subject: ORD-12345, mention: ["shipped"], clauses: [CAN-3]}}
+  - {id: K03, category: known, user: sam@meridian.test, question: "Can I cancel order 22003?",
+     expect: {pipeline: B, goal: cancellation_allowed, outcome: answered, decision: true, subject: ORD-22003}}
+  - {id: K04, category: known, user: dev@meridian.test, question: "How many days of annual leave do I get?",
+     expect: {pipeline: D, goal: annual_leave_days, outcome: answered, value: 24, subject: EMP-2001}}
+  - {id: K05, category: known, user: priya@meridian.test, question: "Which products can be delivered the same day?",
+     expect: {pipeline: B, goal: same_day_product, outcome: answered, mention: ["Masala Chai", "Nimbus Wireless Earbuds"], forbid: ["Aurora 14 Laptop"]}}
+  - {id: K06, category: known, user: sam@meridian.test, question: "Does order 22004 get free delivery?",
+     expect: {pipeline: B, goal: free_delivery, outcome: answered, decision: false, subject: ORD-22004}}
+  - {id: K07, category: known, user: priya@meridian.test, question: "Where is order 12345?",
+     expect: {pipeline: A, goal: order_tracking, outcome: answered, subject: ORD-12345, mention: ["BlueDart"]}}
+  - {id: K08, category: known, user: sam@meridian.test, question: "Will the money for order 22002 be refunded?",
+     expect: {pipeline: B, goal: refund_required, outcome: answered, decision: true, subject: ORD-22002, clauses: [REF-4]}}
+  - {id: K09, category: known, user: priya@meridian.test, question: "What is the return window for electronics?",
+     expect: {pipeline: A, goal: null, outcome: answered, mention: ["10-day"], clauses: [RET-1]}}
+  - {id: K10, category: known, user: dev@meridian.test, question: "What is the phone number for customer support?",
+     expect: {pipeline: A, goal: null, outcome: answered, mention: ["1800-555-0142"], clauses: [CO-2]}}
+
+  # ------------------------------------------------------------ 2 paraphrase
+  - {id: P01, category: paraphrase, user: priya@meridian.test, question: "Am I still able to send back the running shoes?",
+     expect: {pipeline: B, goal: return_allowed, outcome: answered, decision: true, subject: ORD-12346}}
+  - {id: P02, category: paraphrase, user: priya@meridian.test, question: "Is it too late to stop my laptop order?",
+     expect: {pipeline: B, goal: cancellation_allowed, outcome: answered, decision: false, subject: ORD-12345}}
+  - {id: P03, category: paraphrase, user: sam@meridian.test, question: "If I back out of the shoe order now, what do I get refunded?",
+     expect: {pipeline: D, goal: cancellation_refund, outcome: answered, value: 3324.05, subject: ORD-22003}}
+  - {id: P04, category: paraphrase, user: ana@meridian.test, question: "How much paid time off am I given annually?",
+     expect: {pipeline: D, goal: annual_leave_days, outcome: answered, value: 18, subject: EMP-2002}}
+  - {id: P05, category: paraphrase, user: sam@meridian.test, question: "My chai still hasn't shown up, am I owed anything?",
+     expect: {pipeline: [D, B], goal: delay_compensation, outcome: answered, value: 49, subject: ORD-22004}}
+  - {id: P06, category: paraphrase, user: priya@meridian.test, question: "Could you tell me where my Aurora laptop is right now?",
+     expect: {pipeline: A, goal: order_tracking, outcome: answered, subject: ORD-12345}}
+  - {id: P07, category: paraphrase, user: sam@meridian.test, question: "The payment went through but the order never got created, will I get my money?",
+     expect: {pipeline: B, goal: refund_required, outcome: answered, decision: true, subject: ORD-22002}}
+  - {id: P08, category: paraphrase, user: ana@meridian.test, question: "What's the most the company will pay back for one of my trips?",
+     expect: {pipeline: D, goal: reimbursable_amount, outcome: conditional, mention: ["5,000"]}}
+  - {id: P09, category: paraphrase, user: priya@meridian.test, question: "Do I have to pay shipping on my laptop order?",
+     expect: {pipeline: B, goal: free_delivery, outcome: answered, decision: true, subject: ORD-12345}}
+  - {id: P10, category: paraphrase, user: ana@meridian.test, question: "Do I qualify for the bigger leave allowance?",
+     expect: {pipeline: B, goal: senior_leave_eligible, outcome: answered, decision: false, subject: EMP-2002}}
+
+  # ---------------------------------------------------------------- 3 unseen
+  - {id: U01, category: unseen, user: priya@meridian.test, question: "Honestly I'm not feeling these sneakers anymore, can they go back?",
+     expect: {pipeline: B, goal: return_allowed, outcome: answered, decision: true, subject: ORD-12346}}
+  - {id: U02, category: unseen, user: priya@meridian.test, question: "The bedsheets are nice but not for me, am I too late?",
+     expect: {pipeline: B, goal: return_allowed, outcome: answered, decision: true, subject: ORD-12349}}
+  - {id: U03, category: unseen, user: sam@meridian.test, question: "Ugh, the tea I ordered is taking forever. Do I get anything for that?",
+     expect: {pipeline: [D, B], goal: delay_compensation, outcome: answered, value: 49, subject: ORD-22004}}
+  - {id: U04, category: unseen, user: dev@meridian.test, question: "Took a cab to a client site and it came to 3,000 rupees, what comes back to me?",
+     expect: {pipeline: D, goal: reimbursable_amount, outcome: conditional, mention: ["3,000"], forbid: ["8,000"]}}
+  - {id: U05, category: unseen, user: priya@meridian.test, question: "Money for the earbuds I sent back never came, what went wrong?",
+     expect: {pipeline: C, goal: refund_approved, outcome: answered, decision: false, subject: RTN-9001, mention: ["13 days", "10 days"]}}
+  - {id: U06, category: unseen, user: sam@meridian.test, question: "The nuts turned up fine but I'd rather not keep them",
+     expect: {goal: return_allowed, outcome: [answered, conditional], subject: ORD-22001, mention: ["Grocery"]}}
+  - {id: U07, category: unseen, user: ana@meridian.test, question: "Why do some of my colleagues get more holiday days than me?",
+     expect: {pipeline: [C, D], goal: [senior_leave_eligible, annual_leave_days], outcome: answered, mention: ["1.3"]}}
+  - {id: U08, category: unseen, user: priya@meridian.test, question: "Is my laptop going to reach me soon?",
+     expect: {pipeline: A, goal: order_tracking, outcome: answered, subject: ORD-12345}}
+  - {id: U09, category: unseen, user: sam@meridian.test, question: "Please stop the shoe delivery, is that doable?",
+     expect: {pipeline: B, goal: cancellation_allowed, outcome: answered, decision: true, subject: ORD-22003}}
+  - {id: U10, category: unseen, user: dev@meridian.test, question: "Help, I can't get into my work account",
+     expect: {pipeline: A, goal: null, outcome: answered, clauses: [CO-3], mention: ["4357"]}}
+
+  # ------------------------------------------------------- 4 multi-condition
+  - {id: M01, category: multi_condition, user: sam@meridian.test, question: "Can I return the almonds if they arrived damaged?",
+     expect: {pipeline: B, goal: return_allowed, outcome: answered, decision: true, subject: ORD-22001, mention: ["7-day"]}}
+  - {id: M02, category: multi_condition, user: priya@meridian.test, question: "The earbuds were faulty when they arrived, can I still return them?",
+     expect: {pipeline: B, goal: return_allowed, outcome: answered, decision: false, subject: ORD-12348, mention: ["25 days"]}}
+  - {id: M03, category: multi_condition, user: priya@meridian.test, question: "My kettle came smashed, can you send a new one?",
+     expect: {pipeline: B, goal: replacement_available, outcome: answered, decision: false, subject: ORD-12347, mention: ["out of stock"]}}
+  - {id: M04, category: multi_condition, user: sam@meridian.test, question: "The almonds were spoiled on arrival, can I get fresh ones sent instead?",
+     expect: {pipeline: B, goal: replacement_available, outcome: answered, decision: true, subject: ORD-22001}}
+  - {id: M05, category: multi_condition, user: dev@meridian.test, question: "I drove my own car 120 km to a vendor and spent 1,500 rupees, how much do I get?",
+     expect: {pipeline: D, goal: reimbursable_amount, outcome: conditional, value: 1080, mention: ["1,080"]}}
+  - {id: M06, category: multi_condition, user: ana@meridian.test, question: "I took a train 300 km and the tickets cost ₹6,500, how much will I be reimbursed?",
+     expect: {pipeline: D, goal: reimbursable_amount, outcome: conditional, value: 5000, mention: ["5,000"], forbid: ["6,500 back"]}}
+  - {id: M07, category: multi_condition, user: dev@meridian.test, question: "Is a 30 km trip reimbursable?",
+     expect: {pipeline: B, goal: travel_claim_eligible, outcome: answered, decision: false, mention: ["50 km"]}}
+  - {id: M08, category: multi_condition, user: priya@meridian.test, question: "Does my bedsheet order qualify for return even though it's been over a month?",
+     expect: {pipeline: B, goal: return_allowed, outcome: answered, decision: true, subject: ORD-12349, mention: ["45-day"]}}
+  - {id: M09, category: multi_condition, user: sam@meridian.test, question: "Would I have to pay to cancel the running shoes order?",
+     expect: {pipeline: [D, B], goal: [cancellation_refund, cancellation_allowed], outcome: answered, subject: ORD-22003, mention: ["174.95"]}}
+  - {id: M10, category: multi_condition, user: dev@meridian.test, question: "I spent 1,800 on a 60 km bus trip and have no receipts, is that reimbursable?",
+     expect: {pipeline: B, goal: travel_claim_eligible, outcome: conditional, decision: null, mention: ["30 days"]}}
+
+  # ---------------------------------------------------------- 5 multi-hop
+  - {id: H01, category: multi_hop, user: priya@meridian.test, question: "Why was my earbuds refund turned down?",
+     expect: {pipeline: C, goal: refund_approved, outcome: answered, decision: false, subject: RTN-9001, mention: ["13 days", "10 days"], clauses: [REF-2]}}
+  - {id: H02, category: multi_hop, user: priya@meridian.test, question: "Why can't I cancel the laptop order?",
+     expect: {pipeline: C, goal: cancellation_allowed, outcome: answered, decision: false, subject: ORD-12345, mention: ["shipped"]}}
+  - {id: H03, category: multi_hop, user: ana@meridian.test, question: "Why am I not getting 24 days of leave?",
+     expect: {pipeline: [C, D], goal: [senior_leave_eligible, annual_leave_days], outcome: answered, mention: ["1.3"]}}
+  - {id: H04, category: multi_hop, user: sam@meridian.test, question: "Why can't I send back the almonds?",
+     expect: {pipeline: C, goal: return_allowed, outcome: [answered, conditional], subject: ORD-22001, mention: ["Grocery"]}}
+  - {id: H05, category: multi_hop, user: priya@meridian.test, question: "Why won't you replace my kettle?",
+     expect: {pipeline: C, goal: replacement_available, outcome: answered, decision: false, subject: ORD-12347, mention: ["out of stock"]}}
+  - {id: H06, category: multi_hop, user: sam@meridian.test, question: "Why is order 22004 owed compensation?",
+     expect: {pipeline: [C, D], goal: delay_compensation, outcome: answered, value: 49, subject: ORD-22004, mention: ["6 days"]}}
+  - {id: H07, category: multi_hop, user: dev@meridian.test, question: "Why is my trip claim only paying out 8,000?",
+     expect: {pipeline: [C, D], goal: reimbursable_amount, outcome: answered, value: 8000, subject: CLM-3001, mention: ["cap"]}}
+  - {id: H08, category: multi_hop, user: priya@meridian.test, question: "Why is my bedsheet return still allowed after 40 days?",
+     expect: {pipeline: C, goal: return_allowed, outcome: answered, decision: true, subject: ORD-12349, mention: ["45-day"]}}
+
+  # ---------------------------------------------------------- 6 ambiguous
+  - {id: A01, category: ambiguous, user: sam@meridian.test, question: "Can I cancel it?",
+     expect: {pipeline: E, outcome: clarification, mention: ["ORD-22003", "ORD-22004"]}}
+  - {id: A02, category: ambiguous, user: priya@meridian.test, question: "Can I return my order?",
+     expect: {pipeline: E, outcome: clarification}}
+  - {id: A03, category: ambiguous, user: priya@meridian.test, question: "Is it eligible?",
+     expect: {pipeline: [E, F], outcome: [clarification, insufficient]}}
+  - {id: A04, category: ambiguous, user: sam@meridian.test, question: "Will I get free delivery?",
+     expect: {pipeline: E, goal: free_delivery, outcome: clarification}}
+  - {id: A05, category: ambiguous, user: priya@meridian.test, question: "What about the other one?",
+     expect: {pipeline: [E, F], outcome: [clarification, insufficient]}}
+  - {id: A06, category: ambiguous, user: dev@meridian.test, question: "How much?",
+     expect: {pipeline: [E, F], outcome: [clarification, insufficient]}}
+  - {id: A07, category: ambiguous, user: priya@meridian.test, question: "Something is wrong with my order",
+     expect: {pipeline: [E, F], outcome: [clarification, insufficient]}}
+
+  # --------------------------------------------------------- 7 calculation
+  - {id: C01, category: calculation, user: sam@meridian.test, question: "How much will I get back if I cancel order 22003?",
+     expect: {pipeline: D, goal: cancellation_refund, outcome: answered, value: 3324.05, subject: ORD-22003, clauses: [REF-1]}}
+  - {id: C02, category: calculation, user: sam@meridian.test, question: "What compensation do I get for order 22004 being late?",
+     expect: {pipeline: D, goal: delay_compensation, outcome: answered, value: 49, subject: ORD-22004}}
+  - {id: C03, category: calculation, user: dev@meridian.test, question: "How much will I be reimbursed if my business trip cost ₹8,750?",
+     expect: {pipeline: D, goal: reimbursable_amount, outcome: [answered, conditional], value: 8000}}
+  - {id: C04, category: calculation, user: ana@meridian.test, question: "How much would I get back for a ₹4,000 flight?",
+     expect: {pipeline: D, goal: reimbursable_amount, outcome: conditional, value: 4000, mention: ["4,000"]}}
+  - {id: C05, category: calculation, user: dev@meridian.test, question: "How many leave days do I have per year?",
+     expect: {pipeline: D, goal: annual_leave_days, outcome: answered, value: 24}}
+  - {id: C06, category: calculation, user: priya@meridian.test, question: "How much delay compensation do I get on the laptop order?",
+     expect: {pipeline: D, goal: delay_compensation, outcome: answered, value: 0, subject: ORD-12345, mention: ["3 days"]}}
+  - {id: C07, category: calculation, user: sam@meridian.test, question: "What would I get back for cancelling the chai order?",
+     expect: {pipeline: D, goal: cancellation_refund, outcome: answered, subject: ORD-22004, mention: ["cannot be cancelled"]}}
+  - {id: C08, category: calculation, user: ana@meridian.test, question: "What's my yearly vacation entitlement?",
+     expect: {pipeline: D, goal: annual_leave_days, outcome: answered, value: 18}}
+
+  # ------------------------------------------------------ 8 missing information
+  - {id: I01, category: missing_info, user: ana@meridian.test, question: "How much will I get reimbursed for a business trip?",
+     expect: {pipeline: D, goal: reimbursable_amount, outcome: [conditional], missing: [claimed_amount]}}
+  - {id: I02, category: missing_info, user: ana@meridian.test, question: "Is my business trip reimbursable?",
+     expect: {pipeline: B, goal: travel_claim_eligible, outcome: conditional}}
+  - {id: I03, category: missing_info, user: priya@meridian.test, question: "Can I get a replacement for the shoes?",
+     expect: {pipeline: B, goal: replacement_available, outcome: conditional, subject: ORD-12346, mention: ["damaged"]}}
+  - {id: I04, category: missing_info, user: sam@meridian.test, question: "Can I return the almonds?",
+     expect: {pipeline: B, goal: return_allowed, outcome: conditional, subject: ORD-22001, mention: ["damaged", "Grocery"]}}
+  - {id: I05, category: missing_info, user: dev@meridian.test, question: "Can I claim reimbursement for driving my own car to a client?",
+     expect: {goal: [travel_claim_eligible, reimbursable_amount], outcome: [conditional]}}
+  - {id: I06, category: missing_info, user: ana@meridian.test, question: "Will the company pay for my hotel stay?",
+     expect: {pipeline: [F, E, B, D], outcome: [insufficient, clarification, conditional], forbid: ["hotel costs are", "hotels are reimbursed"]}}
+  - {id: I07, category: missing_info, user: sam@meridian.test, question: "Do you offer gift wrapping?",
+     expect: {pipeline: [F, E], outcome: [insufficient, clarification], forbid: ["gift wrapping is"]}}
+  - {id: I08, category: missing_info, user: dev@meridian.test, question: "What is the daily allowance for international travel?",
+     expect: {pipeline: [F, E, A], outcome: [insufficient, clarification, answered], forbid: ["daily allowance is", "per day"]}}
+
+  # ------------------------------------------------ 9 misleading information
+  - {id: L01, category: misleading, user: priya@meridian.test, question: "Order 12345 hasn't shipped yet, so I can cancel it, right?",
+     expect: {pipeline: B, goal: cancellation_allowed, outcome: answered, decision: false, subject: ORD-12345, mention: ["shipped"]}}
+  - {id: L02, category: misleading, user: priya@meridian.test, question: "My shoes order 12346 was delivered 60 days ago, can I still return it?",
+     expect: {pipeline: B, goal: return_allowed, outcome: answered, decision: true, subject: ORD-12346, mention: ["record shows 14"]}}
+  - {id: L03, category: misleading, user: priya@meridian.test, question: "The earbuds order 12348 only arrived 3 days ago, so I'm within the return window?",
+     expect: {pipeline: B, goal: return_allowed, outcome: answered, decision: false, subject: ORD-12348, mention: ["record shows 25"]}}
+  - {id: L04, category: misleading, user: sam@meridian.test, question: "I'm a Plus member so my late chai order gets the extra credit, right?",
+     expect: {goal: delay_compensation, outcome: answered, value: 49, subject: ORD-22004, forbid: ["₹149"]}}
+  - {id: L05, category: misleading, user: dev@meridian.test, question: "My grade cap is ₹15,000 so I'll get the full ₹8,750 for my trip back?",
+     expect: {goal: reimbursable_amount, outcome: answered, value: 8000, subject: CLM-3001, mention: ["8,000"]}}
+  - {id: L06, category: misleading, user: ana@meridian.test, question: "I've worked here 5 years so I get 24 days of leave, correct?",
+     expect: {goal: [annual_leave_days, senior_leave_eligible], outcome: answered, mention: ["1.3"], forbid: ["receive 24 days"]}}
+  - {id: L07, category: misleading, user: sam@meridian.test, question: "Order 22001 was delivered yesterday and the almonds were rotten, can I return them?",
+     expect: {pipeline: B, goal: return_allowed, outcome: answered, decision: true, subject: ORD-22001, mention: ["record shows 4"]}}
+
+  # --------------------------------------------------- 10 symbolic rules
+  - {id: S01, category: symbolic_rules, user: priya@meridian.test, question: "Can I return the bedsheets after 40 days?",
+     expect: {pipeline: B, goal: return_allowed, outcome: answered, decision: true, subject: ORD-12349, mention: ["45-day"]}}
+  - {id: S02, category: symbolic_rules, user: sam@meridian.test, question: "Can I return shoes 40 days after they were delivered?",
+     expect: {pipeline: B, goal: return_allowed, outcome: [answered, conditional], decision: false, mention: ["30-day"]}}
+  - {id: S03, category: symbolic_rules, user: priya@meridian.test, question: "If the kettle arrived with a crack, would I get a replacement?",
+     expect: {pipeline: B, goal: replacement_available, outcome: answered, decision: false, mention: ["out of stock"]}}
+  - {id: S04, category: symbolic_rules, user: sam@meridian.test, question: "Does cancelling order 22003 cost me anything?",
+     expect: {pipeline: [D, B], goal: [cancellation_refund, cancellation_allowed], outcome: answered, subject: ORD-22003, mention: ["174.95"]}}
+  - {id: S05, category: symbolic_rules, user: dev@meridian.test, question: "I travelled 200 km in my own car and spent ₹2,500 with receipts, what's my reimbursement?",
+     expect: {pipeline: D, goal: reimbursable_amount, outcome: conditional, value: 1800, mention: ["1,800"]}}
+  - {id: S06, category: symbolic_rules, user: priya@meridian.test, question: "Can I return a gift card that arrived damaged?",
+     expect: {pipeline: B, goal: return_allowed, outcome: answered, decision: false}}
+  - {id: S07, category: symbolic_rules, user: sam@meridian.test, question: "Does the chai order get compensation for being late?",
+     expect: {pipeline: [D, B], goal: delay_compensation, outcome: answered, value: 49, subject: ORD-22004}}
+  - {id: S08, category: symbolic_rules, user: ana@meridian.test, question: "Is a 45 km taxi ride reimbursable?",
+     expect: {pipeline: B, goal: travel_claim_eligible, outcome: answered, decision: false, mention: ["50 km"]}}

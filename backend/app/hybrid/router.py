@@ -125,6 +125,11 @@ class ReasoningRouter:
                 return self._insufficient(interpretation, clauses, neural_reason)
 
         if goal is None:
+            # A clearly relevant policy clause beats a vague goal match: "help, I can't get
+            # into my work account" is answered by the IT helpdesk clause, not by asking
+            # whether the person meant a refund.
+            if top_clause >= RETRIEVAL_ACCEPT + 0.03:
+                return self._retrieval(clauses, neural_reason)
             suggestions = [c for c in interpretation.candidates if c.score >= GOAL_SUGGEST]
             if suggestions:
                 return RouteDecision(
