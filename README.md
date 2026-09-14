@@ -1,5 +1,14 @@
 # Praxis
 
+> **New: a general-purpose neuro-symbolic enterprise assistant.** Sign in as
+> `priya@meridian.test` or `dev@meridian.test` and ask anything about orders, returns,
+> refunds, delivery, leave or expenses, in your own words. Neural understanding maps the
+> question onto company goals; a three-valued rule engine decides it from company records;
+> every answer shows **how it was determined**. On a held-out benchmark it answers 80% of
+> questions correctly against 13% with lexical understanding and 15% for retrieval alone.
+> Architecture, rationale, results and limitations:
+> **[docs/NEURO_SYMBOLIC_ARCHITECTURE.md](docs/NEURO_SYMBOLIC_ARCHITECTURE.md)**.
+
 A ChatGPT-style assistant that treats a language model as a *language* engine, not
 a *truth* engine.
 
