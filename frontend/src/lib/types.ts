@@ -141,6 +141,81 @@ export interface AssistantTurn {
   stages: StageTiming[];
   latency_ms: number;
   pipeline_mode: string;
+  neurosymbolic?: NeuroSymbolicAnswer | null;
+}
+
+// --- neuro-symbolic assistant -------------------------------------------------------
+
+export type NsOutcome = "answered" | "conditional" | "clarification" | "insufficient" | "denied";
+export type NsLayer = "NEURAL" | "SYMBOLIC" | "HYBRID";
+
+export interface NsSource {
+  type: "policy" | "record";
+  id: string;
+  title: string;
+  document?: string;
+  text?: string;
+}
+
+export interface NsCondition {
+  index: number;
+  condition: string;
+  status: "satisfied" | "violated" | "unknown";
+  note: string;
+}
+
+export interface NsRule {
+  rule: string;
+  name: string;
+  clauses: string[];
+  status?: "proved" | "refuted" | "conditional";
+  value?: string | null;
+  because?: string;
+  failed?: NsCondition | null;
+  conditions?: NsCondition[];
+}
+
+export interface NsTrace {
+  question: string;
+  neural_interpretation: {
+    speech_act: { label: string; score: number };
+    intent_candidates: { name: string; kind: string; goal_kind: string; score: number }[];
+    stated_inputs: { predicate: string; value: unknown; confidence: number; evidence: string; method: string }[];
+    encoder: string;
+    semantic_understanding: boolean;
+  };
+  entities: { type: string; id?: string; value?: number; text: string; method: string }[];
+  retrieved_knowledge: { id: string; title: string; document: string; text: string; score?: number }[];
+  symbolic_facts: { subject: string; predicate: string; value: string; source: string; rule?: string }[];
+  rules_used: NsRule[];
+  rules_considered: NsRule[];
+  reasoning_steps: string[];
+  neural_symbolic_loop: { iteration: number; symbolic_needed: string[]; accepted: string[] }[];
+  grounding: {
+    assumptions?: string[];
+    rejected_statements?: { predicate: string; stated: string; record: string }[];
+  };
+  verification: { passed?: boolean; checks?: { check: string; passed: boolean; detail: string }[] };
+  selected_pipeline: string;
+  pipeline_label: string;
+  pipeline_reason: string;
+  why_neural: string;
+  why_symbolic: string;
+  components: { layer: NsLayer; stage: string }[];
+  confidence: number;
+  confidence_factors: Record<string, number>;
+}
+
+export interface NeuroSymbolicAnswer {
+  pipeline: string;
+  pipeline_label: string;
+  outcome: NsOutcome;
+  confidence: number;
+  explanation: string[];
+  sources: NsSource[];
+  clarification: { question: string; options: { id: string; label: string; detail: string }[] } | null;
+  goal: string | null;
+  trace: NsTrace;
 }
 
 export interface ChatMessage {

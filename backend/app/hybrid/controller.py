@@ -306,7 +306,11 @@ class NeuroSymbolicController:
         # -- verification ---------------------------------------------------------
         used = result.rules_used()
         considered = result.refutations()
-        cited = sorted({c for o in used + considered for c in o.spec.clauses})
+        # The sources are the clauses that decided the answer. Rules that were refuted
+        # explain a refusal, so their clauses are cited only when the answer is one -
+        # otherwise a successful return lists the damaged-goods exception it never used.
+        refused = result.status in ("default", "absent") or bool(cases)
+        cited = sorted({c for o in used + (considered if refused else []) for c in o.spec.clauses})
         consistency = self.verifier.record_consistency(goal.name, subject, result)
         conclusion = self._conclusion(goal, subject, result, grounding, cases, consistency)
         draft = realize(conclusion)
@@ -587,7 +591,9 @@ class NeuroSymbolicController:
                          "using what you said.")
         else:
             lines.append(f"Identified your {graph.display_name(subject)} ({subject}).")
-        clauses = sorted({c for o in used + considered for c in o.spec.clauses})
+        refused = result.status in ("default", "absent") or bool(cases)
+        clauses = sorted({c for o in used + (considered if refused else [])
+                          for c in o.spec.clauses})
         if clauses:
             titles = [f"{c} {self.pack.policies.clause(c).title}" for c in clauses
                       if self.pack.policies.clause(c)]

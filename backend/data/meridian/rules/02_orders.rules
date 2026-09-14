@@ -12,7 +12,7 @@ rule R-KG-CAT "Category of an ordered item" [RET-1]
   then order_category(?o) = ?c
 end
 
-rule R-KG-TIER "Membership of the customer who placed an order" [RET-3, CAN-2, DEL-2]
+rule R-KG-TIER "Membership of the customer who placed an order" [CO-4]
   if   placed_by(?o) = ?u
   and  membership_tier(?u) = ?t
   then order_membership(?o) = ?t

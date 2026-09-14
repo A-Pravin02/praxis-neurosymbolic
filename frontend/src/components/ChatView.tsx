@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 
 import Markdown from "./Markdown";
+import { ClarificationOptions, HowDetermined, KnowledgeUsed, NsStatus } from "./ReasoningPanel";
 import type { AssistantTurn, ChatMessage, PipelineMode } from "../lib/types";
 
 interface Props {
@@ -11,7 +12,29 @@ interface Props {
   onInspect: (turn: AssistantTurn, citationIndex?: number) => void;
   pipelineMode: PipelineMode;
   displayName: string;
+  workspace?: string;
+  roles?: string[];
 }
+
+// Starter questions for the neuro-symbolic workspace. They are here to show what kinds
+// of question the assistant handles; nothing in the assistant knows or matches them.
+const CUSTOMER_SUGGESTIONS = [
+  { kind: "Policy reasoning", text: "I ordered shoes two weeks ago but changed my mind. Can I send them back?" },
+  { kind: "Multi-hop", text: "Why was my refund rejected even though I returned the product?" },
+  { kind: "Clarification", text: "My package arrived damaged. Can I get a replacement instead of a refund?" },
+  { kind: "Record lookup", text: "Where is my order?" },
+  { kind: "Case analysis", text: "Can I return a product 20 days after delivery?" },
+  { kind: "Enumeration", text: "Which products are eligible for same-day delivery?" },
+];
+const EMPLOYEE_SUGGESTIONS = [
+  { kind: "Calculation", text: "How much will I be reimbursed if my business trip cost ₹8,750?" },
+  { kind: "Conditional", text: "Am I eligible for reimbursement if I drove 450 km and spent ₹4,200?" },
+  { kind: "Calculation", text: "How many days of annual leave do I get?" },
+  { kind: "Why not", text: "Why am I not eligible for the higher annual leave?" },
+  { kind: "Retrieval", text: "What is the company's leave policy?" },
+  { kind: "Retrieval", text: "I have a problem with my credentials, who should I call?" },
+];
+const NS_WORKSPACES = new Set(["meridian"]);
 
 const SUGGESTIONS = [
   { kind: "Retrieval", text: "What does the employee handbook say about sick leave?" },
@@ -23,8 +46,13 @@ const SUGGESTIONS = [
 ];
 
 export default function ChatView({
-  messages, busy, onSend, onRetry, onInspect, pipelineMode, displayName,
+  messages, busy, onSend, onRetry, onInspect, pipelineMode, displayName, workspace, roles,
 }: Props) {
+  const neuroSymbolic = NS_WORKSPACES.has(workspace ?? "");
+  const suggestions = !neuroSymbolic ? SUGGESTIONS
+    : (roles ?? []).includes("customer") ? CUSTOMER_SUGGESTIONS
+    : (roles ?? []).includes("support") ? CUSTOMER_SUGGESTIONS
+    : EMPLOYEE_SUGGESTIONS;
   const [draft, setDraft] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -61,14 +89,15 @@ export default function ChatView({
       <div className="messages">
         {isEmpty ? (
           <div className="empty-state">
-            <h2>Ask your workspace, {displayName || "there"}</h2>
+            <h2>{neuroSymbolic ? `How can I help, ${displayName || "there"}?`
+              : `Ask your workspace, ${displayName || "there"}`}</h2>
             <p>
-              Answers are built from your documents, structured facts and rules. Every
-              factual claim is checked against evidence before it reaches you — and when
-              the evidence is not there, the assistant says so instead of guessing.
+              {neuroSymbolic
+                ? "Ask anything about orders, returns, refunds, delivery, leave or expenses, in your own words. I understand the question, then apply the company's actual rules to your records — and when a decision depends on something I don't know, I tell you exactly what."
+                : "Answers are built from your documents, structured facts and rules. Every factual claim is checked against evidence before it reaches you — and when the evidence is not there, the assistant says so instead of guessing."}
             </p>
             <div className="suggestions">
-              {SUGGESTIONS.map((suggestion) => (
+              {suggestions.map((suggestion) => (
                 <button
                   key={suggestion.text}
                   className="suggestion"
@@ -89,6 +118,8 @@ export default function ChatView({
                 message={message}
                 onInspect={onInspect}
                 onRetry={onRetry}
+                onSend={onSend}
+                busy={busy}
               />
             ))}
             <div ref={bottomRef} />
@@ -104,7 +135,8 @@ export default function ChatView({
               id="composer"
               ref={textareaRef}
               rows={1}
-              placeholder="Ask about your documents, policies or entitlements…"
+              placeholder={neuroSymbolic ? "Ask anything — orders, returns, refunds, leave, expenses…"
+                : "Ask about your documents, policies or entitlements…"}
               value={draft}
               onChange={(event) => setDraft(event.target.value)}
               onKeyDown={onKeyDown}
@@ -120,8 +152,9 @@ export default function ChatView({
             </button>
           </div>
           <p className="composer-hint">
-            Enter to send, Shift+Enter for a new line. Pipeline: <strong>{pipelineMode}</strong>.
-            Praxis abstains when the knowledge base does not support an answer.
+            {neuroSymbolic
+              ? <>Enter to send. Decisions come from company rules applied to your records; open <strong>How was this determined?</strong> under any answer to see why.</>
+              : <>Enter to send, Shift+Enter for a new line. Pipeline: <strong>{pipelineMode}</strong>. Praxis abstains when the knowledge base does not support an answer.</>}
           </p>
         </div>
       </div>
@@ -130,11 +163,13 @@ export default function ChatView({
 }
 
 function MessageRow({
-  message, onInspect, onRetry,
+  message, onInspect, onRetry, onSend, busy,
 }: {
   message: ChatMessage;
   onInspect: (turn: AssistantTurn, citationIndex?: number) => void;
   onRetry: () => void;
+  onSend: (message: string) => void;
+  busy: boolean;
 }) {
   const turn = message.turn ?? null;
   const streaming = message.status === "streaming";
@@ -166,7 +201,15 @@ function MessageRow({
           />
         )}
 
-        {turn && !streaming && <TurnFooter turn={turn} onInspect={onInspect} />}
+        {turn && !streaming && turn.neurosymbolic && (
+          <>
+            <ClarificationOptions ns={turn.neurosymbolic} onChoose={onSend} disabled={busy} />
+            <NsStatus ns={turn.neurosymbolic} latencyMs={turn.latency_ms} />
+            <KnowledgeUsed ns={turn.neurosymbolic} />
+            <HowDetermined ns={turn.neurosymbolic} />
+          </>
+        )}
+        {turn && !streaming && !turn.neurosymbolic && <TurnFooter turn={turn} onInspect={onInspect} />}
       </div>
     </div>
   );

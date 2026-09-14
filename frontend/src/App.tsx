@@ -308,6 +308,8 @@ export default function App() {
           onInspect={inspect}
           pipelineMode={pipelineMode}
           displayName={user.display_name}
+          workspace={user.tenant_slug}
+          roles={user.roles}
         />
       </main>
 

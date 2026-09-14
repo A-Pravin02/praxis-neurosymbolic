@@ -5,3 +5,4 @@ __pycache__/
 tests/
 eval_reports/
 .env
+.model_cache/
