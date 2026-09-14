@@ -283,17 +283,6 @@ class FactGrounding:
                 return False
         return True
 
-    def _hypothetical(self, interpretation, subject_type: str) -> bool:
-        if subject_type not in CASE_LINKS:
-            return False
-        m = interpretation.mentions
-        if m.records or m.products:
-            return False
-        stated = [i for i in interpretation.inputs
-                  if i.predicate in self.program.inputs
-                  and self.program.inputs[i.predicate][0].subject_type == subject_type]
-        return bool(stated) or m.hypothetical or not m.personal
-
     def _make_case(self, grounding: Grounding, subject_type: str, actor: Actor) -> None:
         case = f"case:{subject_type}"
         grounding.subjects = [case]
