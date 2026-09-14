@@ -56,6 +56,16 @@ class Settings(BaseSettings):
     llm_max_tokens: int = 1024
     llm_timeout_seconds: float = 60.0
 
+    # --- neuro-symbolic enterprise assistant ---
+    # "semantic" loads a real sentence-embedding model (ONNX, runs offline once
+    # cached). "hashing" is the lexical fallback: it cannot understand paraphrase,
+    # and every answer produced with it is flagged as degraded understanding.
+    neural_encoder: Literal["semantic", "hashing"] = "semantic"
+    neural_model: str = "BAAI/bge-small-en-v1.5"
+    neural_model_cache: str = ""
+    knowledge_pack_dir: str = ""
+    knowledge_pack_tenant: str = "meridian"
+
     embedding_provider: Literal["hashing", "openai", "ollama"] = "hashing"
     embedding_model: str = "praxis-hash-384"
     embedding_dimension: int = 384

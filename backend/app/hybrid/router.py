@@ -1,0 +1,353 @@
+"""HYBRID. The neuro-symbolic reasoning router: which components does this question need?
+
+Neuro-symbolic does not mean every question goes through a rule engine. "What is the
+support phone number?" needs a policy clause, not a proof. "How much will I be
+reimbursed for a ₹8,750 trip?" must never be answered from text similarity, because a
+language model that produces a number is guessing it.
+
+So the router decides, and records why:
+
+    A  Knowledge retrieval   the answer is a policy clause or a stored record
+    B  Policy reasoning      a yes/no decision that rules determine
+    C  Multi-hop reasoning   an explanation that follows relations to a failed condition
+    D  Calculation           an amount computed by rule arithmetic
+    E  Clarification         the question cannot be pinned to one goal or one record
+    F  Insufficient knowledge nothing in the company knowledge covers it
+
+The decision uses two neural signals - which goal the question is closest to, and what
+kind of answer is wanted - and one symbolic one: the *structure of the rule base* for
+that goal. A goal whose rules compute a value needs calculation; a goal concluded by
+rules at all needs symbolic evaluation; a goal with no rules is a lookup. The router
+reads that from the rules, not from the question's wording.
+"""
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import TYPE_CHECKING
+
+from app.neural.retrieval import RetrievedClause
+from app.symbolic.schema import Expr
+
+if TYPE_CHECKING:  # pragma: no cover
+    from app.hybrid.knowledge_pack import KnowledgePack
+    from app.neural.intent_detection import IntentCandidate
+    from app.neural.query_understanding import Interpretation
+
+# Calibrated on data/meridian/benchmark/dev.yaml; never on the test set.
+GOAL_ACCEPT = 0.60        # a goal this close to the question is accepted on its own
+GOAL_SUPPORTED = 0.55     # ...or this close, if stated inputs or mentions corroborate it
+GOAL_SUGGEST = 0.45       # close enough to offer as "did you mean", not to act on
+RETRIEVAL_ACCEPT = 0.55   # a policy clause this relevant answers an informational question
+TIE_WINDOW = 0.03         # goals this close are resolved by the rule graph, not by score
+CASE_ACTS = {"decide", "calculate", "explain", "locate", "enumerate", "resolve", "compare"}
+
+
+class Pipeline(str, Enum):
+    RETRIEVAL = "A"
+    POLICY = "B"
+    MULTI_HOP = "C"
+    CALCULATION = "D"
+    CLARIFICATION = "E"
+    INSUFFICIENT = "F"
+
+    @property
+    def label(self) -> str:
+        return {
+            "A": "Knowledge retrieval",
+            "B": "Policy reasoning",
+            "C": "Multi-hop reasoning",
+            "D": "Calculation",
+            "E": "Clarification",
+            "F": "Insufficient knowledge",
+        }[self.value]
+
+
+@dataclass
+class RouteDecision:
+    pipeline: Pipeline
+    reason: str
+    goal: "IntentCandidate | None" = None
+    goal_score: float = 0.0
+    symbolic_required: bool = False
+    symbolic_reason: str = ""
+    neural_reason: str = ""
+    required_knowledge: list[str] = field(default_factory=list)
+    stages: list[tuple[str, str]] = field(default_factory=list)  # (layer, stage)
+    clauses: list[RetrievedClause] = field(default_factory=list)
+    alternatives: list["IntentCandidate"] = field(default_factory=list)
+
+    def as_dict(self) -> dict:
+        return {
+            "pipeline": self.pipeline.value, "label": self.pipeline.label,
+            "reason": self.reason,
+            "goal": self.goal.as_dict() if self.goal else None,
+            "goal_score": round(self.goal_score, 4),
+            "symbolic_required": self.symbolic_required,
+            "symbolic_reason": self.symbolic_reason,
+            "neural_reason": self.neural_reason,
+            "required_knowledge": self.required_knowledge,
+            "stages": [{"layer": layer, "stage": stage} for layer, stage in self.stages],
+            "alternatives": [a.as_dict() for a in self.alternatives],
+        }
+
+
+class ReasoningRouter:
+    def __init__(self, pack: "KnowledgePack") -> None:
+        self.pack = pack
+        self.program = pack.program
+
+    # -- public -------------------------------------------------------------
+    def route(self, interpretation: "Interpretation") -> RouteDecision:
+        act = interpretation.speech_act.label
+        neural_reason = (
+            f"Understood by meaning with {interpretation.encoder}: the question is closest "
+            f"to \"{interpretation.top.description}\" "
+            f"(similarity {interpretation.top.score:.2f}) and asks to "
+            f"{_ACT_PHRASE.get(act, act)}."
+            if interpretation.top else "No goal in the knowledge base resembles the question."
+        )
+        if not interpretation.semantic:
+            neural_reason += (" Understanding is degraded: the semantic model is unavailable "
+                              "and a lexical fallback cannot recognise paraphrases.")
+
+        goal, score, support = self._choose_goal(interpretation)
+        clauses = self.pack.policies.search(interpretation.question, k=3)
+        top_clause = clauses[0].score if clauses else 0.0
+
+        # An informational question is answered from policy text, even if it is about a
+        # topic a goal also covers: "what is the leave policy" asks what the policy
+        # says, not how many days this person gets.
+        if act == "inform" or (act not in CASE_ACTS):
+            if top_clause >= RETRIEVAL_ACCEPT:
+                return self._retrieval(clauses, neural_reason)
+            if goal is None:
+                return self._insufficient(interpretation, clauses, neural_reason)
+
+        if goal is None:
+            suggestions = [c for c in interpretation.candidates if c.score >= GOAL_SUGGEST]
+            if suggestions:
+                return RouteDecision(
+                    Pipeline.CLARIFICATION,
+                    "The question is loosely related to what the company knowledge covers, but "
+                    "not close enough to one goal to act on it safely. Asking which was meant "
+                    "is better than reasoning about the wrong question.",
+                    neural_reason=neural_reason, alternatives=suggestions[:3],
+                    stages=[("NEURAL", "Understand the question"),
+                            ("HYBRID", "Detect that no goal is a confident match"),
+                            ("HYBRID", "Ask which goal was meant")],
+                )
+            if top_clause >= RETRIEVAL_ACCEPT:
+                return self._retrieval(clauses, neural_reason)
+            return self._insufficient(interpretation, clauses, neural_reason)
+
+        return self._reasoning(goal, score, support, act, interpretation, clauses,
+                               neural_reason)
+
+    # -- goal selection -----------------------------------------------------
+    def _choose_goal(self, interpretation: "Interpretation"):
+        candidates = interpretation.candidates
+        if not candidates:
+            return None, 0.0, []
+        stated = {i.predicate for i in interpretation.inputs}
+        mention_types = {m.entity_type for m in interpretation.mentions.records}
+        if interpretation.mentions.products:
+            mention_types |= {"product", "order"}
+
+        def support_for(candidate) -> list[str]:
+            evidence = [f"stated {p}" for p in
+                        stated & self.program.input_predicates_for(candidate.name)]
+            if candidate.subject_type in mention_types:
+                evidence.append(f"mentions a {candidate.subject_type}")
+            return evidence
+
+        top = candidates[0]
+        near = [c for c in candidates if top.score - c.score <= TIE_WINDOW]
+        chosen = top
+        if len(near) > 1:
+            # Near-ties are resolved by the rule graph, not by a rounding difference in
+            # cosine similarity: prefer the goal the question supplies evidence for,
+            # then the prerequisite over the goal that depends on it. "Can I return the
+            # shoes?" scores return and replacement almost equally; replacement depends on
+            # return being allowed and needs a damage report nobody gave.
+            ranked = sorted(near, key=lambda c: (
+                -len(support_for(c)),
+                sum(1 for other in near if other.name != c.name
+                    and c.name in self.program.dependencies(other.name)) * -1,
+                -c.score))
+            chosen = ranked[0]
+
+        support = support_for(chosen)
+        if chosen.score >= GOAL_ACCEPT or (chosen.score >= GOAL_SUPPORTED and support):
+            return chosen, chosen.score, support
+        return None, chosen.score, support
+
+    # -- pipelines ----------------------------------------------------------
+    def _retrieval(self, clauses, neural_reason) -> RouteDecision:
+        return RouteDecision(
+            Pipeline.RETRIEVAL,
+            "The question asks what company policy or information says in general, not for a "
+            "decision about a particular case. Retrieving the relevant clauses answers it "
+            "directly; there is no rule to evaluate, so the symbolic engine is not used.",
+            symbolic_required=False,
+            symbolic_reason="No decision, eligibility or amount is being asked for.",
+            neural_reason=neural_reason, clauses=clauses,
+            required_knowledge=[f"policy clause {c.clause.id} ({c.clause.title})"
+                                for c in clauses[:2]],
+            stages=[("NEURAL", "Understand the question"),
+                    ("NEURAL", "Semantic retrieval of policy clauses"),
+                    ("HYBRID", "Check the retrieved clauses are relevant enough to answer"),
+                    ("NEURAL", "Compose the answer from the clauses, with citations")],
+        )
+
+    def _insufficient(self, interpretation, clauses, neural_reason) -> RouteDecision:
+        best = clauses[0] if clauses else None
+        return RouteDecision(
+            Pipeline.INSUFFICIENT,
+            "Nothing in the company knowledge covers this: no goal in the rule base resembles "
+            "it and no policy clause is relevant"
+            + (f" (the closest, {best.clause.id}, scores only {best.score:.2f})" if best else "")
+            + ". Answering would mean inventing policy, so the assistant says what is missing "
+              "instead.",
+            neural_reason=neural_reason, clauses=clauses,
+            stages=[("NEURAL", "Understand the question"),
+                    ("NEURAL", "Search goals and policy text"),
+                    ("HYBRID", "Establish that no knowledge covers it"),
+                    ("HYBRID", "Report what is missing rather than guess")],
+        )
+
+    def _reasoning(self, goal, score, support, act, interpretation, clauses,
+                   neural_reason) -> RouteDecision:
+        program = self.program
+        specs = program.rules_for(goal.name)
+        cited = sorted({c for spec in specs for c in spec.clauses})
+        entity_types = self._entity_types(goal.name)
+        computes = any(isinstance(spec.rule.head.value, Expr) for spec in specs) or \
+            any(isinstance(s.rule.head.value, Expr) for s in program.rules
+                if s.rule.head.predicate in program.dependencies(goal.name)
+                and program.value_type(s.rule.head.predicate) == "money")
+        inputs = sorted(program.input_predicates_for(goal.name))
+        required = [f"rules {', '.join(s.code for s in specs)} (policy {', '.join(cited)})"] \
+            if specs else []
+        required += [f"{goal.subject_type} records linking {' → '.join(entity_types)}"]
+        if inputs:
+            required.append("case details a person may state: " + ", ".join(inputs))
+
+        if goal.kind == "lookup":
+            lookup = program.lookups[goal.name]
+            return RouteDecision(
+                Pipeline.RETRIEVAL,
+                f"The question asks for the current state of a {goal.subject_type} "
+                f"({', '.join(lookup.predicates)}). That is a record lookup in the knowledge "
+                f"graph; no policy decision is involved, so no rule is evaluated.",
+                goal=goal, goal_score=score, symbolic_required=False,
+                symbolic_reason="Stored facts answer it; nothing needs to be derived.",
+                neural_reason=neural_reason, clauses=clauses,
+                required_knowledge=[f"{goal.subject_type} record: {', '.join(lookup.predicates)}"],
+                stages=[("NEURAL", "Understand the question"),
+                        ("NEURAL", "Extract record references"),
+                        ("SYMBOLIC", f"Resolve which {goal.subject_type} is meant"),
+                        ("SYMBOLIC", "Read the record from the knowledge graph"),
+                        ("NEURAL", "Compose the answer")],
+            )
+
+        why_symbolic = (
+            f"\"{goal.description}\" is decided by {len(specs)} rule"
+            f"{'s' if len(specs) != 1 else ''} citing policy {', '.join(cited)}. A language model "
+            f"asked this would predict a plausible answer; the rules determine the actual one, "
+            f"and can show which condition decided it."
+        )
+        base_stages = [("NEURAL", "Understand the question and detect the goal"),
+                       ("NEURAL", "Extract records, quantities and stated conditions"),
+                       ("SYMBOLIC", f"Resolve the {goal.subject_type} and validate the "
+                                    f"extracted facts against company records")]
+
+        if goal.goal_kind == "calculation" or (act == "calculate" and computes):
+            return RouteDecision(
+                Pipeline.CALCULATION,
+                f"The answer is an amount. It is computed by rule arithmetic over company "
+                f"records and stated values, because a number a language model produces is a "
+                f"prediction, not a calculation. The result is then checked against the rule's "
+                f"constraints.",
+                goal=goal, goal_score=score, symbolic_required=True,
+                symbolic_reason=why_symbolic, neural_reason=neural_reason,
+                required_knowledge=required, clauses=clauses,
+                stages=base_stages + [
+                    ("SYMBOLIC", "Evaluate the rules and compute the amount"),
+                    ("HYBRID", "Ask the neural layer again for any input the calculation lacks"),
+                    ("SYMBOLIC", "Verify the result against the rule constraints"),
+                    ("NEURAL", "State the amount and how it was calculated")],
+            )
+
+        if goal.goal_kind == "enumeration":
+            return RouteDecision(
+                Pipeline.POLICY,
+                f"The question asks which {goal.subject_type}s qualify. Each one is checked "
+                f"against the rules in the knowledge graph, so the list is complete and exact "
+                f"rather than whatever a search happens to surface.",
+                goal=goal, goal_score=score, symbolic_required=True,
+                symbolic_reason=why_symbolic, neural_reason=neural_reason,
+                required_knowledge=required, clauses=clauses,
+                stages=[("NEURAL", "Understand the question and detect the goal"),
+                        ("SYMBOLIC", f"Evaluate the rule for every {goal.subject_type}"),
+                        ("NEURAL", "List the ones that qualify")],
+            )
+
+        if goal.goal_kind == "explanation" or act == "explain":
+            return RouteDecision(
+                Pipeline.MULTI_HOP,
+                f"The question asks why an outcome happened. Explaining it means following the "
+                f"records across {' → '.join(entity_types)}, re-evaluating the policy on them, "
+                f"and identifying which rule condition was violated - multi-step symbolic "
+                f"reasoning, not a summary of policy text.",
+                goal=goal, goal_score=score, symbolic_required=True,
+                symbolic_reason=why_symbolic, neural_reason=neural_reason,
+                required_knowledge=required, clauses=clauses,
+                stages=base_stages + [
+                    ("SYMBOLIC", "Traverse the knowledge graph to the related records"),
+                    ("SYMBOLIC", "Re-evaluate the rules and find the violated condition"),
+                    ("HYBRID", "Check the derived outcome against the recorded one"),
+                    ("NEURAL", "Explain the decision in plain language")],
+            )
+
+        return RouteDecision(
+            Pipeline.POLICY,
+            f"The question asks whether {goal.description.removeprefix('whether ')}. The answer "
+            f"depends on company policy applied to a specific case, so the relevant rules are "
+            f"evaluated symbolically rather than inferred from similar-sounding text.",
+            goal=goal, goal_score=score, symbolic_required=True,
+            symbolic_reason=why_symbolic, neural_reason=neural_reason,
+            required_knowledge=required, clauses=clauses,
+            stages=base_stages + [
+                ("SYMBOLIC", "Evaluate the policy rules"),
+                ("HYBRID", "Ask the neural layer again for any input the rules lack"),
+                ("SYMBOLIC", "Verify the decision"),
+                ("NEURAL", "Explain the decision in plain language")],
+        )
+
+    def _entity_types(self, goal: str) -> list[str]:
+        """Entity types a proof of the goal can touch, in first-reached order."""
+        program = self.program
+        start = program.goals[goal].subject_type if goal in program.goals else ""
+        seen: list[str] = [start] if start else []
+        for predicate in sorted(program.dependencies(goal)):
+            attribute = program.attributes.get(predicate)
+            if attribute is None:
+                continue
+            for entity_type in (attribute.subject_type, attribute.value_type):
+                if entity_type in program.entity_types and entity_type != "company" \
+                        and entity_type not in seen:
+                    seen.append(entity_type)
+        return seen
+
+
+_ACT_PHRASE = {
+    "inform": "know what a policy or the company says",
+    "decide": "decide whether something is allowed in their case",
+    "calculate": "calculate an amount",
+    "explain": "explain why an outcome happened",
+    "locate": "find the current status of a record",
+    "enumerate": "list what qualifies",
+    "compare": "compare things",
+    "resolve": "resolve a problem they describe",
+}

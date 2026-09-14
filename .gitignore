@@ -36,3 +36,6 @@ dataset_ingestion_summary.json
 !backend/data/
 backend/data/*
 !backend/data/meridian/
+
+# Downloaded neural model weights.
+backend/.model_cache/

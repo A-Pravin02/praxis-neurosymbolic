@@ -84,7 +84,8 @@ input claimed_amount(claim) -> money "the amount of money spent on the business 
 input travel_distance_km(claim) -> distance "how far the employee travelled on the trip"
 input travel_mode(claim) -> enum own_vehicle "the employee drove their own car or rode their own motorbike"
 input travel_mode(claim) -> enum public_transport "the employee travelled by train, bus, flight or taxi"
-input receipts_attached(claim) -> flag "whether receipts, bills or invoices are available for the expenses"
+input receipts_attached(claim) -> flag true "receipts, bills or invoices are available for the expenses"
+input receipts_attached(claim) -> flag false "the receipts or bills were lost, are missing, or were never kept"
 input claim_submitted_after_days(claim) -> days "how many days after the trip the claim is submitted"
 
 # --- goals: what a person can ask the assistant to determine ----------------
@@ -103,6 +104,41 @@ goal travel_claim_eligible(claim) decision "whether a business trip expense qual
 goal reimbursable_amount(claim) calculation "how much money an employee is paid back for the cost of a business trip"
 
 lookup order_tracking(order) "where an order or package is right now and when it is expected to arrive" : order_status carrier promised_delivery delivered_on
+
+# --- how answers are phrased: {subject} is the record, {value} the result ---------
+say return_allowed yes "your {subject} can be returned"
+say return_allowed no "your {subject} can't be returned"
+say replacement_available yes "a replacement can be sent for your {subject}"
+say replacement_available no "a replacement isn't available for your {subject}"
+say cancellation_allowed yes "your {subject} can still be cancelled"
+say cancellation_allowed no "your {subject} can no longer be cancelled"
+say cancellation_refund value "cancelling your {subject} would refund {value}"
+say refund_approved yes "the refund for your {subject} was approved"
+say refund_approved no "the refund for your {subject} was not approved"
+say refund_required yes "the money for your {subject} will be refunded"
+say refund_required no "no automatic refund applies to your {subject}"
+say delay_compensation value "you're owed {value} in delay compensation for your {subject}"
+say free_delivery yes "your {subject} ships free"
+say free_delivery no "your {subject} doesn't qualify for free delivery"
+say annual_leave_days value "you're entitled to {value} days of annual leave a year"
+say senior_leave_eligible yes "you qualify for the higher annual leave entitlement"
+say senior_leave_eligible no "you don't yet qualify for the higher annual leave entitlement"
+say travel_claim_eligible yes "this trip qualifies for reimbursement"
+say travel_claim_eligible no "this trip doesn't qualify for reimbursement"
+say reimbursable_amount value "you would be reimbursed {value}"
+
+recorded refund_approved as refund_status via refund_for_return true "approved" false "rejected"
+
+# --- relevance: which of a person's records a question plausibly concerns --------
+# These narrow "my order" to candidate records. They never decide the answer.
+relevant order_tracking when order_status(?x) in ["placed", "packed", "shipped", "out_for_delivery"]
+relevant cancellation_allowed when order_status(?x) in ["placed", "packed", "shipped", "out_for_delivery"]
+relevant cancellation_refund when order_status(?x) in ["placed", "packed"]
+relevant return_allowed when order_status(?x) = "delivered"
+relevant replacement_available when order_status(?x) = "delivered"
+relevant delay_compensation when order_status(?x) in ["shipped", "out_for_delivery"]
+relevant refund_required when order_status(?x) = "payment_failed"
+relevant free_delivery when order_status(?x) in ["placed", "packed", "shipped"]
 
 default return_allowed = false
 default replacement_available = false

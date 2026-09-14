@@ -1,0 +1,33 @@
+# Development questions: used ONLY to calibrate similarity thresholds.
+# The benchmark test set (test.yaml) is written separately and is never used for
+# tuning. Keeping the two apart is what makes the benchmark's generalisation
+# numbers mean anything.
+
+cases:
+  - {q: "Can I return the shoes I bought?", goal: return_allowed, act: decide}
+  - {q: "Is it possible to send back something I purchased last week?", goal: return_allowed, act: decide}
+  - {q: "The blender came with a cracked lid, can I exchange it?", goal: replacement_available, act: decide, inputs: {return_reason: damaged_on_arrival}}
+  - {q: "They sent me the wrong colour entirely", goal: replacement_available, act: resolve, inputs: {return_reason: wrong_item}}
+  - {q: "I just don't need it any more", goal: return_allowed, act: decide, inputs: {return_reason: change_of_mind}}
+  - {q: "Can my order still be stopped?", goal: cancellation_allowed, act: decide}
+  - {q: "If I cancel now how much do I get back?", goal: cancellation_refund, act: calculate}
+  - {q: "They refused my refund, why?", goal: refund_approved, act: explain}
+  - {q: "Money left my account but there is no order", goal: refund_required, act: resolve}
+  - {q: "My parcel is four days late, do I get anything?", goal: delay_compensation, act: calculate}
+  - {q: "Will I pay shipping on this order?", goal: free_delivery, act: decide}
+  - {q: "What can I get delivered today?", goal: same_day_product, act: enumerate}
+  - {q: "How much vacation do I have per year?", goal: annual_leave_days, act: calculate}
+  - {q: "Why don't I get the long-service leave?", goal: senior_leave_eligible, act: explain}
+  - {q: "Does my trip to Chennai count for reimbursement?", goal: travel_claim_eligible, act: decide}
+  - {q: "What will I get back for a 6,000 rupee trip?", goal: reimbursable_amount, act: calculate, inputs: {claimed_amount: 6000}}
+  - {q: "I drove my car 200 km for a client meeting", goal: reimbursable_amount, act: resolve, inputs: {travel_mode: own_vehicle, travel_distance_km: 200}}
+  - {q: "I took the train and have all the bills", goal: reimbursable_amount, act: resolve, inputs: {travel_mode: public_transport, receipts_attached: true}}
+  - {q: "I lost the receipts for my trip", goal: travel_claim_eligible, act: resolve, inputs: {receipts_attached: false}}
+  - {q: "Where's my stuff?", goal: order_tracking, act: locate}
+  - {q: "When will my laptop arrive?", goal: order_tracking, act: locate}
+  - {q: "What does the returns policy say?", goal: null, act: inform}
+  - {q: "What are the parental leave rules?", goal: null, act: inform}
+  - {q: "What is the support phone number?", goal: null, act: inform}
+  - {q: "How do I reset my work password?", goal: null, act: inform}
+  - {q: "What is the capital of France?", goal: null, act: inform}
+  - {q: "Do you sell pet food?", goal: null, act: inform}

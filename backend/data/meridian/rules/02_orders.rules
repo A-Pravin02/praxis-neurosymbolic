@@ -18,6 +18,11 @@ rule R-KG-TIER "Membership of the customer who placed an order" [RET-3, CAN-2, D
   then order_membership(?o) = ?t
 end
 
+rule R-CLK-IMP "A stated delivery age implies the item was delivered" [RET-1]
+  if   days_since_delivery(?o) = ?d
+  then order_status(?o) = "delivered"
+end
+
 rule R-CLK-DEL "Days since delivery" [RET-1]
   if   delivered_on(?o) = ?t
   and  today(meridian) = ?n
@@ -55,7 +60,7 @@ end
 rule R-RET-D "Damaged, defective or wrong item" [RET-4] priority 200
   if   order_status(?o) = "delivered"                otherwise "the order has not been delivered yet"
   and  return_reason(?o) = ?k
-  and  ?k in ["damaged_on_arrival", "wrong_item"]     otherwise "the damaged-item exception only covers items that arrived damaged, defective or wrong"
+  and  ?k in ["damaged_on_arrival", "wrong_item"]     otherwise "the damaged-item exception only covers items that arrived damaged, defective or wrong" requires "the item arrived damaged, defective or wrong"
   and  order_category(?o) = ?c
   and  not excluded_from_damage_returns(?c)           otherwise "{c} items are excluded even when damaged"
   and  days_since_delivery(?o) = ?d
@@ -68,7 +73,7 @@ end
 rule R-RET-R "Replacement for a damaged or wrong item" [RET-5]
   if   return_allowed(?o) = true                      otherwise "the item is not eligible for return"
   and  return_reason(?o) = ?k
-  and  ?k in ["damaged_on_arrival", "wrong_item"]     otherwise "replacements are only offered for items that arrived damaged, defective or wrong"
+  and  ?k in ["damaged_on_arrival", "wrong_item"]     otherwise "replacements are only offered for items that arrived damaged, defective or wrong" requires "the item arrived damaged, defective or wrong"
   and  contains(?o) = ?p
   and  in_stock(?p) = true                            otherwise "the same product is currently out of stock, so a full refund is issued instead"
   then replacement_available(?o) = true

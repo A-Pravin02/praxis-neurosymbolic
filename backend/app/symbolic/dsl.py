@@ -91,6 +91,36 @@ class Default:
 
 
 @dataclass
+class Relevance:
+    """Which of a person's records a question about a goal plausibly concerns.
+
+    `relevant cancellation_allowed when order_status(?x) in [...]` means: when someone
+    with several orders asks whether they can cancel "my order", only the ones not yet
+    delivered are candidates. It narrows *which record*, never the answer about it.
+    """
+
+    name: str
+    conditions: list[dict]
+
+
+@dataclass
+class RecordedOutcome:
+    """Where a company record states the outcome a goal derives.
+
+    `recorded refund_approved as refund_status via refund_for_return true "approved"
+    false "rejected"` lets verification compare the refund's stored status with the
+    decision the rules derive. Agreement raises confidence; disagreement is surfaced,
+    because one of the record and the policy is wrong.
+    """
+
+    goal: str
+    predicate: str
+    relation: str
+    true_value: str
+    false_value: str
+
+
+@dataclass
 class RuleSpec:
     """A compiled rule plus the parts that exist only for explanation."""
 
@@ -99,6 +129,10 @@ class RuleSpec:
     because: str = ""
     # Aligned with rule.body: what to say when that condition is the one that fails.
     otherwise: list[str] = field(default_factory=list)
+    # Aligned with rule.body: how to state that condition as a requirement when it is
+    # unknown - so a conditional answer says "provided you have receipts" and never
+    # asserts an assumption as a fact.
+    requires: list[str] = field(default_factory=list)
     source: str = ""
 
     @property
@@ -114,6 +148,11 @@ class KnowledgeProgram:
     goals: dict[str, Goal] = field(default_factory=dict)
     lookups: dict[str, Lookup] = field(default_factory=dict)
     defaults: dict[str, Default] = field(default_factory=dict)
+    relevance: dict[str, Relevance] = field(default_factory=dict)
+    # goal -> {"yes"|"no"|"value": template} used to phrase the answer
+    phrases: dict[str, dict[str, str]] = field(default_factory=dict)
+    # goal -> how the company *stores* that outcome, for consistency verification
+    recorded: dict[str, "RecordedOutcome"] = field(default_factory=dict)
     rules: list[RuleSpec] = field(default_factory=list)
 
     # -- queries the rest of the system asks -------------------------------
@@ -332,7 +371,8 @@ def parse_head(text: str) -> dict:
 # File parser
 # ---------------------------------------------------------------------------
 
-_QUOTED_TAIL = re.compile(r'^(?P<body>.*?)\s+(?P<key>otherwise|because)\s+"(?P<text>.*)"\s*$')
+_QUOTED_TAIL = re.compile(
+    r'^(?P<body>.*?)\s+(?P<key>otherwise|because|requires)\s+"(?P<text>[^"]*)"\s*$')
 _RULE_HEADER = re.compile(
     r'^rule\s+(?P<code>[A-Za-z0-9_.\-]+)\s+"(?P<name>[^"]*)"'
     r'(?:\s*\[(?P<clauses>[^\]]*)\])?(?:\s+priority\s+(?P<priority>-?\d+))?\s*$')
@@ -414,6 +454,35 @@ def parse_program(text: str, *, source: str = "") -> KnowledgeProgram:
                 name, stype = _signature(match.group("sig"))
                 program.lookups[name] = Lookup(name, stype, match.group("desc"),
                                                match.group("preds").split())
+            elif keyword == "relevant":
+                name, _, condition = rest.partition(" when ")
+                if not condition:
+                    raise fail("expected: relevant <goal> when <condition using ?x>")
+                relevance = program.relevance.setdefault(name.strip(),
+                                                         Relevance(name.strip(), []))
+                # `order_status(?x) in [...]` is shorthand for binding the attribute
+                # and then comparing it.
+                sugar = re.match(r"^(\w+)\((\?x)\)\s*(not in|in|!=|<=|>=|<|>)\s*(.+)$",
+                                 condition.strip())
+                if sugar:
+                    relevance.conditions.append(
+                        parse_literal(f"{sugar.group(1)}(?x) = ?_value"))
+                    relevance.conditions.append(
+                        parse_literal(f"?_value {sugar.group(3)} {sugar.group(4)}"))
+                else:
+                    relevance.conditions.append(parse_literal(condition.strip()))
+            elif keyword == "say":
+                match = re.match(r'^(\w+)\s+(yes|no|value)\s+"([^"]+)"$', rest)
+                if not match:
+                    raise fail('expected: say <goal> yes|no|value "template"')
+                program.phrases.setdefault(match.group(1), {})[match.group(2)] = match.group(3)
+            elif keyword == "recorded":
+                match = re.match(r'^(\w+)\s+as\s+(\w+)\s+via\s+(\w+)\s+true\s+"([^"]+)"\s+'
+                                 r'false\s+"([^"]+)"$', rest)
+                if not match:
+                    raise fail('expected: recorded <goal> as <pred> via <relation> '
+                               'true "v" false "v"')
+                program.recorded[match.group(1)] = RecordedOutcome(*match.groups())
             elif keyword == "default":
                 predicate, _, value = rest.partition("=")
                 program.defaults[predicate.strip()] = Default(predicate.strip(),
@@ -445,6 +514,7 @@ def _parse_rule_block(lines: list[str], start: int, program: KnowledgeProgram,
 
     body: list[dict] = []
     otherwise: list[str] = []
+    requires: list[str] = []
     head: dict | None = None
     because = ""
     i = start + 1
@@ -459,11 +529,17 @@ def _parse_rule_block(lines: list[str], start: int, program: KnowledgeProgram,
         rest = rest.strip()
         try:
             if keyword in ("if", "and"):
-                tail = _QUOTED_TAIL.match(rest)
-                text, note = (tail.group("body"), tail.group("text")) \
-                    if tail and tail.group("key") == "otherwise" else (rest, "")
+                text, notes = rest, {}
+                # A condition may carry `otherwise "..."` and `requires "..."`, in any order.
+                while True:
+                    tail = _QUOTED_TAIL.match(text)
+                    if not tail or tail.group("key") not in ("otherwise", "requires"):
+                        break
+                    notes[tail.group("key")] = tail.group("text")
+                    text = tail.group("body")
                 body.append(parse_literal(text))
-                otherwise.append(note)
+                otherwise.append(notes.get("otherwise", ""))
+                requires.append(notes.get("requires", ""))
             elif keyword == "then":
                 head = parse_head(rest)
             elif keyword == "because":
@@ -481,7 +557,7 @@ def _parse_rule_block(lines: list[str], start: int, program: KnowledgeProgram,
     rule = compile_rule(code, body, head, name=header.group("name"),
                         description=header.group("name"), priority=priority)
     program.rules.append(RuleSpec(rule=rule, clauses=clauses, because=because,
-                                  otherwise=otherwise, source=source))
+                                  otherwise=otherwise, requires=requires, source=source))
     return i + 1
 
 

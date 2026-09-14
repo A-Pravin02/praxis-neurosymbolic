@@ -47,13 +47,13 @@ end
 rule R-TRV-E1 "Eligible trip without receipts" [TRV-2, TRV-4, TRV-5]
   if   travel_distance_km(?c) = ?km
   and  min_trip_km(meridian) = ?min
-  and  ?km >= ?min                                    otherwise "the trip was {km} km, but trips must be at least {min} km to qualify"
+  and  ?km >= ?min                                    otherwise "the trip was {km} km, but trips must be at least {min} km to qualify" requires "the trip was at least {min} km"
   and  claimed_amount(?c) = ?a
   and  receipt_threshold(meridian) = ?rt
   and  ?a <= ?rt
   and  claim_submitted_after_days(?c) = ?sd
   and  claim_deadline_days(meridian) = ?dl
-  and  ?sd <= ?dl                                     otherwise "the claim was submitted {sd} days after the trip, past the {dl}-day deadline"
+  and  ?sd <= ?dl                                     otherwise "the claim was submitted {sd} days after the trip, past the {dl}-day deadline" requires "you submit the claim within {dl} days of the trip"
   then travel_claim_eligible(?c) = true
   because "the trip is at least {min} km and the claim is small enough not to need receipts"
 end
@@ -61,15 +61,15 @@ end
 rule R-TRV-E2 "Eligible trip with receipts" [TRV-2, TRV-4, TRV-5]
   if   travel_distance_km(?c) = ?km
   and  min_trip_km(meridian) = ?min
-  and  ?km >= ?min                                    otherwise "the trip was {km} km, but trips must be at least {min} km to qualify"
+  and  ?km >= ?min                                    otherwise "the trip was {km} km, but trips must be at least {min} km to qualify" requires "the trip was at least {min} km"
   and  claimed_amount(?c) = ?a
   and  receipt_threshold(meridian) = ?rt
   and  ?a > ?rt
   and  receipts_attached(?c) = ?rcpt
-  and  ?rcpt = true                                   otherwise "receipts are required for claims above {rt}"
+  and  ?rcpt = true                                   otherwise "receipts are required for claims above {rt}" requires "you have receipts, which are needed for claims above {rt}"
   and  claim_submitted_after_days(?c) = ?sd
   and  claim_deadline_days(meridian) = ?dl
-  and  ?sd <= ?dl                                     otherwise "the claim was submitted {sd} days after the trip, past the {dl}-day deadline"
+  and  ?sd <= ?dl                                     otherwise "the claim was submitted {sd} days after the trip, past the {dl}-day deadline" requires "you submit the claim within {dl} days of the trip"
   then travel_claim_eligible(?c) = true
   because "the trip is at least {min} km, receipts are attached for a claim above {rt}, and it was submitted within {dl} days"
 end
@@ -77,7 +77,7 @@ end
 rule R-TRV-A1 "Reimbursement for public transport" [TRV-1]
   if   travel_claim_eligible(?c) = true               otherwise "the trip does not qualify for reimbursement"
   and  travel_mode(?c) = ?m
-  and  ?m = "public_transport"
+  and  ?m = "public_transport"                         requires "you travelled by train, bus, flight or taxi"
   and  claimed_amount(?c) = ?a
   and  claim_cap(?c) = ?cap
   then reimbursable_amount(?c) = min(?a, ?cap)
@@ -87,7 +87,7 @@ end
 rule R-TRV-A2 "Reimbursement for own-vehicle travel" [TRV-1, TRV-3]
   if   travel_claim_eligible(?c) = true               otherwise "the trip does not qualify for reimbursement"
   and  travel_mode(?c) = ?m
-  and  ?m = "own_vehicle"
+  and  ?m = "own_vehicle"                              requires "you drove your own vehicle"
   and  claimed_amount(?c) = ?a
   and  claim_cap(?c) = ?cap
   and  travel_distance_km(?c) = ?km

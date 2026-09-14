@@ -129,6 +129,7 @@ class ConditionResult:
     status: str
     note: str = ""           # the rule's own words for why this condition failed
     missing: list[Unknown] = field(default_factory=list)
+    requirement: str = ""    # the rule's own words for this condition, when it is unknown
 
     def as_dict(self) -> dict[str, Any]:
         return {"index": self.index, "condition": self.expression, "status": self.status,
@@ -238,6 +239,8 @@ class Reasoner:
         self.max_depth = max_depth
         self._memo: dict[tuple[str, str], GoalResult] = {}
         self._active: set[tuple[str, str]] = set()
+        # Variables in the rule being applied whose values hold only conditionally.
+        self._provisional: dict[str, list[Unknown]] = {}
         self.touched: dict[tuple[str, str, str], FactRef] = {}
 
     # -- public -------------------------------------------------------------
@@ -341,6 +344,16 @@ class Reasoner:
         conditions: list[ConditionResult] = []
         premises: list[GoalResult] = []
         failed: ConditionResult | None = None
+        outer_provisional = self._provisional
+        self._provisional = {}
+        try:
+            return self._apply_body(spec, subject, rule, bindings, types, conditions, premises,
+                                    failed)
+        finally:
+            self._provisional = outer_provisional
+
+    def _apply_body(self, spec, subject, rule, bindings, types, conditions, premises,
+                    failed) -> RuleOutcome:
 
         for index, condition in enumerate(rule.body):
             note_template = spec.otherwise[index] if index < len(spec.otherwise) else ""
@@ -358,6 +371,10 @@ class Reasoner:
                 conditions.append(result)
                 failed = result
                 break
+            if result.status == UNKNOWN:
+                requirement = spec.requires[index] if index < len(spec.requires) else ""
+                result.requirement = render_template(requirement, bindings, types,
+                                                     graph=self.graph, program=self.program)
             conditions.append(result)
 
         if failed is not None:
@@ -390,9 +407,14 @@ class Reasoner:
 
         if premise.status in ("determined", "default", CONDITIONAL):
             value = premise.value
+            provisional = premise.status == CONDITIONAL
             if isinstance(condition.value, Var) and condition.value.name not in bindings:
                 bindings[condition.value.name] = value
                 types[condition.value.name] = value_type
+                if provisional:
+                    # The value holds only under the premise's own assumptions. Anything
+                    # later refuted *by this value* is not refuted, only undecided.
+                    self._provisional[condition.value.name] = list(premise.missing)
                 status = UNKNOWN if _is_open(value) else SATISFIED
                 return ConditionResult(index, f"{text} = {self._show(value, value_type)}",
                                        status, missing=_leaves(value))
@@ -402,6 +424,10 @@ class Reasoner:
                 return ConditionResult(index, shown, UNKNOWN,
                                        missing=_leaves(value) + _leaves(expected))
             ok = _normalise(value) == _normalise(expected)
+            if not ok and provisional:
+                # A conditionally derived value that disagrees refutes nothing: the
+                # derivation it came from may not apply at all.
+                return ConditionResult(index, shown, UNKNOWN, missing=list(premise.missing))
             return ConditionResult(index, shown + ("" if ok else
                                                    f" (needs {self._show(expected, value_type)})"),
                                    SATISFIED if ok else VIOLATED)
@@ -428,8 +454,14 @@ class Reasoner:
                 f"{self._show(right, value_type)}")
         if _is_open(left) or _is_open(right):
             return ConditionResult(index, text, UNKNOWN, missing=_leaves(left) + _leaves(right))
-        return ConditionResult(index, text,
-                               SATISFIED if compare(condition.op, left, right) else VIOLATED)
+        if compare(condition.op, left, right):
+            return ConditionResult(index, text, SATISFIED)
+        provisional = [m for name in _var_names(condition.left) | _var_names(condition.right)
+                       for m in self._provisional.get(name, [])]
+        if any(name in self._provisional
+               for name in _var_names(condition.left) | _var_names(condition.right)):
+            return ConditionResult(index, text, UNKNOWN, missing=provisional)
+        return ConditionResult(index, text, VIOLATED)
 
     def _absent(self, condition, bindings, premises, index) -> ConditionResult:
         subject = self._value(condition.subject, bindings)
@@ -481,6 +513,14 @@ class Reasoner:
         if isinstance(value, Unknown):
             return f"?{value.predicate}"
         return format_value(value, value_type, graph=self.graph, program=self.program)
+
+
+def _var_names(term: Any) -> set[str]:
+    if isinstance(term, Var):
+        return {term.name}
+    if isinstance(term, Expr):
+        return set().union(*(_var_names(a) for a in term.args)) if term.args else set()
+    return set()
 
 
 def _unique(items: list[Unknown]) -> list[Unknown]:

@@ -41,7 +41,7 @@ entities:
      attributes: {return_window_days: 10, plus_extension_days: 0}}
   - {id: grocery, type: category, name: Grocery,
      attributes: {return_window_days: 0, plus_extension_days: 0, non_returnable: true}}
-  - {id: gift_card, type: category, name: Gift cards,
+  - {id: gift_card, type: category, name: Gift card,
      attributes: {return_window_days: 0, plus_extension_days: 0, non_returnable: true,
                   excluded_from_damage_returns: true}}
 
