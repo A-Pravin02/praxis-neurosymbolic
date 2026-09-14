@@ -55,14 +55,27 @@ def _run_migrations() -> None:
         raise RuntimeError(f"alembic upgrade failed:\n{result.stdout}\n{result.stderr}")
 
 
+def pytest_configure(config) -> None:
+    config.addinivalue_line(
+        "markers", "no_db: pure-logic tests that need no database - a run containing "
+                   "only these skips migration and seeding")
+
+
 @pytest.fixture(scope="session", autouse=True)
-def database() -> None:
+def database(request) -> None:
     """Bring the test schema up to date, clear it, then seed the demo workspaces.
 
     The schema is migrated rather than dropped: pgvector and pg_trgm are installed
     into `public` by the container's init script as the superuser, and the
     migration role deliberately cannot create extensions.
     """
+    # The symbolic reasoner and the neural understanding layer are pure logic.
+    # Requiring Postgres to test them would make the core of the system
+    # unverifiable whenever Docker is down, which is exactly when it matters.
+    if request.session.items and all(item.get_closest_marker("no_db")
+                                     for item in request.session.items):
+        yield
+        return
     _run_migrations()
     with admin_engine.connect() as conn:
         conn.execute(text(

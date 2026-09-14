@@ -30,3 +30,9 @@ datasets/
 *.jsonl
 !backend/app/seed/**/*.csv
 dataset_ingestion_summary.json
+
+# The demonstration knowledge pack is authored source, not a dataset: policies,
+# rules and a fictional company graph that the assistant reasons over.
+!backend/data/
+backend/data/*
+!backend/data/meridian/

@@ -1,0 +1,115 @@
+# =============================================================================
+# Meridian Marketplace knowledge schema
+#
+# This file is what the NEURAL layer reads to understand questions. It lists the
+# goals a person can ask about and the facts a person can state in their own
+# words. Nothing here is an example question: descriptions are written from the
+# policy side, and a new policy extends what the assistant understands by adding
+# a goal here and rules beside it.
+# =============================================================================
+
+entity customer order product category return refund payment employee claim grade company
+
+# --- structural attributes: the company records, authoritative --------------
+attribute membership_tier(customer) -> text
+attribute city(customer) -> text
+attribute email(customer) -> text
+attribute placed_by(order) -> customer
+attribute contains(order) -> product
+attribute paid_with(order) -> payment
+attribute order_status(order) -> text
+attribute placed_on(order) -> date
+attribute delivered_on(order) -> date
+attribute promised_delivery(order) -> date
+attribute carrier(order) -> text
+attribute order_total(order) -> money
+attribute delivery_fee_paid(order) -> money
+attribute product_name(product) -> text
+attribute product_category(product) -> category
+attribute price(product) -> money
+attribute in_stock(product) -> flag
+attribute same_day_eligible(product) -> flag
+attribute return_window_days(category) -> days
+attribute plus_extension_days(category) -> days
+attribute non_returnable(category) -> flag
+attribute excluded_from_damage_returns(category) -> flag
+attribute payment_status(payment) -> text
+attribute payment_method(payment) -> text
+attribute return_for(return) -> order
+attribute return_started_on(return) -> date
+attribute inspection_result(return) -> text
+attribute refund_for_return(refund) -> return
+attribute refund_status(refund) -> text
+attribute grade(employee) -> grade
+attribute joined_on(employee) -> date
+attribute travel_cap(grade) -> money
+attribute claimant(claim) -> employee
+attribute today(company) -> date
+attribute damage_report_days(company) -> days
+attribute cancellation_fee_rate(company) -> percent
+attribute cancellation_fee_cap(company) -> money
+attribute free_delivery_threshold_plus(company) -> money
+attribute free_delivery_threshold_standard(company) -> money
+attribute delay_threshold_days(company) -> days
+attribute plus_delay_credit(company) -> money
+attribute senior_service_years(company) -> years
+attribute annual_leave_base(company) -> days
+attribute annual_leave_senior(company) -> days
+attribute min_trip_km(company) -> distance
+attribute receipt_threshold(company) -> money
+attribute claim_deadline_days(company) -> days
+attribute mileage_rate(company) -> money
+
+# --- derived attributes: computed by rules, never stored --------------------
+attribute days_since_delivery(order) -> days
+attribute order_category(order) -> category
+attribute order_membership(order) -> text
+attribute effective_return_window(order) -> days
+attribute cancellation_fee(order) -> money
+attribute cancellation_refund(order) -> money
+attribute days_late(order) -> days
+attribute delay_compensation(order) -> money
+attribute return_started_after_days(return) -> days
+attribute service_years(employee) -> years
+attribute annual_leave_days(employee) -> days
+attribute claim_cap(claim) -> money
+attribute reimbursable_amount(claim) -> money
+
+# --- inputs: what a person may tell us about their own case -----------------
+input return_reason(order) -> enum change_of_mind "the customer no longer wants the item, changed their mind, or bought it by mistake"
+input return_reason(order) -> enum damaged_on_arrival "the product arrived broken, cracked, smashed, damaged, faulty or defective"
+input return_reason(order) -> enum wrong_item "a different or incorrect product was delivered instead of the one that was ordered"
+input days_since_delivery(order) -> days "how many days ago the item was delivered or received"
+input claimed_amount(claim) -> money "the amount of money spent on the business trip or being claimed back"
+input travel_distance_km(claim) -> distance "how far the employee travelled on the trip"
+input travel_mode(claim) -> enum own_vehicle "the employee drove their own car or rode their own motorbike"
+input travel_mode(claim) -> enum public_transport "the employee travelled by train, bus, flight or taxi"
+input receipts_attached(claim) -> flag "whether receipts, bills or invoices are available for the expenses"
+input claim_submitted_after_days(claim) -> days "how many days after the trip the claim is submitted"
+
+# --- goals: what a person can ask the assistant to determine ----------------
+goal return_allowed(order) decision "whether an item that was bought can be sent back to the seller"
+goal replacement_available(order) decision "whether a faulty, damaged or wrong item can be exchanged for a new one of the same product instead of money back"
+goal cancellation_allowed(order) decision "whether an order that has been placed can still be cancelled or stopped"
+goal cancellation_refund(order) calculation "how much money comes back when an order is cancelled, after any cancellation charge"
+goal refund_approved(return) explanation "whether the money for a returned item was paid back or refused, and the reason"
+goal refund_required(order) decision "whether money deducted for an order that did not go through will be given back"
+goal delay_compensation(order) calculation "what compensation a customer receives when a package arrives late or is delayed"
+goal free_delivery(order) decision "whether an order ships without a delivery or shipping charge"
+goal same_day_product(product) enumeration "which products can be delivered on the same day they are ordered"
+goal annual_leave_days(employee) calculation "how many days of annual leave or paid vacation an employee is entitled to each year"
+goal senior_leave_eligible(employee) decision "whether an employee qualifies for the higher annual leave entitlement given to long-serving staff"
+goal travel_claim_eligible(claim) decision "whether a business trip expense qualifies to be paid back by the company"
+goal reimbursable_amount(claim) calculation "how much money an employee is paid back for the cost of a business trip"
+
+lookup order_tracking(order) "where an order or package is right now and when it is expected to arrive" : order_status carrier promised_delivery delivered_on
+
+default return_allowed = false
+default replacement_available = false
+default cancellation_allowed = false
+default refund_approved = false
+default refund_required = false
+default free_delivery = false
+default same_day_product = false
+default senior_leave_eligible = false
+default travel_claim_eligible = false

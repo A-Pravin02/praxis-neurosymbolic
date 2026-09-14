@@ -1,0 +1,214 @@
+# =============================================================================
+# Orders, returns, refunds and delivery. Every rule cites its policy clause.
+# The logic lives here; every number (windows, fees, thresholds) lives in the
+# knowledge base, so a policy change is a data change, not a rule rewrite.
+# =============================================================================
+
+# --- knowledge-graph traversal: multi-hop derivations -----------------------
+
+rule R-KG-CAT "Category of an ordered item" [RET-1]
+  if   contains(?o) = ?p
+  and  product_category(?p) = ?c
+  then order_category(?o) = ?c
+end
+
+rule R-KG-TIER "Membership of the customer who placed an order" [RET-3, CAN-2, DEL-2]
+  if   placed_by(?o) = ?u
+  and  membership_tier(?u) = ?t
+  then order_membership(?o) = ?t
+end
+
+rule R-CLK-DEL "Days since delivery" [RET-1]
+  if   delivered_on(?o) = ?t
+  and  today(meridian) = ?n
+  then days_since_delivery(?o) = ?n - ?t
+end
+
+# --- returns -----------------------------------------------------------------
+
+rule R-RET-W1 "Standard return window" [RET-1]
+  if   order_category(?o) = ?c
+  and  return_window_days(?c) = ?w
+  and  order_membership(?o) = "standard"
+  then effective_return_window(?o) = ?w
+end
+
+rule R-RET-W2 "Meridian Plus extended return window" [RET-3]
+  if   order_category(?o) = ?c
+  and  return_window_days(?c) = ?w
+  and  plus_extension_days(?c) = ?x
+  and  order_membership(?o) = "plus"
+  then effective_return_window(?o) = ?w + ?x
+end
+
+rule R-RET-A "Change-of-mind return within the window" [RET-1, RET-2, RET-3]
+  if   order_status(?o) = "delivered"                otherwise "the order has not been delivered yet"
+  and  order_category(?o) = ?c
+  and  not non_returnable(?c)                         otherwise "{c} items cannot be returned for change of mind"
+  and  days_since_delivery(?o) = ?d
+  and  effective_return_window(?o) = ?w
+  and  ?d <= ?w                                       otherwise "it was delivered {d} days ago, past the {w}-day return window for {c} items"
+  then return_allowed(?o) = true
+  because "it was delivered {d} days ago, within the {w}-day return window for {c} items"
+end
+
+rule R-RET-D "Damaged, defective or wrong item" [RET-4] priority 200
+  if   order_status(?o) = "delivered"                otherwise "the order has not been delivered yet"
+  and  return_reason(?o) = ?k
+  and  ?k in ["damaged_on_arrival", "wrong_item"]     otherwise "the damaged-item exception only covers items that arrived damaged, defective or wrong"
+  and  order_category(?o) = ?c
+  and  not excluded_from_damage_returns(?c)           otherwise "{c} items are excluded even when damaged"
+  and  days_since_delivery(?o) = ?d
+  and  damage_report_days(meridian) = ?lim
+  and  ?d <= ?lim                                     otherwise "the problem was reported {d} days after delivery, but damaged or wrong items must be reported within {lim} days"
+  then return_allowed(?o) = true
+  because "the item was reported as {k} {d} days after delivery, within the {lim}-day window for damaged or wrong items"
+end
+
+rule R-RET-R "Replacement for a damaged or wrong item" [RET-5]
+  if   return_allowed(?o) = true                      otherwise "the item is not eligible for return"
+  and  return_reason(?o) = ?k
+  and  ?k in ["damaged_on_arrival", "wrong_item"]     otherwise "replacements are only offered for items that arrived damaged, defective or wrong"
+  and  contains(?o) = ?p
+  and  in_stock(?p) = true                            otherwise "the same product is currently out of stock, so a full refund is issued instead"
+  then replacement_available(?o) = true
+  because "the item arrived {k}, it is within the return rules, and the same product is in stock"
+end
+
+# --- cancellation --------------------------------------------------------------
+
+rule R-CAN-1 "Free cancellation before packing" [CAN-1]
+  if   order_status(?o) = ?s
+  and  ?s = "placed"                                  otherwise "the order status is {s}"
+  then cancellation_allowed(?o) = true
+  because "the order is still at the placed stage, so it can be cancelled free of charge"
+end
+
+rule R-CAN-2 "Cancellation after packing" [CAN-2]
+  if   order_status(?o) = ?s
+  and  ?s = "packed"                                  otherwise "the order status is {s}"
+  then cancellation_allowed(?o) = true
+  because "the order has been packed but not shipped, so it can still be cancelled"
+end
+
+rule R-CAN-3 "No cancellation once shipped" [CAN-3] priority 200
+  if   order_status(?o) = ?s
+  and  ?s in ["shipped", "out_for_delivery", "delivered"]
+  then cancellation_allowed(?o) = false
+  because "the order is already {s}, and orders cannot be cancelled once they have shipped; you can refuse the delivery or return the item after it arrives"
+end
+
+rule R-FEE-1 "No fee before packing" [CAN-1]
+  if   order_status(?o) = "placed"
+  then cancellation_fee(?o) = 0
+  because "orders cancelled before packing carry no fee"
+end
+
+rule R-FEE-2 "No fee for Meridian Plus" [CAN-2]
+  if   order_status(?o) = "packed"
+  and  order_membership(?o) = "plus"
+  then cancellation_fee(?o) = 0
+  because "Meridian Plus members pay no cancellation fee"
+end
+
+rule R-FEE-3 "Cancellation fee after packing" [CAN-2]
+  if   order_status(?o) = "packed"
+  and  order_membership(?o) = "standard"
+  and  order_total(?o) = ?t
+  and  cancellation_fee_rate(meridian) = ?r
+  and  cancellation_fee_cap(meridian) = ?cap
+  then cancellation_fee(?o) = min(?t * ?r, ?cap)
+  because "a fee of {r} of the {t} order total applies, capped at {cap}"
+end
+
+rule R-REF-C "Refund on cancellation" [REF-1]
+  if   cancellation_allowed(?o) = true                otherwise "the order cannot be cancelled"
+  and  order_total(?o) = ?t
+  and  cancellation_fee(?o) = ?f
+  then cancellation_refund(?o) = ?t - ?f
+  because "the refund is the order total of {t} minus a cancellation fee of {f}"
+end
+
+# --- refunds -------------------------------------------------------------------
+
+rule R-REF-FAIL "Payment captured but order failed" [REF-4]
+  if   order_status(?o) = ?s
+  and  ?s = "payment_failed"                          otherwise "the order did not fail (status {s})"
+  and  paid_with(?o) = ?pay
+  and  payment_status(?pay) = ?ps
+  and  ?ps = "captured"                               otherwise "no money was actually taken for this order"
+  and  order_total(?o) = ?t
+  then refund_required(?o) = true
+  because "a payment of {t} was taken but the order failed, so it is refunded automatically within 3 business days"
+end
+
+rule R-REF-DAYS "Days between delivery and the start of a return" [REF-2, REF-3]
+  if   return_for(?r) = ?o
+  and  return_started_on(?r) = ?s
+  and  delivered_on(?o) = ?t
+  then return_started_after_days(?r) = ?s - ?t
+end
+
+rule R-REF-OK "Refund approved for a timely, inspected return" [REF-2]
+  if   return_for(?r) = ?o
+  and  return_started_after_days(?r) = ?d
+  and  effective_return_window(?o) = ?w
+  and  ?d <= ?w                                       otherwise "the return was started {d} days after delivery, but the return window for this item is {w} days"
+  and  inspection_result(?r) = ?i
+  and  ?i = "passed"                                  otherwise "the returned item failed inspection"
+  then refund_approved(?r) = true
+  because "the return was started {d} days after delivery, within the {w}-day window, and the item passed inspection"
+end
+
+# --- delivery ------------------------------------------------------------------
+
+rule R-DEL-SD "Same-day delivery eligibility" [DEL-1]
+  if   same_day_eligible(?p) = true                   otherwise "it is not marked same-day eligible"
+  then same_day_product(?p) = true
+  because "the product is marked same-day eligible"
+end
+
+rule R-DEL-F1 "Free delivery for Meridian Plus" [DEL-2]
+  if   order_membership(?o) = "plus"                  otherwise "the customer is not a Meridian Plus member"
+  and  order_total(?o) = ?t
+  and  free_delivery_threshold_plus(meridian) = ?m
+  and  ?t > ?m                                        otherwise "the order total of {t} does not exceed {m}"
+  then free_delivery(?o) = true
+  because "the customer is a Meridian Plus member and the {t} order total exceeds {m}"
+end
+
+rule R-DEL-F2 "Free delivery above the standard threshold" [DEL-2]
+  if   order_total(?o) = ?t
+  and  free_delivery_threshold_standard(meridian) = ?m
+  and  ?t >= ?m                                       otherwise "the order total of {t} is below the {m} free-delivery threshold"
+  then free_delivery(?o) = true
+  because "the {t} order total meets the {m} free-delivery threshold"
+end
+
+rule R-DEL-LATE "Days late" [DEL-3]
+  if   order_status(?o) = ?s
+  and  ?s in ["shipped", "out_for_delivery"]
+  and  promised_delivery(?o) = ?p
+  and  today(meridian) = ?n
+  then days_late(?o) = ?n - ?p
+end
+
+rule R-DEL-C1 "Delay compensation: delivery fee refunded" [DEL-3]
+  if   days_late(?o) = ?d
+  and  delay_threshold_days(meridian) = ?th
+  and  ?d > ?th                                       otherwise "the order is {d} days past its promised date, and compensation starts after {th} days"
+  and  delivery_fee_paid(?o) = ?fee
+  then delay_compensation(?o) = ?fee
+  because "the delivery is {d} days late, more than {th} days, so the {fee} delivery fee is refunded"
+end
+
+rule R-DEL-C2 "Delay compensation for Meridian Plus" [DEL-3] priority 200
+  if   days_late(?o) = ?d
+  and  delay_threshold_days(meridian) = ?th
+  and  ?d > ?th                                       otherwise "the order is {d} days past its promised date, and compensation starts after {th} days"
+  and  order_membership(?o) = "plus"
+  and  delivery_fee_paid(?o) = ?fee
+  and  plus_delay_credit(meridian) = ?cr
+  then delay_compensation(?o) = ?fee + ?cr
+  because "the delivery is {d} days late, so the {fee} delivery fee is refunded plus a {cr} Meridian Plus wallet credit"
+end

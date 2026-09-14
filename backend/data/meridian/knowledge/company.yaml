@@ -1,0 +1,203 @@
+# =============================================================================
+# Meridian Marketplace knowledge graph (fictional demonstration data).
+#
+# Every entity is a node; every attribute is a fact; every entity-valued
+# attribute is an edge. The loader turns this into symbolic facts and a
+# traversable graph. Policy constants live on the `meridian` company node so the
+# rules hold only logic.
+#
+# `as_of` pins "today" so every answer and every benchmark result reproduces.
+# =============================================================================
+
+as_of: 2026-09-14
+
+entities:
+  # --- the company and its policy constants ----------------------------------
+  - id: meridian
+    type: company
+    name: Meridian Marketplace
+    attributes:
+      damage_report_days: 7
+      cancellation_fee_rate: 0.05
+      cancellation_fee_cap: 500
+      free_delivery_threshold_plus: 500
+      free_delivery_threshold_standard: 999
+      delay_threshold_days: 3
+      plus_delay_credit: 100
+      senior_service_years: 3
+      annual_leave_base: 18
+      annual_leave_senior: 24
+      min_trip_km: 50
+      receipt_threshold: 2000
+      claim_deadline_days: 30
+      mileage_rate: 9
+
+  # --- product categories -----------------------------------------------------
+  - {id: fashion, type: category, name: Fashion,
+     attributes: {return_window_days: 30, plus_extension_days: 15}}
+  - {id: home, type: category, name: Home,
+     attributes: {return_window_days: 30, plus_extension_days: 15}}
+  - {id: electronics, type: category, name: Electronics,
+     attributes: {return_window_days: 10, plus_extension_days: 0}}
+  - {id: grocery, type: category, name: Grocery,
+     attributes: {return_window_days: 0, plus_extension_days: 0, non_returnable: true}}
+  - {id: gift_card, type: category, name: Gift cards,
+     attributes: {return_window_days: 0, plus_extension_days: 0, non_returnable: true,
+                  excluded_from_damage_returns: true}}
+
+  # --- products ----------------------------------------------------------------
+  - id: PRD-501
+    type: product
+    name: Aurora 14 Laptop
+    attributes: {product_name: Aurora 14 Laptop, product_category: electronics, price: 62999,
+                 in_stock: true, same_day_eligible: false}
+  - id: PRD-502
+    type: product
+    name: Trailblazer Running Shoes
+    attributes: {product_name: Trailblazer Running Shoes, product_category: fashion,
+                 price: 3499, in_stock: true, same_day_eligible: true}
+  - id: PRD-503
+    type: product
+    name: Copper Kettle 1.5L
+    attributes: {product_name: Copper Kettle 1.5L, product_category: home, price: 1899,
+                 in_stock: false, same_day_eligible: true}
+  - id: PRD-504
+    type: product
+    name: Organic Almonds 500g
+    attributes: {product_name: Organic Almonds 500g, product_category: grocery, price: 749,
+                 in_stock: true, same_day_eligible: true}
+  - id: PRD-505
+    type: product
+    name: Nimbus Wireless Earbuds
+    attributes: {product_name: Nimbus Wireless Earbuds, product_category: electronics,
+                 price: 4999, in_stock: true, same_day_eligible: true}
+  - id: PRD-506
+    type: product
+    name: Meridian Gift Card 2000
+    attributes: {product_name: Meridian Gift Card 2000, product_category: gift_card,
+                 price: 2000, in_stock: true, same_day_eligible: false}
+  - id: PRD-507
+    type: product
+    name: Masala Chai 250g
+    attributes: {product_name: Masala Chai 250g, product_category: grocery, price: 399,
+                 in_stock: true, same_day_eligible: true}
+  - id: PRD-508
+    type: product
+    name: Linen Bedsheet Set
+    attributes: {product_name: Linen Bedsheet Set, product_category: home, price: 2499,
+                 in_stock: true, same_day_eligible: false}
+
+  # --- customers ----------------------------------------------------------------
+  - id: CUST-1001
+    type: customer
+    name: Priya Nair
+    attributes: {membership_tier: plus, city: bengaluru, email: priya@meridian.test}
+  - id: CUST-1002
+    type: customer
+    name: Sam Mehta
+    attributes: {membership_tier: standard, city: pune, email: sam@meridian.test}
+
+  # --- payments --------------------------------------------------------------------
+  - {id: PAY-7001, type: payment, attributes: {payment_status: captured, payment_method: card}}
+  - {id: PAY-7002, type: payment, attributes: {payment_status: captured, payment_method: upi}}
+  - {id: PAY-7003, type: payment, attributes: {payment_status: captured, payment_method: upi}}
+  - {id: PAY-7004, type: payment, attributes: {payment_status: captured, payment_method: card}}
+  - {id: PAY-7005, type: payment, attributes: {payment_status: captured, payment_method: wallet}}
+  - {id: PAY-8001, type: payment, attributes: {payment_status: captured, payment_method: upi}}
+  - {id: PAY-8002, type: payment, attributes: {payment_status: captured, payment_method: card}}
+  - {id: PAY-8003, type: payment, attributes: {payment_status: captured, payment_method: upi}}
+  - {id: PAY-8004, type: payment, attributes: {payment_status: captured, payment_method: upi}}
+
+  # --- Priya's orders (Meridian Plus, Bengaluru) -----------------------------------
+  - id: ORD-12345
+    type: order
+    name: Aurora 14 Laptop order
+    attributes: {placed_by: CUST-1001, contains: PRD-501, paid_with: PAY-7001,
+                 order_status: shipped, placed_on: 2026-09-11, promised_delivery: 2026-09-16,
+                 carrier: BlueDart, order_total: 62999, delivery_fee_paid: 0}
+  - id: ORD-12346
+    type: order
+    name: Trailblazer Running Shoes order
+    attributes: {placed_by: CUST-1001, contains: PRD-502, paid_with: PAY-7002,
+                 order_status: delivered, placed_on: 2026-08-27, promised_delivery: 2026-09-01,
+                 delivered_on: 2026-08-31, carrier: Delhivery, order_total: 3499,
+                 delivery_fee_paid: 0}
+  - id: ORD-12347
+    type: order
+    name: Copper Kettle order
+    attributes: {placed_by: CUST-1001, contains: PRD-503, paid_with: PAY-7003,
+                 order_status: delivered, placed_on: 2026-09-09, promised_delivery: 2026-09-12,
+                 delivered_on: 2026-09-12, carrier: Ekart, order_total: 1899,
+                 delivery_fee_paid: 0}
+  - id: ORD-12348
+    type: order
+    name: Nimbus Wireless Earbuds order
+    attributes: {placed_by: CUST-1001, contains: PRD-505, paid_with: PAY-7004,
+                 order_status: delivered, placed_on: 2026-08-17, promised_delivery: 2026-08-20,
+                 delivered_on: 2026-08-20, carrier: BlueDart, order_total: 4999,
+                 delivery_fee_paid: 0}
+  - id: ORD-12349
+    type: order
+    name: Linen Bedsheet Set order
+    attributes: {placed_by: CUST-1001, contains: PRD-508, paid_with: PAY-7005,
+                 order_status: delivered, placed_on: 2026-08-01, promised_delivery: 2026-08-05,
+                 delivered_on: 2026-08-05, carrier: Ekart, order_total: 2499,
+                 delivery_fee_paid: 0}
+
+  - id: RTN-9001
+    type: return
+    name: Return of the Nimbus Wireless Earbuds
+    attributes: {return_for: ORD-12348, return_started_on: 2026-09-02,
+                 inspection_result: passed}
+  - id: RFD-5001
+    type: refund
+    name: Refund for the earbuds return
+    attributes: {refund_for_return: RTN-9001, refund_status: rejected}
+
+  # --- Sam's orders (standard membership, Pune) ------------------------------------
+  - id: ORD-22001
+    type: order
+    name: Organic Almonds order
+    attributes: {placed_by: CUST-1002, contains: PRD-504, paid_with: PAY-8001,
+                 order_status: delivered, placed_on: 2026-09-07, promised_delivery: 2026-09-10,
+                 delivered_on: 2026-09-10, carrier: Ekart, order_total: 749,
+                 delivery_fee_paid: 49}
+  - id: ORD-22002
+    type: order
+    name: Copper Kettle order (payment failed)
+    attributes: {placed_by: CUST-1002, contains: PRD-503, paid_with: PAY-8002,
+                 order_status: payment_failed, placed_on: 2026-09-13, order_total: 1899,
+                 delivery_fee_paid: 0}
+  - id: ORD-22003
+    type: order
+    name: Trailblazer Running Shoes order
+    attributes: {placed_by: CUST-1002, contains: PRD-502, paid_with: PAY-8003,
+                 order_status: packed, placed_on: 2026-09-13, promised_delivery: 2026-09-17,
+                 carrier: Delhivery, order_total: 3499, delivery_fee_paid: 0}
+  - id: ORD-22004
+    type: order
+    name: Masala Chai order
+    attributes: {placed_by: CUST-1002, contains: PRD-507, paid_with: PAY-8004,
+                 order_status: shipped, placed_on: 2026-09-03, promised_delivery: 2026-09-08,
+                 carrier: Ekart, order_total: 399, delivery_fee_paid: 49}
+
+  # --- employees -------------------------------------------------------------------
+  - {id: L1, type: grade, name: L1, attributes: {travel_cap: 5000}}
+  - {id: L2, type: grade, name: L2, attributes: {travel_cap: 8000}}
+  - {id: L3, type: grade, name: L3, attributes: {travel_cap: 15000}}
+
+  - id: EMP-2001
+    type: employee
+    name: Dev Rao
+    attributes: {grade: L2, joined_on: 2022-03-01, email: dev@meridian.test}
+  - id: EMP-2002
+    type: employee
+    name: Ana Joseph
+    attributes: {grade: L1, joined_on: 2025-06-01, email: ana@meridian.test}
+
+  - id: CLM-3001
+    type: claim
+    name: Mysuru client visit
+    attributes: {claimant: EMP-2001, claimed_amount: 8750, travel_distance_km: 150,
+                 travel_mode: public_transport, receipts_attached: true,
+                 claim_submitted_after_days: 5}
