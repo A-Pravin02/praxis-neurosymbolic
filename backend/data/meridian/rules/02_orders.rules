@@ -74,6 +74,9 @@ rule R-RET-R "Replacement for a damaged or wrong item" [RET-5]
   if   return_allowed(?o) = true                      otherwise "the item is not eligible for return"
   and  return_reason(?o) = ?k
   and  ?k in ["damaged_on_arrival", "wrong_item"]     otherwise "replacements are only offered for items that arrived damaged, defective or wrong" requires "the item arrived damaged, defective or wrong"
+  and  days_since_delivery(?o) = ?d
+  and  damage_report_days(meridian) = ?lim
+  and  ?d <= ?lim                                     otherwise "replacements are only offered when the problem is reported within {lim} days of delivery, and this was {d} days"
   and  contains(?o) = ?p
   and  in_stock(?p) = true                            otherwise "the same product is currently out of stock, so a full refund is issued instead"
   then replacement_available(?o) = true

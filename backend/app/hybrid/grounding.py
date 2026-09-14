@@ -93,6 +93,7 @@ class FactGrounding:
         self.pack = pack
         self.program = pack.program
         self.graph = pack.graph
+        self._mentioned_category: str | None = None
 
     def actor(self, email: str, roles: tuple[str, ...] = ()) -> Actor:
         return Actor(email=email, entity=self.graph.person_by_email(email), roles=roles)
@@ -102,6 +103,8 @@ class FactGrounding:
                actor: Actor, context: dict | None = None) -> Grounding:
         grounding = Grounding()
         context = context or {}
+        categories = [m.entity_id for m in interpretation.mentions.categories]
+        self._mentioned_category = categories[0] if len(categories) == 1 else None
 
         if goal_name in self.program.goals and \
                 self.program.goals[goal_name].kind == "enumeration":
@@ -299,6 +302,10 @@ class FactGrounding:
         link = CASE_LINKS.get(subject_type)
         if link and actor.entity is not None:
             grounding.stated[(case, link)] = actor.entity.id
+        if subject_type == "order" and self._mentioned_category is not None:
+            # "Can I return electronics 8 days after delivery?" names the category; the
+            # case is about that category, not every category.
+            grounding.stated[(case, "order_category")] = self._mentioned_category
         grounding.assumptions.append(
             f"No specific {subject_type} was named, so this is evaluated as a general case "
             f"using what you said and the policies that apply to you.")
