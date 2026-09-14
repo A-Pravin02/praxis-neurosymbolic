@@ -16,6 +16,7 @@ from app.core import ratelimit
 from app.core.deps import CurrentPrincipal, DbSession, client_ip, require_permissions
 from app.core.errors import AuthorizationError, NotFoundError
 from app.db.session import tenant_session
+from app.hybrid import service as ns_service
 from app.orchestrator import conversation as convo
 from app.orchestrator.pipeline import AssistantTurn, Orchestrator
 from app.tenancy.permissions import (
@@ -51,7 +52,7 @@ def _turn_out(turn: AssistantTurn, *, conversation_id: uuid.UUID | None = None,
         citations=turn.citations, claims=turn.claims, reasoning=turn.reasoning,
         policy_decision=turn.policy_decision, warnings=turn.warnings,
         stages=[s.as_dict() for s in turn.stages], latency_ms=turn.latency_ms,
-        pipeline_mode=turn.pipeline_mode,
+        pipeline_mode=turn.pipeline_mode, neurosymbolic=turn.neurosymbolic,
     )
 
 
@@ -141,8 +142,12 @@ def _run_turn(db, principal, payload: ChatRequest, *, persist: bool = True):
     if persist:
         convo.append_message(db, principal, conversation, role="user",
                              content=payload.message)
-    turn = Orchestrator(db, principal).answer(
-        payload.message, history=history, pipeline_mode=payload.pipeline_mode)
+    if ns_service.serves_tenant(db, principal):
+        context = ns_service.previous_context(db, principal, conversation.id)
+        turn = ns_service.answer(principal, payload.message, context)
+    else:
+        turn = Orchestrator(db, principal).answer(
+            payload.message, history=history, pipeline_mode=payload.pipeline_mode)
     message = None
     if persist:
         message = convo.append_message(db, principal, conversation, role="assistant",

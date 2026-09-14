@@ -56,6 +56,11 @@ ALL_PERMISSIONS: dict[str, str] = {
 
 # Role name -> permissions. Seeded per tenant.
 ROLE_TEMPLATES: dict[str, list[str]] = {
+    # A customer talks to the assistant about their own orders; nothing else.
+    "customer": [CHAT_USE, CONVERSATION_READ, CONVERSATION_WRITE],
+    # A support agent may reason about any customer's record, but reads no internal
+    # documents or HR data.
+    "support": [CHAT_USE, CONVERSATION_READ, CONVERSATION_WRITE, DOCUMENT_READ],
     "employee": [
         CHAT_USE, CONVERSATION_READ, CONVERSATION_WRITE, DOCUMENT_READ,
         FACT_READ, RULE_READ,

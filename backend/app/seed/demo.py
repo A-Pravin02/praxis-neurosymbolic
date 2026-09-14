@@ -430,10 +430,25 @@ def seed_tenant(session: Session, *, slug: str, name: str, users: list[DemoUser]
             "documents": ingested, "facts": facts, "rules": len(rules)}
 
 
+# The neuro-symbolic enterprise assistant's workspace. Its knowledge - policies, rules
+# and the company graph - lives in the knowledge pack (backend/data/meridian), and these
+# accounts are linked to graph entities by email.
+MERIDIAN_SLUG = "meridian"
+MERIDIAN_USERS = [
+    DemoUser("priya@meridian.test", "Priya Nair", ["customer"], {"membership": "plus"}),
+    DemoUser("sam@meridian.test", "Sam Mehta", ["customer"], {"membership": "standard"}),
+    DemoUser("dev@meridian.test", "Dev Rao", ["employee"], {"grade": "L2"}),
+    DemoUser("ana@meridian.test", "Ana Joseph", ["employee"], {"grade": "L1"}),
+    DemoUser("support@meridian.test", "Kiran Das", ["support"], {}),
+]
+
+
 def seed_all() -> dict[str, Any]:
     ensure_permission_catalogue()
     summary: dict[str, Any] = {"tenants": []}
     for spec in (
+        {"slug": MERIDIAN_SLUG, "name": "Meridian Marketplace", "users": MERIDIAN_USERS,
+         "documents": [], "rules": [], "constraint_rules": []},
         {"slug": ACME_SLUG, "name": "Acme Corporation", "users": ACME_USERS,
          "documents": ACME_DOCUMENTS, "rules": ACME_RULES,
          "constraint_rules": ACME_CONSTRAINT_RULES},

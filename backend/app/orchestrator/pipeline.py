@@ -92,9 +92,11 @@ class AssistantTurn:
     plan: dict[str, Any] = field(default_factory=dict)
     grounding: dict[str, Any] = field(default_factory=dict)
     gate_signals: dict[str, Any] = field(default_factory=dict)
+    neurosymbolic: dict[str, Any] | None = None
 
     def trace(self) -> dict[str, Any]:
         return {
+            "neurosymbolic": self.neurosymbolic,
             "intent": self.intent, "plan": self.plan, "reasoning": self.reasoning,
             "citations": self.citations, "claims": self.claims,
             "gate": self.gate_signals, "grounding": self.grounding,

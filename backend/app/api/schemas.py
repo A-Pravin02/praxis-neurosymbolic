@@ -217,6 +217,9 @@ class AssistantTurnOut(BaseModel):
     stages: list[StageTimingOut] = []
     latency_ms: int = 0
     pipeline_mode: str = "neurosymbolic"
+    # Present when a knowledge-pack workspace answered: pipeline, explanation, sources,
+    # clarification options and the full reasoning trace.
+    neurosymbolic: dict | None = None
 
 
 class MessageOut(BaseModel):
