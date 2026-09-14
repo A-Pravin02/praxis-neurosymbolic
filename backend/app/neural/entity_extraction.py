@@ -68,6 +68,10 @@ _STOP = {"the", "a", "an", "my", "i", "is", "it", "to", "of", "for", "and", "or"
          "g", "l", "with", "have", "has", "get", "got"}
 
 
+# Words that pack or size a product rather than name it; never a product's head noun.
+_GENERIC_PRODUCT_WORDS = {"set", "pack", "kit", "pair", "box", "bundle", "combo"}
+
+
 @dataclass
 class Quantity:
     kind: str          # money | distance | days
@@ -116,8 +120,18 @@ def _number(text: str) -> float:
 def split_clauses(question: str) -> list[str]:
     """Clause-sized pieces, so one statement is not diluted by the rest of the question."""
     parts = re.split(r"(?<=[.?!;])\s+|(?<!\d),\s*|,\s+|\s+(?:but|and|because|so|although|though|"
-                     r"even though|since|however)\s+", question.strip(), flags=re.IGNORECASE)
-    clauses = [p.strip(" .?!") for p in parts if p and len(p.strip(" .?!")) > 2]
+                     r"even though|since|however)\s+|\s+(?=(?:if|when|as|after)\s)",
+                     question.strip(), flags=re.IGNORECASE)
+    clauses = []
+    for part in parts:
+        part = part.strip(" .?!")
+        # "if they arrived damaged" states a condition of the case being asked about; as
+        # a clause it is a statement, so its subordinator is removed. Left attached to
+        # "Can I return the almonds", the whole sentence read as a question and the
+        # damage was never registered.
+        part = re.sub(r"^(?:if|when|as|after)\s+", "", part, flags=re.IGNORECASE)
+        if part and len(part) > 2:
+            clauses.append(part)
     return clauses or [question.strip()]
 
 
@@ -249,10 +263,15 @@ def extract_mentions(question: str, graph: "KnowledgeGraph",
     words = [w for w in re.findall(r"[a-z0-9]+", question.lower()) if w not in _STOP]
     word_set = set(words) | {w.rstrip("s") for w in words}
     for entity in graph.entities_of_type("product"):
-        name_words = {w for w in re.findall(r"[a-z0-9]+", entity.name.lower())
-                      if w not in _STOP and not w.isdigit() and len(w) > 2}
+        ordered = [w for w in re.findall(r"[a-z0-9.]+", entity.name.lower())
+                   if w not in _STOP and not any(ch.isdigit() for ch in w) and len(w) > 2]
+        name_words = set(ordered)
+        head = next((w for w in reversed(ordered) if w not in _GENERIC_PRODUCT_WORDS), None)
         hits = {w for w in name_words if w in word_set or w.rstrip("s") in word_set}
-        if hits:
+        # One shared modifier is not a reference: "gift wrapping" is not the gift card.
+        # A link needs the product's head noun ("card", "kettle", "bedsheet") or two of
+        # its words.
+        if hits and (len(hits) >= 2 or (head is not None and head in hits)):
             mentions.products.append(EntityMention(entity.id, "product", " ".join(sorted(hits)),
                                                    "name", len(hits) / len(name_words)))
     for entity in graph.entities_of_type("category"):

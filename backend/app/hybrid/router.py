@@ -40,7 +40,18 @@ GOAL_SUPPORTED = 0.55     # ...or this close, if stated inputs or mentions corro
 GOAL_SUGGEST = 0.45       # close enough to offer as "did you mean", not to act on
 RETRIEVAL_ACCEPT = 0.55   # a policy clause this relevant answers an informational question
 TIE_WINDOW = 0.03         # goals this close are resolved by the rule graph, not by score
+KIND_WINDOW = 0.06        # a goal of the requested kind this close to the top is preferred
 CASE_ACTS = {"decide", "calculate", "explain", "locate", "enumerate", "resolve", "compare"}
+# Which goal kinds can answer each kind of request.
+COMPATIBLE_KINDS = {
+    "calculate": {"calculation"},
+    "explain": {"explanation", "decision", "calculation"},
+    # A yes/no question often wants an amount ("am I owed anything?"), so it overrides
+    # nothing a calculation could answer.
+    "decide": {"decision", "explanation", "calculation"},
+    "enumerate": {"enumeration"},
+    "locate": {"lookup"},
+}
 
 
 class Pipeline(str, Enum):
@@ -166,8 +177,28 @@ class ReasoningRouter:
                 evidence.append(f"mentions a {candidate.subject_type}")
             return evidence
 
+        # Symbolic validation of the neural interpretation, part 1: a question with no
+        # content word cannot select a goal, however similar its embedding happens to be -
+        # "How much?" scored 0.6 against a delivery-charge goal. One is enough: "Can I
+        # cancel it?" names its goal and only lacks the record.
+        if _content_words(interpretation.question) < 1:
+            return None, candidates[0].score, []
+
         top = candidates[0]
-        near = [c for c in candidates if top.score - c.score <= TIE_WINDOW]
+        # Part 2: the goal's kind must fit what was asked. "What's my reimbursement?" and
+        # "does my trip qualify?" sit a few hundredths apart in embedding space, but one
+        # wants an amount and the other a yes or no - and answering the wrong one is a
+        # fluent, cited answer to a question nobody asked. When a goal of the kind the
+        # speech act calls for is close to the top, it wins.
+        act = interpretation.speech_act.label
+        wanted = COMPATIBLE_KINDS.get(act)
+        if wanted and top.goal_kind not in wanted:
+            compatible = [c for c in candidates
+                          if c.goal_kind in wanted and top.score - c.score <= KIND_WINDOW]
+            if compatible:
+                top = compatible[0]
+        near = [c for c in candidates if top.score - c.score <= TIE_WINDOW
+                and (not wanted or c.goal_kind in wanted or c is top)]
         chosen = top
         if len(near) > 1:
             # Near-ties are resolved by the rule graph, not by a rounding difference in
@@ -344,6 +375,20 @@ class ReasoningRouter:
                         and entity_type not in seen:
                     seen.append(entity_type)
         return seen
+
+
+_FUNCTION_WORDS = {
+    "a", "an", "the", "is", "are", "was", "were", "be", "i", "me", "my", "we", "our", "you",
+    "your", "it", "this", "that", "these", "those", "what", "which", "who", "why", "how",
+    "when", "where", "much", "many", "do", "does", "did", "can", "could", "will", "would",
+    "should", "about", "other", "one", "of", "to", "for", "in", "on", "and", "or", "so",
+    "get", "got", "any", "some", "there", "here", "am", "if",
+}
+
+
+def _content_words(question: str) -> int:
+    words = [w for w in "".join(ch.lower() if ch.isalnum() else " " for ch in question).split()]
+    return sum(1 for w in words if w not in _FUNCTION_WORDS and len(w) > 2)
 
 
 _ACT_PHRASE = {

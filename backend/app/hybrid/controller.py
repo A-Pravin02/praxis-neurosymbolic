@@ -56,7 +56,9 @@ class AssistantAnswer:
     trace: dict[str, Any] = field(default_factory=dict)
     context: dict[str, Any] = field(default_factory=dict)
     goal: str | None = None
-    decision: Any = None
+    decision: Any = None          # the result, only when it is determined
+    value: Any = None             # the result even when conditional; None when symbolic
+    subject: str | None = None    # the record the reasoning resolved to
     latency_ms: int = 0
 
     def as_dict(self) -> dict[str, Any]:
@@ -238,7 +240,7 @@ class NeuroSymbolicController:
         trace.confidence = confidence
         return AssistantAnswer(
             answer=text, pipeline=route.pipeline.value, pipeline_label=route.pipeline.label,
-            outcome="answered", confidence=confidence, goal=goal.name,
+            outcome="answered", confidence=confidence, goal=goal.name, subject=subject,
             sources=[{"type": "record", "id": subject,
                       "title": self.graph.display_name(subject)}],
             context=self._context(context, goal.subject_type, subject),
@@ -345,6 +347,8 @@ class NeuroSymbolicController:
             answer=text, pipeline=route.pipeline.value, pipeline_label=route.pipeline.label,
             outcome=outcome, confidence=confidence, goal=goal.name,
             decision=_plain(result.value) if result.status in ("determined", "default") else None,
+            value=None if cases else _plain(result.value),
+            subject=None if grounding.hypothetical else subject,
             sources=[{"type": "policy", "id": c["id"], "title": c["title"],
                       "document": c["document"], "text": c["text"]}
                      for c in trace.retrieved_knowledge if "linked_by" in c]

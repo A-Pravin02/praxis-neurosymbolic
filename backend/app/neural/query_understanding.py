@@ -88,6 +88,14 @@ class Interpretation:
         }
 
 
+def _clause_around(question: str, quantity) -> str:
+    """The clause a quantity was written in."""
+    for clause in split_clauses(question):
+        if quantity.text.lower() in clause.lower():
+            return clause
+    return question
+
+
 class QueryUnderstanding:
     def __init__(self, program: "KnowledgeProgram", graph: "KnowledgeGraph",
                  encoder: "Encoder") -> None:
@@ -178,23 +186,30 @@ class QueryUnderstanding:
     def _quantity_inputs(self, interpretation: Interpretation,
                          predicates: set[str]) -> list[StatedInput]:
         stated: list[StatedInput] = []
-        used: set[int] = set()
-        for quantity in interpretation.mentions.quantities:
-            matching = [p for p in sorted(predicates)
-                        if self.program.value_type(p) == UNIT_OF_INPUT.get(quantity.kind)
-                        and p not in {s.predicate for s in stated}]
-            if not matching or id(quantity) in used:
+        quantities = interpretation.mentions.quantities
+        units = sorted({UNIT_OF_INPUT.get(q.kind) for q in quantities} - {None})
+        for unit in units:
+            inputs = [p for p in sorted(predicates) if self.program.value_type(p) == unit]
+            numbers = [q for q in quantities if UNIT_OF_INPUT.get(q.kind) == unit]
+            if not inputs or not numbers:
                 continue
-            if len(matching) == 1:
-                chosen, confidence = matching[0], 0.95
-            else:
-                # Several inputs share a unit: bind the number to the one whose meaning
-                # is closest to the words around it.
-                descriptions = [self.program.inputs[p][0].description for p in matching]
-                scores = self.encoder.similarity([interpretation.question], descriptions)[0]
-                index = int(scores.argmax())
-                chosen, confidence = matching[index], float(scores[index])
-            used.add(id(quantity))
-            stated.append(StatedInput(chosen, quantity.value, confidence, quantity.text,
-                                      "quantity"))
+            # Bind each input to the number whose surrounding clause means the most like
+            # the input's description. "My grade cap is ₹15,000 so I'll get the full ₹8,750
+            # for my trip" has two amounts; the claim is the one said about the trip, not
+            # simply the first one written.
+            contexts = [_clause_around(interpretation.question, q) for q in numbers]
+            descriptions = [self.program.inputs[p][0].description for p in inputs]
+            scores = self.encoder.similarity(contexts, descriptions)
+            taken: set[int] = set()
+            for column, predicate in sorted(enumerate(inputs),
+                                            key=lambda pair: -float(scores[:, pair[0]].max())):
+                order = sorted(range(len(numbers)), key=lambda row: -float(scores[row, column]))
+                row = next((r for r in order if r not in taken), None)
+                if row is None:
+                    continue
+                taken.add(row)
+                confidence = 0.95 if len(numbers) == 1 and len(inputs) == 1 \
+                    else float(scores[row, column])
+                stated.append(StatedInput(predicate, numbers[row].value, confidence,
+                                          numbers[row].text, "quantity"))
         return stated

@@ -48,7 +48,10 @@ class Conclusion:
         parts = [self.subject, self.headline, self.value or "", *self.reasons,
                  *self.conditions, *[f"{a} {b}" for a, b in self.cases], *self.missing,
                  *self.notes, *self.corrections, *self.items, self.prompt,
-                 *[c.get("text", "") + " " + c.get("title", "") for c in self.clauses],
+                 # The clause id and document are part of what may be printed: without
+                 # them the "1" in "(RET-1)" reads as a figure the reply invented.
+                 *[" ".join(str(c.get(k, "")) for k in ("id", "title", "document", "text"))
+                   for c in self.clauses],
                  *[o.get("label", "") + " " + o.get("id", "") + " " + o.get("detail", "")
                    for o in self.options]]
         return " ".join(p for p in parts if p)
