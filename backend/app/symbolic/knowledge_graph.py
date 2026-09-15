@@ -177,7 +177,26 @@ class KnowledgeGraph:
             values = self.values(entity_id, predicate)
             if values:
                 return self.owner_of(values[0])
+        # A payment carries no owner of its own; it belongs to whoever placed the order
+        # that was paid with it.
+        for predicate, other in self._reverse.get(entity_id, []):
+            if predicate == "paid_with":
+                return self.owner_of(other)
         return None
+
+    def holders_of(self, predicate: str, value: str) -> list[str]:
+        """Subjects whose `predicate` points at `value`."""
+        return [s for (s, p), values in self._facts.items()
+                if p == predicate and value in map(str, values)]
+
+    def policy_versions(self, policy: str) -> list[Entity]:
+        """Every version of a policy, oldest first by effective date."""
+        versions = [e for e in self.entities_of_type("policy_version")
+                    if [str(v) for v in self.values(e.id, "policy")] == [policy]]
+        return sorted(versions, key=lambda e: (self.values(e.id, "effective_from") or [0])[0])
+
+    def view_for(self, kind: str, person_id: str | None, program) -> "AuthorizedGraph":
+        return AuthorizedGraph(self, kind, person_id, program)
 
     def person_by_email(self, email: str) -> Entity | None:
         matches = self.find("email", email)
@@ -195,6 +214,113 @@ class KnowledgeGraph:
             return dt.date.fromordinal(int(ordinal))
         except (TypeError, ValueError, OverflowError):
             return None
+
+
+class AuthorizedGraph:
+    """The part of the knowledge graph one person is allowed to reason over.
+
+    Authorization happens *before* reasoning: the reasoner, the grounding and the
+    verifier receive this view, not the graph, so a fact the person may not see cannot
+    enter a proof, a why-not explanation or a number in the answer. Visibility is declared
+    in the schema (`access customer own: order ...`), not written in code:
+
+    * `public` types (products, categories, policy versions) are visible to everyone;
+    * `own` types are visible when the record belongs to the person asking;
+    * `all` types are visible whoever they belong to (a support agent and orders).
+    """
+
+    def __init__(self, graph: KnowledgeGraph, kind: str, person_id: str | None, program) -> None:
+        self.base = graph
+        self.kind = kind
+        self.person_id = person_id
+        self.as_of = graph.as_of
+        public = program.visible_types("public", "all")
+        self.all_types = public | program.visible_types(kind, "all")
+        self.own_types = program.visible_types(kind, "own")
+        self.unrestricted = "*" in self.all_types
+        self._visible: dict[str, bool] = {}
+        self.entities = {i: e for i, e in graph.entities.items() if self.visible(i)}
+
+    # -- visibility -----------------------------------------------------------
+    def visible(self, entity_id: str) -> bool:
+        if entity_id in self._visible:
+            return self._visible[entity_id]
+        entity = self.base.entities.get(entity_id)
+        if entity is None:
+            allowed = False
+        elif self.unrestricted or entity.type in self.all_types:
+            allowed = True
+        elif entity.type in self.own_types and self.person_id is not None:
+            allowed = self.base.owner_of(entity_id) == self.person_id
+        else:
+            allowed = False
+        self._visible[entity_id] = allowed
+        return allowed
+
+    def hidden_count(self) -> int:
+        return len(self.base.entities) - len(self.entities)
+
+    # -- the KnowledgeGraph interface, filtered -------------------------------------
+    def values(self, subject: str, predicate: str) -> list[Any]:
+        if subject in self.base.entities and not self.visible(subject):
+            return []
+        return [v for v in self.base.values(subject, predicate)
+                if not (isinstance(v, str) and v in self.base.entities and not self.visible(v))]
+
+    def has_entity(self, entity_id: str) -> bool:
+        return entity_id in self.entities
+
+    def entities_of_type(self, entity_type: str) -> list[Entity]:
+        return [e for e in self.base.entities_of_type(entity_type) if self.visible(e.id)]
+
+    def find(self, predicate: str, value: Any) -> list[Entity]:
+        return [e for e in self.base.find(predicate, value) if self.visible(e.id)]
+
+    def facts_about(self, entity_id: str) -> dict[str, Any]:
+        return self.base.facts_about(entity_id) if self.visible(entity_id) else {}
+
+    def neighbours(self, entity_id: str) -> list[tuple[str, str, str]]:
+        if not self.visible(entity_id):
+            return []
+        return [n for n in self.base.neighbours(entity_id) if self.visible(n[2])]
+
+    def related(self, entity_id: str, entity_type: str, *, max_hops: int = 3) -> list[str]:
+        if not self.visible(entity_id):
+            return []
+        return [r for r in self.base.related(entity_id, entity_type, max_hops=max_hops)
+                if self.visible(r)]
+
+    def path(self, source: str, target: str, *, max_hops: int = 5):
+        route = self.base.path(source, target, max_hops=max_hops)
+        return route if all(self.visible(a) and self.visible(b) for a, _, b in route) else []
+
+    def owner_of(self, entity_id: str) -> str | None:
+        return self.base.owner_of(entity_id) if self.visible(entity_id) else None
+
+    def holders_of(self, predicate: str, value: str) -> list[str]:
+        return [s for s in self.base.holders_of(predicate, value) if self.visible(s)]
+
+    def policy_versions(self, policy: str) -> list[Entity]:
+        return [e for e in self.base.policy_versions(policy) if self.visible(e.id)]
+
+    def person_by_email(self, email: str) -> Entity | None:
+        person = self.base.person_by_email(email)
+        return person if person is not None and self.visible(person.id) else None
+
+    def records_of(self, person_id: str, entity_type: str) -> list[Entity]:
+        return [e for e in self.base.records_of(person_id, entity_type) if self.visible(e.id)]
+
+    def display_name(self, entity_id: Any) -> str:
+        if entity_id is not None and str(entity_id) in self.base.entities and \
+                not self.visible(str(entity_id)):
+            return "a restricted record"
+        return self.base.display_name(entity_id)
+
+    def date_of(self, ordinal: Any) -> dt.date | None:
+        return self.base.date_of(ordinal)
+
+    def view_for(self, kind: str, person_id: str | None, program) -> "AuthorizedGraph":
+        return AuthorizedGraph(self.base, kind, person_id, program)
 
 
 def load_graph(path: Path) -> KnowledgeGraph:

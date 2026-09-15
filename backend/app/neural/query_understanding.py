@@ -18,6 +18,7 @@ anywhere.
 """
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
@@ -43,6 +44,10 @@ TARGETED_INPUT_THRESHOLD = 0.64
 INPUT_MARGIN = 0.03
 
 UNIT_OF_INPUT = {"money": "money", "days": "days", "distance": "distance"}
+# Words that make a stated number a claim about what the policy says.
+POLICY_CLAIM_CUE = re.compile(
+    r"\b(policy|policies|rule|rules|window|limit|cap|threshold|allowance|maximum|"
+    r"entitled to|you allow|allows?)\b", re.IGNORECASE)
 
 
 @dataclass
@@ -118,6 +123,9 @@ class QueryUnderstanding:
         relevant: set[str] = set()
         for candidate in candidates[:3]:
             relevant |= self.program.input_predicates_for(candidate.name)
+        # Claims only a record can confirm ("my manager already approved it") are looked
+        # for in every question, so an unconfirmed one is reported whatever was asked.
+        relevant |= {p for p in self.program.inputs if self.program.is_verified_input(p)}
         interpretation.inputs = self.detect_inputs(interpretation, relevant, INPUT_THRESHOLD)
         return interpretation
 
@@ -200,6 +208,12 @@ class QueryUnderstanding:
             contexts = [_clause_around(interpretation.question, q) for q in numbers]
             descriptions = [self.program.inputs[p][0].description for p in inputs]
             scores = self.encoder.similarity(contexts, descriptions)
+            # "Your policy is 30 days, so can I return it after 20 days?" - a number said
+            # about the policy is a claim about the policy, checked later against it, not
+            # a fact about the case. It is bound only if nothing else can be.
+            for row, context in enumerate(contexts):
+                if POLICY_CLAIM_CUE.search(context) and len(numbers) > 1:
+                    scores[row, :] -= 1.0
             taken: set[int] = set()
             for column, predicate in sorted(enumerate(inputs),
                                             key=lambda pair: -float(scores[:, pair[0]].max())):

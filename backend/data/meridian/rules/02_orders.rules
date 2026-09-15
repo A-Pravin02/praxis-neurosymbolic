@@ -23,6 +23,24 @@ rule R-CLK-IMP "A stated delivery age implies the item was delivered" [RET-1]
   then order_status(?o) = "delivered"
 end
 
+rule R-KG-PRICE "A general case is valued at the product's list price" [SUP-2]
+  if   contains(?o) = ?p
+  and  price(?p) = ?x
+  then order_total(?o) = ?x
+  because "no order record was named, so the order total is taken as the product's list price of {x}"
+end
+
+rule R-DATE-REC "Delivery date from the order record" [RET-1]
+  if   delivered_on(?o) = ?t
+  then delivery_date(?o) = ?t
+end
+
+rule R-DATE-AGE "Delivery date from how long ago the item arrived" [RET-1]
+  if   days_since_delivery(?o) = ?d
+  and  today(meridian) = ?n
+  then delivery_date(?o) = ?n - ?d
+end
+
 rule R-CLK-DEL "Days since delivery" [RET-1]
   if   delivered_on(?o) = ?t
   and  today(meridian) = ?n
@@ -64,8 +82,9 @@ rule R-RET-D "Damaged, defective or wrong item" [RET-4] priority 200
   and  order_category(?o) = ?c
   and  not excluded_from_damage_returns(?c)           otherwise "{c} items are excluded even when damaged"
   and  days_since_delivery(?o) = ?d
-  and  damage_report_days(meridian) = ?lim
-  and  ?d <= ?lim                                     otherwise "the problem was reported {d} days after delivery, but damaged or wrong items must be reported within {lim} days"
+  and  returns_policy(?o) = ?v
+  and  damage_report_days(?v) = ?lim
+  and  ?d <= ?lim                                     otherwise "the problem was reported {d} days after delivery, but damaged or wrong items must be reported within {lim} days" requires "the problem is reported within {lim} days of delivery"
   then return_allowed(?o) = true
   because "the item was reported as {k} {d} days after delivery, within the {lim}-day window for damaged or wrong items"
 end
@@ -75,7 +94,8 @@ rule R-RET-R "Replacement for a damaged or wrong item" [RET-5]
   and  return_reason(?o) = ?k
   and  ?k in ["damaged_on_arrival", "wrong_item"]     otherwise "replacements are only offered for items that arrived damaged, defective or wrong" requires "the item arrived damaged, defective or wrong"
   and  days_since_delivery(?o) = ?d
-  and  damage_report_days(meridian) = ?lim
+  and  returns_policy(?o) = ?v
+  and  damage_report_days(?v) = ?lim
   and  ?d <= ?lim                                     otherwise "replacements are only offered when the problem is reported within {lim} days of delivery, and this was {d} days"
   and  contains(?o) = ?p
   and  in_stock(?p) = true                            otherwise "the same product is currently out of stock, so a full refund is issued instead"

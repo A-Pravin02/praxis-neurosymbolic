@@ -1,6 +1,9 @@
 # Returns and Replacements Policy
 
-Meridian Marketplace (fictional demonstration company). Effective 2026-01-01.
+Meridian Marketplace (fictional demonstration company).
+Policy: returns. Version: 2. Effective: 2026-09-01. Supersedes version 1.
+Change from version 1: damaged, defective or wrong items may now be reported within
+15 days of delivery instead of 7. It applies to orders delivered on or after 2026-09-01.
 
 ## RET-1 Return window
 
@@ -22,15 +25,15 @@ fashion and home items. The extension does not apply to electronics.
 
 An item that arrived damaged, defective, or was not the item ordered may be
 returned in any category except gift cards, provided the problem is reported
-within 7 days of delivery. This applies even to groceries and to electronics
+within 15 days of delivery. This applies even to groceries and to electronics
 outside their normal window.
 
 ## RET-5 Replacement instead of refund
 
 A replacement is offered only when the item is eligible for return because it
-arrived damaged, defective or wrong, and the same product is currently in
-stock. When the product is out of stock, the customer receives a full refund
-instead.
+arrived damaged, defective or wrong, the problem was reported within the damage
+reporting period, and the same product is currently in stock. When the product is
+out of stock, the customer receives a full refund instead.
 
 ## RET-6 Condition of returned items
 

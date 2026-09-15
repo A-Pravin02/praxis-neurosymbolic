@@ -231,12 +231,19 @@ class GoalResult:
 class Reasoner:
     def __init__(self, program: KnowledgeProgram, graph: KnowledgeGraph, *,
                  stated: dict[tuple[str, str], Any] | None = None,
-                 open_subjects: set[str] | None = None, max_depth: int = 16) -> None:
+                 open_subjects: set[str] | None = None, max_depth: int = 16,
+                 two_valued: bool = False, latest_versions: bool = False) -> None:
         self.program = program
         self.graph = graph
         self.stated = dict(stated or {})
         self.open_subjects = set(open_subjects or ())
         self.max_depth = max_depth
+        # Ablations used only by the evaluation baselines: a classical rule engine treats
+        # an unknown as false, and a naive one always applies the newest policy version.
+        self.two_valued = two_valued
+        self.latest_versions = latest_versions
+        # (subject, policy) -> which version governed the case and why
+        self.version_resolutions: dict[tuple[str, str], dict[str, Any]] = {}
         self._memo: dict[tuple[str, str], GoalResult] = {}
         self._active: set[tuple[str, str]] = set()
         # Variables in the rule being applied whose values hold only conditionally.
@@ -265,6 +272,8 @@ class Reasoner:
         recorded = self.graph.values(subject, predicate)
         if recorded:
             return self._fact(subject, predicate, recorded[0], "record")
+        if predicate in self.program.versions:
+            return self._resolve_version(subject, self.program.versions[predicate])
         if is_open and (subject, predicate) in self.stated:
             return self._fact(subject, predicate, self.stated[(subject, predicate)], "stated")
 
@@ -284,10 +293,63 @@ class Reasoner:
 
         if (subject, predicate) in self.stated:
             return self._fact(subject, predicate, self.stated[(subject, predicate)], "stated")
-        if self.program.is_input(predicate) or is_open:
+        if (self.program.is_input(predicate) or is_open) and not self.two_valued:
             return GoalResult(subject, predicate, UNKNOWN,
                               missing=[Unknown(predicate, subject)])
         return GoalResult(subject, predicate, "absent")
+
+    def _resolve_version(self, subject: str, binding) -> GoalResult:
+        """The version of a policy in force on the case's date.
+
+        Not the newest version: an order delivered before a policy change is governed by
+        the policy that applied then. When the case has no date at all (a general
+        question with no timing), the version in force today applies, and the
+        resolution records that it was assumed.
+        """
+        predicate = binding.predicate
+        versions = self.graph.policy_versions(binding.policy)
+        if not versions:
+            return GoalResult(subject, predicate, "absent")
+        today = self.graph.as_of.toordinal()
+
+        def effective(entity) -> int:
+            return int((self.graph.values(entity.id, "effective_from") or [0])[0])
+
+        reference, assumed = today, True
+        basis = "no date is known for this case, so the version in force today applies"
+        if self.latest_versions:
+            basis = "the newest version is always applied"
+        else:
+            dated = self.evaluate(subject, binding.date_predicate)
+            if dated.status == "determined" and isinstance(dated.value, (int, float)) and \
+                    not isinstance(dated.value, bool):
+                reference, assumed = int(dated.value), False
+                basis = (f"the {humanize(binding.date_predicate)} is "
+                         f"{format_value(reference, 'date')}")
+
+        in_force = [v for v in versions if effective(v) <= reference] if not \
+            self.latest_versions else versions
+        if not in_force:
+            return GoalResult(subject, predicate, "absent")
+        chosen = in_force[-1]
+        later = [v for v in versions if effective(v) > effective(chosen)]
+        self.version_resolutions[(subject, binding.policy)] = {
+            "subject": subject, "policy": binding.policy, "version": chosen.id,
+            "name": chosen.name,
+            "number": (self.graph.values(chosen.id, "version") or [None])[0],
+            "effective_from": format_value(effective(chosen), "date"),
+            "effective_ordinal": effective(chosen),
+            "superseded_on": format_value(effective(later[0]), "date") if later else None,
+            "superseded_ordinal": effective(later[0]) if later else None,
+            "reference_date": format_value(reference, "date"),
+            "reference_ordinal": reference,
+            "basis": basis, "assumed": assumed,
+            "versions_available": [v.id for v in versions],
+        }
+        ref = FactRef(subject, predicate, chosen.id, "derived", f"version:{binding.policy}")
+        self.touched[(subject, predicate, "derived")] = ref
+        return GoalResult(subject, predicate, "determined", value=chosen.id, source="derived",
+                          facts=[ref])
 
     def _fact(self, subject: str, predicate: str, value: Any, source: str) -> GoalResult:
         ref = FactRef(subject, predicate, value, source)

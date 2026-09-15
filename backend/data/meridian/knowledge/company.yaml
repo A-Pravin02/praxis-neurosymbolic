@@ -17,7 +17,6 @@ entities:
     type: company
     name: Meridian Marketplace
     attributes:
-      damage_report_days: 7
       cancellation_fee_rate: 0.05
       cancellation_fee_cap: 500
       free_delivery_threshold_plus: 500
@@ -31,6 +30,20 @@ entities:
       receipt_threshold: 2000
       claim_deadline_days: 30
       mileage_rate: 9
+      approval_threshold: 25000
+      goodwill_rate: 0.10
+      goodwill_cap: 500
+
+  # --- policy versions: a policy change is a new node, never a rule edit ----------
+  - id: RETURNS-v1
+    type: policy_version
+    name: Returns policy version 1
+    attributes: {policy: returns, version: 1, effective_from: 2026-01-01, damage_report_days: 7}
+  - id: RETURNS-v2
+    type: policy_version
+    name: Returns policy version 2
+    attributes: {policy: returns, version: 2, effective_from: 2026-09-01, supersedes: RETURNS-v1,
+                 damage_report_days: 15}
 
   # --- product categories -----------------------------------------------------
   - {id: fashion, type: category, name: Fashion,
@@ -96,6 +109,10 @@ entities:
     type: customer
     name: Sam Mehta
     attributes: {membership_tier: standard, city: pune, email: sam@meridian.test}
+  - id: CUST-1003
+    type: customer
+    name: Rohan Iyer
+    attributes: {membership_tier: standard, city: mumbai, email: rohan@meridian.test}
 
   # --- payments --------------------------------------------------------------------
   - {id: PAY-7001, type: payment, attributes: {payment_status: captured, payment_method: card}}
@@ -107,6 +124,8 @@ entities:
   - {id: PAY-8002, type: payment, attributes: {payment_status: captured, payment_method: card}}
   - {id: PAY-8003, type: payment, attributes: {payment_status: captured, payment_method: upi}}
   - {id: PAY-8004, type: payment, attributes: {payment_status: captured, payment_method: upi}}
+  - {id: PAY-9001, type: payment, attributes: {payment_status: captured, payment_method: card}}
+  - {id: PAY-9002, type: payment, attributes: {payment_status: captured, payment_method: card}}
 
   # --- Priya's orders (Meridian Plus, Bengaluru) -----------------------------------
   - id: ORD-12345
@@ -135,7 +154,7 @@ entities:
     attributes: {placed_by: CUST-1001, contains: PRD-505, paid_with: PAY-7004,
                  order_status: delivered, placed_on: 2026-08-17, promised_delivery: 2026-08-20,
                  delivered_on: 2026-08-20, carrier: BlueDart, order_total: 4999,
-                 delivery_fee_paid: 0}
+                 delivery_fee_paid: 0, exception_approved: true}
   - id: ORD-12349
     type: order
     name: Linen Bedsheet Set order
@@ -181,6 +200,24 @@ entities:
                  order_status: shipped, placed_on: 2026-09-03, promised_delivery: 2026-09-08,
                  carrier: Ekart, order_total: 399, delivery_fee_paid: 49}
 
+  # --- Rohan's orders (standard membership, Mumbai) --------------------------------
+  # One damaged-goods case under each returns policy version: delivered after and
+  # before version 2 took effect on 2026-09-01.
+  - id: ORD-33001
+    type: order
+    name: Aurora 14 Laptop order
+    attributes: {placed_by: CUST-1003, contains: PRD-501, paid_with: PAY-9001,
+                 order_status: delivered, placed_on: 2026-08-29, promised_delivery: 2026-09-02,
+                 delivered_on: 2026-09-02, carrier: BlueDart, order_total: 62999,
+                 delivery_fee_paid: 0}
+  - id: ORD-33002
+    type: order
+    name: Nimbus Wireless Earbuds order
+    attributes: {placed_by: CUST-1003, contains: PRD-505, paid_with: PAY-9002,
+                 order_status: delivered, placed_on: 2026-08-25, promised_delivery: 2026-08-28,
+                 delivered_on: 2026-08-28, carrier: Delhivery, order_total: 4999,
+                 delivery_fee_paid: 0}
+
   # --- employees -------------------------------------------------------------------
   - {id: L1, type: grade, name: L1, attributes: {travel_cap: 5000}}
   - {id: L2, type: grade, name: L2, attributes: {travel_cap: 8000}}
@@ -189,11 +226,13 @@ entities:
   - id: EMP-2001
     type: employee
     name: Dev Rao
-    attributes: {grade: L2, joined_on: 2022-03-01, email: dev@meridian.test}
+    attributes: {grade: L2, joined_on: 2022-03-01, email: dev@meridian.test,
+                 monthly_salary: 185000}
   - id: EMP-2002
     type: employee
     name: Ana Joseph
-    attributes: {grade: L1, joined_on: 2025-06-01, email: ana@meridian.test}
+    attributes: {grade: L1, joined_on: 2025-06-01, email: ana@meridian.test,
+                 monthly_salary: 92000}
 
   - id: CLM-3001
     type: claim

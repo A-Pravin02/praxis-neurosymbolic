@@ -16,7 +16,15 @@ Grounding decides, symbolically:
   relied on it.
 * **Hypothetical cases.** "If I spent ₹8,750" is about no record at all. It becomes an
   open-world case linked to the person asking, so their grade and membership still apply
-  and every unstated condition is unknown rather than false.
+  and every unstated condition is unknown rather than false. A support agent describing
+  a customer's problem ("my customer's laptop arrived damaged") gets the same kind of
+  case, linked to no one.
+* **Claims the records must confirm.** "The manager already approved this" is a
+  *verified* input: only a recorded approval makes it true. Said without one, it is
+  reported as unconfirmed and never used.
+
+Grounding works on the person's *authorized view* of the knowledge graph, so a record
+they may not see can be neither resolved nor reasoned over.
 """
 from __future__ import annotations
 
@@ -33,6 +41,8 @@ if TYPE_CHECKING:  # pragma: no cover
 
 # How a hypothetical case of each type is attached to the person asking.
 CASE_LINKS = {"order": "placed_by", "claim": "claimant"}
+# Record types a question may describe as a general case rather than name.
+CASE_SUBJECTS = {"order", "claim", "ticket"}
 STAFF_ROLES = {"support", "admin"}
 
 
@@ -51,6 +61,16 @@ class Actor:
         if STAFF_ROLES & set(self.roles):
             return "staff"
         return self.entity.type if self.entity else "unknown"
+
+    @property
+    def access_kind(self) -> str:
+        """Which `access` declarations apply: the most privileged role wins."""
+        roles = set(self.roles)
+        if "admin" in roles:
+            return "admin"
+        if "support" in roles:
+            return "support"
+        return self.entity.type if self.entity else "public"
 
     @property
     def name(self) -> str:
@@ -89,14 +109,15 @@ class Grounding:
 
 
 class FactGrounding:
-    def __init__(self, pack: "KnowledgePack") -> None:
+    def __init__(self, pack: "KnowledgePack", graph=None) -> None:
         self.pack = pack
         self.program = pack.program
-        self.graph = pack.graph
+        # The authorized view when grounding for a person; the full graph otherwise.
+        self.graph = graph if graph is not None else pack.graph
         self._mentioned_category: str | None = None
 
     def actor(self, email: str, roles: tuple[str, ...] = ()) -> Actor:
-        return Actor(email=email, entity=self.graph.person_by_email(email), roles=roles)
+        return Actor(email=email, entity=self.pack.graph.person_by_email(email), roles=roles)
 
     # -- public -------------------------------------------------------------
     def ground(self, interpretation: "Interpretation", goal_name: str, subject_type: str,
@@ -112,7 +133,7 @@ class FactGrounding:
             return grounding
 
         if subject_type in ("employee", "customer"):
-            self._ground_person(grounding, actor, subject_type)
+            self._ground_person(grounding, actor, subject_type, interpretation)
         else:
             self._resolve_record(grounding, interpretation, goal_name, subject_type, actor,
                                  context)
@@ -122,7 +143,20 @@ class FactGrounding:
         return grounding
 
     # -- the person asking --------------------------------------------------
-    def _ground_person(self, grounding: Grounding, actor: Actor, subject_type: str) -> None:
+    def _ground_person(self, grounding: Grounding, actor: Actor, subject_type: str,
+                       interpretation=None) -> None:
+        named = [m.entity_id for m in (interpretation.mentions.records if interpretation else [])
+                 if m.entity_type == subject_type and m.entity_id != actor.id]
+        if named:
+            # "How much leave does Ana get?" is about Ana, not about the person asking -
+            # and only if the person asking may see Ana's record.
+            if not self._may_access(actor, named[0]):
+                grounding.denied = (
+                    f"That is another {subject_type}'s record, so I can't look at it or reason "
+                    f"about it for you.")
+                return
+            grounding.subjects = [named[0]]
+            return
         if actor.entity is not None and actor.entity.type == subject_type:
             grounding.subjects = [actor.entity.id]
             return
@@ -137,11 +171,34 @@ class FactGrounding:
 
         explicit = [m.entity_id for m in mentions.records if m.entity_type == subject_type]
         # A mention of a related record points at the one asked about: an order id in a
-        # question about a refund, a return id in a question about an order.
+        # question about a refund, a return id in a question about an order, a customer
+        # named by a support agent in a question about "their order".
+        named_person = False
         for mention in mentions.records:
-            if mention.entity_type != subject_type:
-                explicit += self.graph.related(mention.entity_id, subject_type, max_hops=2)
+            if mention.entity_type != subject_type and mention.entity_id != actor.id:
+                if not self._may_access(actor, mention.entity_id):
+                    grounding.denied = (
+                        "That record belongs to a different account, so I can't look at it or "
+                        "reason about it for you.")
+                    return
+                related = self.graph.related(mention.entity_id, subject_type, max_hops=2)
+                if mention.entity_type in ("customer", "employee"):
+                    named_person = True
+                    related = [r for r in related if self.graph.owner_of(r) == mention.entity_id]
+                explicit += related
         explicit = list(dict.fromkeys(explicit))
+        if named_person and len(explicit) > 1:
+            # "Rohan's laptop" names a person and a product: narrow to that product, then
+            # to the records the question can apply to and its statements fit.
+            products = {m.entity_id for m in mentions.products}
+            if products:
+                explicit = [r for r in explicit
+                            if set(map(str, self.graph.values(r, "contains"))) & products] \
+                    or explicit
+            relevant = [e for e in explicit if self._relevant(goal_name, e)]
+            consistent = [e for e in relevant
+                          if self._consistent(e, interpretation, goal_name, subject_type)]
+            explicit = consistent or relevant or explicit
 
         if mentions.unresolved_ids and not explicit:
             grounding.missing_subject = (
@@ -169,6 +226,21 @@ class FactGrounding:
         # contradiction is only "misleading" when the person named the record.
         own = self._candidates(actor, subject_type, interpretation)
         products = [m.entity_id for m in mentions.products]
+        if actor.kind == "staff" and actor.entity is None and subject_type in CASE_SUBJECTS:
+            previous = context.get("subjects", {}).get(subject_type)
+            if previous and self.graph.has_entity(previous) and mentions.deictic and \
+                    not products and not interpretation.inputs:
+                grounding.subjects = [previous]
+                grounding.assumptions.append(
+                    f"Taken to mean {self.graph.display_name(previous)} ({previous}) from "
+                    f"earlier in the conversation.")
+                return
+            # A support agent describing a customer's situation without naming an order
+            # or a customer is asking about the policy applied to that situation.
+            self._make_case(grounding, subject_type, actor)
+            if products and subject_type == "order":
+                grounding.stated[(grounding.subjects[0], "contains")] = products[0]
+            return
         if products and subject_type == "order" and not own and actor.entity is not None:
             # A product the person never ordered: the question is about that product in
             # general ("can I return a gift card that arrived damaged?").
@@ -217,6 +289,10 @@ class FactGrounding:
                 grounding.stated[(grounding.subjects[0], "contains")] = products[0]
             return
         if not own and subject_type in CASE_LINKS and actor.entity is not None:
+            self._make_case(grounding, subject_type, actor)
+            return
+        if not own and subject_type in CASE_SUBJECTS and subject_type not in CASE_LINKS:
+            # Nobody owns a support ticket; describing the issue is the case.
             self._make_case(grounding, subject_type, actor)
             return
         if len(own) > 1:
@@ -295,9 +371,11 @@ class FactGrounding:
             # "Can I return electronics 8 days after delivery?" names the category; the
             # case is about that category, not every category.
             grounding.stated[(case, "order_category")] = self._mentioned_category
-        grounding.assumptions.append(
-            f"No specific {subject_type} was named, so this is evaluated as a general case "
-            f"using what you said and the policies that apply to you.")
+        if subject_type in CASE_LINKS:
+            grounding.assumptions.append(
+                f"No specific {subject_type} was named, so this is evaluated as a general "
+                f"case using what you said and the policies that apply"
+                + (" to you." if actor.entity is not None else "."))
 
     def _clarify(self, entity_ids: list[str], subject_type: str) -> Clarification:
         options = []
@@ -310,6 +388,9 @@ class FactGrounding:
             question=f"Which {subject_type} do you mean?", options=options)
 
     def _may_access(self, actor: Actor, entity_id: str) -> bool:
+        visible = getattr(self.graph, "visible", None)
+        if visible is not None:
+            return visible(entity_id)
         if actor.kind == "staff":
             return True
         owner = self.graph.owner_of(entity_id)
@@ -325,6 +406,13 @@ class FactGrounding:
                             stated=grounding.stated)
 
         for statement in interpretation.inputs:
+            if self.program.is_verified_input(statement.predicate) and \
+                    statement.predicate not in needed:
+                # A claim the records must confirm is checked even when this decision
+                # doesn't depend on it: an unconfirmed "it was already approved" is
+                # reported, not silently ignored.
+                self._verify_claim(grounding, statement, subject)
+                continue
             self.accept_statement(grounding, statement, subject, subject_type, needed, baseline)
 
     def accept_statement(self, grounding: Grounding, statement: "StatedInput", subject: str,
@@ -336,6 +424,9 @@ class FactGrounding:
             return False
         value_type = self.program.value_type(statement.predicate)
         shown = format_value(statement.value, value_type, graph=self.graph)
+
+        if self.program.is_verified_input(statement.predicate):
+            return self._verify_claim(grounding, statement, subject)
 
         if subject not in grounding.open_subjects:
             known = baseline.evaluate(subject, statement.predicate)
@@ -357,6 +448,28 @@ class FactGrounding:
                                    "status": "stated by you", "evidence": statement.evidence,
                                    "confidence": round(statement.confidence, 3)})
         return True
+
+    def _verify_claim(self, grounding: Grounding, statement: "StatedInput", subject: str) -> bool:
+        """A verified input is true only if the company record says so."""
+        predicate = statement.predicate
+        if any(r["predicate"] == predicate for r in grounding.rejected) or \
+                any(a["predicate"] == predicate for a in grounding.accepted):
+            return False
+        recorded = [] if subject.startswith("case:") else self.graph.values(subject, predicate)
+        value_type = self.program.value_type(predicate)
+        if recorded and _same(recorded[0], statement.value):
+            grounding.accepted.append({
+                "predicate": predicate,
+                "value": format_value(statement.value, value_type, graph=self.graph),
+                "status": "confirmed by record", "evidence": statement.evidence})
+            return True
+        where = "there is no order record to check it against" if subject.startswith("case:") \
+            else "the company records show no such approval"
+        grounding.rejected.append({
+            "predicate": predicate, "kind": "unverified claim", "stated": "yes",
+            "record": "not recorded", "evidence": statement.evidence,
+            "reason": f"it can only be confirmed by a company record, and {where}"})
+        return False
 
 
 def _tolerance(value_type: str) -> float:

@@ -54,7 +54,7 @@ def load_pack(directory: str | None = None, encoder_kind: str | None = None) -> 
         directory=root,
         program=program,
         graph=graph,
-        policies=PolicyIndex(parse_policies(root / "policies"), encoder),
+        policies=PolicyIndex(parse_policies(root / "policies", as_of=graph.as_of), encoder),
         understanding=QueryUnderstanding(program, graph, encoder),
         encoder=encoder,
     )

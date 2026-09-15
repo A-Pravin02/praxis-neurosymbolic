@@ -27,6 +27,19 @@ here; no example questions and no code.
     goal      return_allowed(order) decision "whether a bought item can be sent back"
     lookup    order_tracking(order) "where an order is now" : order_status carrier
     default   return_allowed = false
+
+Declarations that make the knowledge an operational product rather than a demo:
+
+    version   returns_policy(order) of returns on delivery_date
+              the policy version in force for a case is resolved from its date
+    access    customer own: customer order payment return refund
+              which entity types each kind of person may reason over
+    label     recommended_resolution replacement "offer a replacement of the same product"
+    action    replacement_available yes "Create a replacement order; no refund is issued."
+    followup  recommended_resolution approval_required
+              a goal whose result qualifies another goal's recommended action
+    input ... verified
+              a statement the company records can confirm but a person cannot establish
 """
 from __future__ import annotations
 
@@ -38,9 +51,10 @@ from typing import Any
 from app.core.errors import RuleError
 from app.symbolic.schema import CompiledRule, check_stratification, compile_rule
 
-GOAL_KINDS = {"decision", "calculation", "explanation", "enumeration"}
+GOAL_KINDS = {"decision", "calculation", "explanation", "enumeration", "recommendation"}
 VALUE_TYPES = {"text", "number", "money", "days", "distance", "date", "flag", "enum",
                "entity", "percent", "years"}
+ACCESS_SCOPES = {"own", "all"}
 FUNCTIONS = {"min", "max", "abs", "floor", "ceil"}
 _CMP = {"<=": "lte", ">=": "gte", "<": "lt", ">": "gt", "=": "eq", "!=": "ne",
         "in": "in", "not in": "not_in"}
@@ -66,6 +80,34 @@ class InputValue:
     value_type: str
     value: Any
     description: str
+    # A verified input is something the company records ("a supervisor approved an
+    # exception"). A person saying it does not make it true: only the record can.
+    verified: bool = False
+
+
+@dataclass
+class VersionBinding:
+    """`version returns_policy(order) of returns on delivery_date`.
+
+    The version of a policy that governs a case is the one in force on the case's date,
+    not whichever is newest. Rules read versioned parameters through the resolved
+    version entity (`returns_policy(?o) = ?v and damage_report_days(?v) = ?lim`), so a
+    policy change is a new version node in the knowledge graph, never a rule edit.
+    """
+
+    predicate: str
+    subject_type: str
+    policy: str
+    date_predicate: str
+
+
+@dataclass
+class AccessGrant:
+    """`access support all: customer order` - what a kind of person may reason over."""
+
+    kind: str             # public | customer | employee | support | admin | ...
+    scope: str            # own | all
+    entity_types: set[str]
 
 
 @dataclass
@@ -153,6 +195,14 @@ class KnowledgeProgram:
     phrases: dict[str, dict[str, str]] = field(default_factory=dict)
     # goal -> how the company *stores* that outcome, for consistency verification
     recorded: dict[str, "RecordedOutcome"] = field(default_factory=dict)
+    versions: dict[str, VersionBinding] = field(default_factory=dict)
+    access: list[AccessGrant] = field(default_factory=list)
+    # predicate -> {text value: how a person reads it}
+    labels: dict[str, dict[str, str]] = field(default_factory=dict)
+    # goal -> {"yes"|"no"|"value"|<text value>: what the person should do next}
+    actions: dict[str, dict[str, str]] = field(default_factory=dict)
+    # goal -> goals whose results qualify its recommended action
+    followups: dict[str, list[str]] = field(default_factory=dict)
     rules: list[RuleSpec] = field(default_factory=list)
 
     # -- queries the rest of the system asks -------------------------------
@@ -187,6 +237,16 @@ class KnowledgeProgram:
 
     def input_predicates_for(self, predicate: str) -> set[str]:
         return {p for p in self.dependencies(predicate) | {predicate} if self.is_input(p)}
+
+    def is_verified_input(self, predicate: str) -> bool:
+        return any(v.verified for v in self.inputs.get(predicate, []))
+
+    def visible_types(self, kind: str, scope: str) -> set[str]:
+        return {t for grant in self.access if grant.kind == kind and grant.scope == scope
+                for t in grant.entity_types}
+
+    def label(self, predicate: str, value: Any) -> str | None:
+        return self.labels.get(predicate, {}).get(str(value))
 
 
 # ---------------------------------------------------------------------------
@@ -429,16 +489,50 @@ def parse_program(text: str, *, source: str = "") -> KnowledgeProgram:
                 program.attributes[predicate] = PredicateType(predicate, stype, vtype)
             elif keyword == "input":
                 match = re.match(r'^(?P<sig>\S+)\s*->\s*(?P<vtype>\w+)'
-                                 r'(?:\s+(?P<value>[^"\s]+))?\s+"(?P<desc>[^"]+)"$', rest)
+                                 r'(?:\s+(?P<value>[^"\s]+))?\s+"(?P<desc>[^"]+)"'
+                                 r'(?:\s+(?P<verified>verified))?$', rest)
                 if not match:
-                    raise fail("expected: input pred(type) -> vtype [value] \"description\"")
+                    raise fail("expected: input pred(type) -> vtype [value] \"description\" "
+                               "[verified]")
                 predicate, stype = _signature(match.group("sig"))
                 vtype = match.group("vtype")
                 value = _scalar(match.group("value")) if match.group("value") else None
                 if vtype == "enum" and value is None:
                     raise fail("an enum input needs a value")
                 program.inputs.setdefault(predicate, []).append(InputValue(
-                    predicate, stype, vtype, value, match.group("desc")))
+                    predicate, stype, vtype, value, match.group("desc"),
+                    verified=bool(match.group("verified"))))
+            elif keyword == "version":
+                match = re.match(r'^(?P<sig>\S+)\s+of\s+(?P<policy>[\w\-]+)\s+on\s+'
+                                 r'(?P<date>\w+)$', rest)
+                if not match:
+                    raise fail("expected: version pred(type) of <policy> on <date predicate>")
+                predicate, stype = _signature(match.group("sig"))
+                program.versions[predicate] = VersionBinding(
+                    predicate, stype, match.group("policy"), match.group("date"))
+            elif keyword == "access":
+                match = re.match(r'^(?P<kind>\w+)(?:\s+(?P<scope>own|all))?\s*:\s*(?P<types>.+)$',
+                                 rest)
+                if not match:
+                    raise fail("expected: access <kind> [own|all]: type type ...")
+                kind = match.group("kind")
+                scope = "all" if kind == "public" else (match.group("scope") or "own")
+                program.access.append(AccessGrant(kind, scope, set(match.group("types").split())))
+            elif keyword == "label":
+                match = re.match(r'^(\w+)\s+(\S+)\s+"([^"]+)"$', rest)
+                if not match:
+                    raise fail('expected: label <predicate> <value> "text"')
+                program.labels.setdefault(match.group(1), {})[match.group(2)] = match.group(3)
+            elif keyword == "action":
+                match = re.match(r'^(\w+)\s+(\S+)\s+"([^"]+)"$', rest)
+                if not match:
+                    raise fail('expected: action <goal> yes|no|value|<value> "text"')
+                program.actions.setdefault(match.group(1), {})[match.group(2)] = match.group(3)
+            elif keyword == "followup":
+                parts = rest.split()
+                if len(parts) < 2:
+                    raise fail("expected: followup <goal> <goal> [<goal> ...]")
+                program.followups.setdefault(parts[0], []).extend(parts[1:])
             elif keyword == "goal":
                 match = re.match(r'^(?P<sig>\S+)\s+(?P<kind>\w+)\s+"(?P<desc>[^"]+)"$', rest)
                 if not match or match.group("kind") not in GOAL_KINDS:
@@ -574,6 +668,24 @@ def _check_references(program: KnowledgeProgram) -> None:
     duplicates = {c for c in codes if codes.count(c) > 1}
     if duplicates:
         raise RuleError(f"Duplicate rule codes: {', '.join(sorted(duplicates))}")
+    for binding in program.versions.values():
+        attribute = program.attributes.get(binding.predicate)
+        if attribute is None or attribute.subject_type != binding.subject_type:
+            raise RuleError(f"Versioned predicate {binding.predicate!r} must be declared as an "
+                            f"attribute of {binding.subject_type}.")
+        if binding.date_predicate not in program.attributes:
+            raise RuleError(f"Version {binding.predicate!r} is dated by an undeclared predicate "
+                            f"{binding.date_predicate!r}.")
+    for grant in program.access:
+        unknown = grant.entity_types - program.entity_types - {"*"}
+        if unknown:
+            raise RuleError(f"access {grant.kind} names unknown entity types: "
+                            f"{', '.join(sorted(unknown))}")
+    known_goals = set(program.goals) | set(program.lookups)
+    for goal, followups in program.followups.items():
+        for name in [goal, *followups]:
+            if name not in known_goals and name not in program.derived_predicates():
+                raise RuleError(f"followup names {name!r}, which no rule concludes.")
 
 
 def load_program(directory: Path) -> KnowledgeProgram:

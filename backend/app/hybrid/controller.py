@@ -1,22 +1,26 @@
 """HYBRID. The neuro-symbolic controller: one question, end to end.
 
     question
+      -> SECURITY  authorize: the person's view of the knowledge graph, before anything else
       -> NEURAL    understand: goal candidates, speech act, entities, stated inputs
       -> HYBRID    route: choose pipeline A-F from the question and the rule base
       -> SYMBOLIC  ground: resolve the record, validate statements against records
-      -> SYMBOLIC  reason: three-valued rule evaluation over the knowledge graph
+      -> SYMBOLIC  reason: three-valued rule evaluation over the authorized graph, with the
+                   policy version in force on the case's date
       -> HYBRID    loop: the reasoner names an input it lacks; the neural layer looks
                    again for exactly that input; the reasoner re-evaluates
-      -> HYBRID    verify: record consistency, constraints, citations, grounding
+      -> HYBRID    check claims: numbers attributed to the policy against the policy
+      -> HYBRID    verify: ten deterministic checks; an answer that fails is withheld
       -> NEURAL    generate: phrase the established conclusion
-      -> HYBRID    explain: a trace and a plain-language account of how it was decided
+      -> HYBRID    explain: decision, recommended action, evidence, rules, verification,
+                   and a knowledge gap when the knowledge could not answer
 
 Where standard RAG ends and neuro-symbolic reasoning begins
 ------------------------------------------------------------
 Pipeline A *is* retrieval: find the policy clause and quote it. Every other reasoning
 pipeline uses retrieval only for citations. The decision - can this order be returned,
-how much is this claim worth - is made by rules evaluated on records, and a language
-model never sees the question when that decision is made.
+how much is this claim worth, what may an agent offer - is made by rules evaluated on
+records, and a language model never sees the question when that decision is made.
 """
 from __future__ import annotations
 
@@ -25,11 +29,13 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from app.core.logging import get_logger
-from app.hybrid.grounding import FactGrounding, Grounding
+from app.hybrid import gaps
+from app.hybrid.claims import check_policy_claims
+from app.hybrid.grounding import Actor, FactGrounding, Grounding
 from app.hybrid.knowledge_pack import KnowledgePack, load_pack
 from app.hybrid.router import RETRIEVAL_ACCEPT, Pipeline, ReasoningRouter, RouteDecision
 from app.hybrid.trace import ReasoningTrace
-from app.hybrid.verification import Verifier, run_checks
+from app.hybrid.verification import VerificationReport, Verifier, run_checks
 from app.neural.query_understanding import TARGETED_INPUT_THRESHOLD, Interpretation
 from app.neural.response_generation import Conclusion, LanguageModelRealizer, realize
 from app.symbolic.reasoner import CONDITIONAL, GoalResult, Reasoner, RuleOutcome, Symbolic
@@ -39,8 +45,10 @@ logger = get_logger("praxis.hybrid")
 
 MAX_LOOP_ITERATIONS = 2
 MAX_CASES = 8
-NOT_SPLIT_TYPES = {"company", "customer", "employee", "grade"}
-SUBJECT_NOUNS = {"order": "order", "claim": "trip", "return": "return", "employee": "record"}
+NOT_SPLIT_TYPES = {"company", "customer", "employee", "grade", "policy_version"}
+SUBJECT_NOUNS = {"order": "order", "claim": "trip", "return": "return", "employee": "record",
+                 "ticket": "issue"}
+CUSTOMER_RECORD_TYPES = {"order", "return", "refund", "payment", "ticket"}
 
 
 @dataclass
@@ -48,7 +56,7 @@ class AssistantAnswer:
     answer: str
     pipeline: str
     pipeline_label: str
-    outcome: str                  # answered | conditional | clarification | insufficient | denied
+    outcome: str        # answered | conditional | clarification | insufficient | denied | needs_review
     confidence: float
     sources: list[dict[str, Any]] = field(default_factory=list)
     explanation: list[str] = field(default_factory=list)
@@ -60,9 +68,35 @@ class AssistantAnswer:
     value: Any = None             # the result even when conditional; None when symbolic
     subject: str | None = None    # the record the reasoning resolved to
     latency_ms: int = 0
+    # -- the decision-support view --------------------------------------------------------
+    decision_label: str = ""      # "Yes", "No", "₹8,000", "Offer a replacement", ...
+    decision_kind: str = ""       # yes_no | amount | recommendation | list | record |
+    #                               information | needs_information | clarification |
+    #                               not_covered | access_refused | needs_review
+    recommended_action: str | None = None
+    verification: dict[str, Any] = field(default_factory=dict)
+    knowledge_gap: dict[str, Any] | None = None
+    policy_versions: list[dict[str, Any]] = field(default_factory=list)
+    rules_applied: list[dict[str, Any]] = field(default_factory=list)
+    facts: list[dict[str, Any]] = field(default_factory=list)
+    claims: list[dict[str, Any]] = field(default_factory=list)
 
     def as_dict(self) -> dict[str, Any]:
         return dict(self.__dict__)
+
+
+@dataclass
+class _Request:
+    """Everything that is specific to the person asking. Never stored on the controller."""
+
+    actor: Actor
+    view: Any
+    grounder: FactGrounding
+    verifier: Verifier
+
+    @property
+    def staff(self) -> bool:
+        return self.actor.kind == "staff"
 
 
 class NeuroSymbolicController:
@@ -71,8 +105,6 @@ class NeuroSymbolicController:
         self.program = self.pack.program
         self.graph = self.pack.graph
         self.router = ReasoningRouter(self.pack)
-        self.grounder = FactGrounding(self.pack)
-        self.verifier = Verifier(self.pack)
         if llm is None:
             from app.neuro.registry import get_llm
             llm = get_llm()
@@ -82,7 +114,11 @@ class NeuroSymbolicController:
     def answer(self, question: str, *, actor_email: str, actor_roles: tuple[str, ...] = (),
                context: dict | None = None) -> AssistantAnswer:
         started = time.perf_counter()
-        actor = self.grounder.actor(actor_email, tuple(actor_roles))
+        actor = FactGrounding(self.pack).actor(actor_email, tuple(actor_roles))
+        # Authorization before reasoning: every later step sees only this view.
+        view = self.graph.view_for(actor.access_kind, actor.id, self.program)
+        req = _Request(actor, view, FactGrounding(self.pack, view), Verifier(self.pack, view))
+
         interpretation = self.pack.understanding.understand(question)
         route = self.router.route(interpretation)
 
@@ -97,20 +133,24 @@ class NeuroSymbolicController:
             why_symbolic=route.symbolic_reason,
             components=[{"layer": layer, "stage": stage} for layer, stage in route.stages],
             retrieved_knowledge=[c.as_dict() for c in route.clauses],
+            authorization={"access": actor.access_kind, "person": actor.id,
+                           "visible_records": len(view.entities),
+                           "withheld_records": view.hidden_count()},
         )
 
         goal = route.goal
         if route.pipeline is Pipeline.INSUFFICIENT:
-            result = self._insufficient(interpretation, route, trace)
+            result = self._insufficient(interpretation, route, trace, req)
         elif route.pipeline is Pipeline.CLARIFICATION and goal is None:
-            result = self._clarify_intent(route, trace)
+            result = self._clarify_intent(interpretation, route, trace)
         elif goal is None:
-            result = self._retrieval(route, trace)
+            result = self._retrieval(route, trace, req)
         elif goal.kind == "lookup":
-            result = self._lookup(interpretation, route, actor, context, trace)
+            result = self._lookup(interpretation, route, req, context, trace)
         else:
-            result = self._reason(interpretation, route, actor, context, trace)
+            result = self._reason(interpretation, route, req, context, trace)
 
+        self._finish(result, trace)
         result.latency_ms = trace.latency_ms = int((time.perf_counter() - started) * 1000)
         result.trace = trace.as_dict()
         return result
@@ -118,7 +158,7 @@ class NeuroSymbolicController:
     # =======================================================================
     # Pipeline A: knowledge retrieval
     # =======================================================================
-    def _retrieval(self, route: RouteDecision, trace: ReasoningTrace) -> AssistantAnswer:
+    def _retrieval(self, route: RouteDecision, trace: ReasoningTrace, req) -> AssistantAnswer:
         top = route.clauses[0]
         # An overview question ("what is the leave policy") is answered by every clause
         # on the topic, not only the single closest one.
@@ -128,13 +168,15 @@ class NeuroSymbolicController:
             {"id": c.clause.id, "title": c.clause.title, "document": c.clause.document,
              "text": c.clause.text} for c in chosen])
         text = realize(conclusion)
-        report = run_checks(self.verifier.grounding(text, conclusion))
+        sources = [_clause_source(c.clause) for c in chosen]
+        report = run_checks(req.verifier.policy_applicability(sources, []),
+                            req.verifier.grounding(text, conclusion))
         trace.verification = report.as_dict()
         trace.reasoning_steps = [
             "Classified the request as a question about what company policy says.",
-            f"Retrieved {len(chosen)} policy clause{'s' if len(chosen) != 1 else ''} by "
-            f"meaning: " + "; ".join(f"{c.clause.id} {c.clause.title} ({c.score:.2f})"
-                                     for c in chosen) + ".",
+            f"Retrieved {len(chosen)} policy clause{'s' if len(chosen) != 1 else ''} in force, "
+            f"by meaning: " + "; ".join(f"{c.clause.id} {c.clause.title} ({c.score:.2f})"
+                                        for c in chosen) + ".",
             "No decision or amount was asked for, so no rule was evaluated.",
         ]
         confidence = _clamp((top.score - 0.45) / 0.35) * (1.0 if report.passed else 0.5)
@@ -142,13 +184,12 @@ class NeuroSymbolicController:
         trace.confidence_factors = {"retrieval_relevance": round(top.score, 3)}
         return AssistantAnswer(
             answer=text, pipeline=route.pipeline.value, pipeline_label=route.pipeline.label,
-            outcome="answered", confidence=round(confidence, 2),
-            sources=[{"type": "policy", "id": c.clause.id, "title": c.clause.title,
-                      "document": c.clause.document, "text": c.clause.text}
-                     for c in chosen],
+            outcome="answered", confidence=round(confidence, 2), sources=sources,
+            decision_label="Policy information", decision_kind="information",
+            verification=_verification(report),
             explanation=[
                 "Understood the question as a request for company information.",
-                "Retrieved the matching policy text: "
+                "Retrieved the matching policy text in force: "
                 + ", ".join(f"{c.clause.id} ({c.clause.title})" for c in chosen) + ".",
                 "Answered from that text directly — there was no rule to apply.",
                 f"Chose {route.pipeline.label} because no decision about a specific case was "
@@ -159,13 +200,16 @@ class NeuroSymbolicController:
     # Pipeline F / E without a goal
     # =======================================================================
     def _insufficient(self, interpretation: Interpretation, route: RouteDecision,
-                      trace: ReasoningTrace) -> AssistantAnswer:
+                      trace: ReasoningTrace, req) -> AssistantAnswer:
         best = route.clauses[0] if route.clauses else None
-        reasons = ["Nothing in the company's policies, rules or records covers it, so any "
-                   "answer would be invented"]
-        if best is not None and best.score >= 0.45:
-            reasons.append(f"The closest topic I do have is {best.clause.title} "
-                           f"({best.clause.id}), and it doesn't answer this")
+        nearest = best if best is not None and best.score >= 0.45 else None
+        gap = gaps.uncovered_topic(interpretation, self.pack, nearest)
+        covered = f" about {', '.join(gap['terms'][:3])}" if gap["terms"] else ""
+        reasons = [f"Nothing in the company's policies, rules or records says anything{covered}, "
+                   f"so any answer would be invented"]
+        if nearest is not None:
+            reasons.append(f"The closest topic I do have is {nearest.clause.title} "
+                           f"({nearest.clause.id}), and it doesn't answer this")
         conclusion = Conclusion(kind="insufficient", reasons=reasons,
                                 headline=f"I can't answer that from "
                                          f"{self.graph.display_name('meridian')}'s company "
@@ -174,17 +218,21 @@ class NeuroSymbolicController:
         trace.reasoning_steps = [
             "Compared the question with every goal the rule base can decide: none is close.",
             "Searched the policy text: no clause is relevant enough to answer from.",
+            f"Recorded a knowledge gap: {gap['summary']}.",
             "Reported what is missing instead of generating an answer.",
         ]
-        trace.verification = run_checks(self.verifier.grounding(text, conclusion)).as_dict()
+        trace.knowledge_gap = gap
+        trace.verification = run_checks(req.verifier.grounding(text, conclusion)).as_dict()
         return AssistantAnswer(
             answer=text, pipeline=route.pipeline.value, pipeline_label=route.pipeline.label,
-            outcome="insufficient", confidence=0.0,
+            outcome="insufficient", confidence=0.0, knowledge_gap=gap,
+            recommended_action=_gap_action(req),
             explanation=["Looked for a matching policy, rule or record.",
                          "Found nothing that covers the question.",
-                         "Declined to guess, and said what is missing."])
+                         "Declined to guess, said what is missing, and logged the gap."])
 
-    def _clarify_intent(self, route: RouteDecision, trace: ReasoningTrace) -> AssistantAnswer:
+    def _clarify_intent(self, interpretation, route: RouteDecision,
+                        trace: ReasoningTrace) -> AssistantAnswer:
         options = [{"id": a.name, "label": _sentence_case(a.description), "detail": ""}
                    for a in route.alternatives]
         conclusion = Conclusion(kind="clarification", options=options,
@@ -195,45 +243,50 @@ class NeuroSymbolicController:
             "is a confident match.",
             "Asked which one was meant rather than reasoning about the wrong question.",
         ]
+        trace.knowledge_gap = gaps.unclear_request(interpretation, route.alternatives)
         return AssistantAnswer(
             answer=realize(conclusion), pipeline=route.pipeline.value,
             pipeline_label=route.pipeline.label, outcome="clarification", confidence=0.0,
             clarification={"question": conclusion.prompt, "options": options},
+            knowledge_gap=trace.knowledge_gap,
+            recommended_action="Choose the question you meant.",
             explanation=["Understood the topic, but not which question was meant.",
                          "Asked for clarification instead of guessing."])
 
     # =======================================================================
     # Pipeline A over records: lookup
     # =======================================================================
-    def _lookup(self, interpretation, route, actor, context, trace) -> AssistantAnswer:
+    def _lookup(self, interpretation, route, req: _Request, context, trace) -> AssistantAnswer:
         goal = route.goal
         lookup = self.program.lookups[goal.name]
-        grounding = self.grounder.ground(interpretation, goal.name, goal.subject_type, actor,
-                                         context)
+        grounding = req.grounder.ground(interpretation, goal.name, goal.subject_type, req.actor,
+                                        context)
         trace.grounding = grounding.as_dict()
         early = self._grounding_outcome(grounding, route, trace, goal.subject_type)
         if early is not None:
             return early
 
         subject = grounding.subjects[0]
+        view = req.view
         facts = []
         for predicate in lookup.predicates:
-            values = self.graph.values(subject, predicate)
+            values = view.values(subject, predicate)
             if values:
                 facts.append((predicate, format_value(values[0], self.program.value_type(
-                    predicate), graph=self.graph)))
+                    predicate), graph=view)))
         detail = ", ".join(f"{humanize(p)} {v}" for p, v in facts)
+        owner = "the customer's" if req.staff else "your"
         conclusion = Conclusion(
-            kind="lookup", subject=self.graph.display_name(subject),
-            headline=f"your {self.graph.display_name(subject)} ({subject}): {detail}",
+            kind="lookup", subject=view.display_name(subject),
+            headline=f"{owner} {view.display_name(subject)} ({subject}): {detail}",
             notes=grounding.assumptions)
         text = realize(conclusion)
-        report = run_checks(self.verifier.grounding(text, conclusion))
+        report = run_checks(req.verifier.grounding(text, conclusion))
         trace.verification = report.as_dict()
         trace.symbolic_facts = [{"subject": subject, "predicate": p, "value": v,
                                  "source": "record"} for p, v in facts]
         trace.reasoning_steps = [
-            f"Resolved the question to {subject} ({self.graph.display_name(subject)}).",
+            f"Resolved the question to {subject} ({view.display_name(subject)}).",
             f"Read {', '.join(lookup.predicates)} from the knowledge graph.",
         ]
         confidence = round(0.5 + 0.5 * _clamp((route.goal_score - 0.45) / 0.35), 2)
@@ -241,22 +294,24 @@ class NeuroSymbolicController:
         return AssistantAnswer(
             answer=text, pipeline=route.pipeline.value, pipeline_label=route.pipeline.label,
             outcome="answered", confidence=confidence, goal=goal.name, subject=subject,
-            sources=[{"type": "record", "id": subject,
-                      "title": self.graph.display_name(subject)}],
+            decision_label="Record status", decision_kind="record",
+            verification=_verification(report),
+            facts=trace.symbolic_facts,
+            sources=[{"type": "record", "id": subject, "title": view.display_name(subject)}],
             context=self._context(context, goal.subject_type, subject),
             explanation=[f"Understood the question as {lookup.description}.",
-                         f"Identified your {self.graph.display_name(subject)} ({subject}).",
+                         f"Identified the {view.display_name(subject)} ({subject}).",
                          "Read its current status from the company records.",
                          "No policy needed evaluating, so no rules were run."])
 
     # =======================================================================
     # Pipelines B, C, D: symbolic reasoning
     # =======================================================================
-    def _reason(self, interpretation, route, actor, context, trace) -> AssistantAnswer:
+    def _reason(self, interpretation, route, req: _Request, context, trace) -> AssistantAnswer:
         goal = route.goal
-        program, graph = self.program, self.graph
-        grounding = self.grounder.ground(interpretation, goal.name, goal.subject_type, actor,
-                                         context)
+        program, view = self.program, req.view
+        grounding = req.grounder.ground(interpretation, goal.name, goal.subject_type, req.actor,
+                                        context)
         early = self._grounding_outcome(grounding, route, trace, goal.subject_type)
         if early is not None:
             trace.grounding = grounding.as_dict()
@@ -264,14 +319,14 @@ class NeuroSymbolicController:
 
         if goal.goal_kind == "enumeration":
             trace.grounding = grounding.as_dict()
-            return self._enumerate(route, grounding, trace)
+            return self._enumerate(route, grounding, trace, req)
 
         subject = grounding.subjects[0]
         subject_type = goal.subject_type
         needed = program.input_predicates_for(goal.name)
 
         # -- the neural-symbolic loop -------------------------------------------
-        reasoner = Reasoner(program, graph, stated=grounding.stated,
+        reasoner = Reasoner(program, view, stated=grounding.stated,
                             open_subjects=grounding.open_subjects)
         result = reasoner.evaluate(subject, goal.name)
         asked: set[str] = set()
@@ -284,7 +339,7 @@ class NeuroSymbolicController:
             asked |= wanted
             found = self.pack.understanding.detect_inputs(interpretation, wanted,
                                                           TARGETED_INPUT_THRESHOLD)
-            accepted = [f for f in found if self.grounder.accept_statement(
+            accepted = [f for f in found if req.grounder.accept_statement(
                 grounding, f, subject, subject_type, needed, reasoner)]
             trace.neural_symbolic_loop.append({
                 "iteration": iteration,
@@ -294,99 +349,217 @@ class NeuroSymbolicController:
             })
             if not accepted:
                 break
-            reasoner = Reasoner(program, graph, stated=grounding.stated,
+            reasoner = Reasoner(program, view, stated=grounding.stated,
                                 open_subjects=grounding.open_subjects)
             result = reasoner.evaluate(subject, goal.name)
-        trace.grounding = grounding.as_dict()
+
+        # -- a question the rules decide, but not for the case described -----------------
+        if result.status in (CONDITIONAL, "unknown"):
+            gap = gaps.undefined_case(interpretation, goal, result, self.pack)
+            if gap is not None:
+                trace.grounding = grounding.as_dict()
+                return self._undefined_case(gap, goal, route, trace, req)
 
         cases = []
         if grounding.hypothetical and result.status in (CONDITIONAL, "unknown"):
-            cases = self._split_cases(goal.name, subject, grounding)
+            cases = self._split_cases(goal.name, subject, grounding, view)
 
-        # -- verification ---------------------------------------------------------
+        # -- follow-up goals that qualify the recommendation ------------------------------
+        followups: list[tuple[str, GoalResult]] = []
+        if not cases and result.status in ("determined", "default"):
+            for name in program.followups.get(goal.name, []):
+                extra = reasoner.evaluate(subject, name)
+                if extra.status == "determined" and extra.decided_by is not None and \
+                        extra.value not in (False, None, 0):
+                    followups.append((name, extra))
+
+        # -- claims about the policy, checked against the parameters the proof read -------
+        resolutions = _resolutions(reasoner, cases)
+        touched = list(reasoner.touched.values()) + [
+            ref for case in cases for ref in case["reasoner"].touched.values()]
+        claims = check_policy_claims(interpretation, grounding, touched, self.pack, view,
+                                     resolutions)
+        grounding.rejected.extend(c for c in claims if not c["confirmed"])
+        trace.grounding = grounding.as_dict()
+        trace.claims = claims
+
+        # -- conclusion and citations -------------------------------------------------------
         used = result.rules_used()
+        for _, extra in followups:
+            used += [o for o in extra.rules_used() if o.spec.code not in {u.spec.code for u in used}]
         considered = result.refutations()
         # The sources are the clauses that decided the answer. Rules that were refuted
         # explain a refusal, so their clauses are cited only when the answer is one -
         # otherwise a successful return lists the damaged-goods exception it never used.
         refused = result.status in ("default", "absent") or bool(cases)
-        cited = sorted({c for o in used + (considered if refused else []) for c in o.spec.clauses})
-        consistency = self.verifier.record_consistency(goal.name, subject, result)
-        conclusion = self._conclusion(goal, subject, result, grounding, cases, consistency)
+        codes = sorted({c for o in used + (considered if refused else []) for c in o.spec.clauses})
+        cited = self._cite(codes, resolutions)
+
+        audience = _Audience(req, subject_type)
+        consistency = req.verifier.record_consistency(goal.name, subject, result)
+        conclusion = self._conclusion(goal, subject, result, grounding, cases, consistency,
+                                      followups, audience, view)
         draft = realize(conclusion)
         text, rephrased = self.realizer.realize(conclusion)
-        report = run_checks(consistency, self.verifier.constraints(goal.name, result),
-                            self.verifier.citations(cited),
-                            self.verifier.grounding(text, conclusion))
+
+        expected, opposite, value_text = self._agreement_targets(goal, result, audience, subject,
+                                                                 grounding, view)
+
+        def verify(reply: str, model_phrased: bool) -> VerificationReport:
+            return run_checks(
+                req.verifier.fact_validity(reasoner),
+                req.verifier.authorization(reasoner),
+                req.verifier.policy_applicability(cited, resolutions),
+                req.verifier.policy_version(resolutions),
+                req.verifier.provenance(goal.name, result, conclusion, cases),
+                req.verifier.calculation(goal.name, subject, result, grounding.stated,
+                                         grounding.open_subjects) if not cases else None,
+                req.verifier.grounding(reply, conclusion),
+                consistency,
+                req.verifier.contradictions(result, grounding, cases),
+                req.verifier.agreement(reply, conclusion, expected, opposite, value_text),
+                req.verifier.unsupported_claims(reply, draft, model_phrased),
+            )
+
+        report = verify(text, rephrased)
         if not report.passed and rephrased:
-            text = draft
-            report = run_checks(consistency, self.verifier.constraints(goal.name, result),
-                                self.verifier.citations(cited),
-                                self.verifier.grounding(text, conclusion))
+            # The model's phrasing is not released; the deterministic one is re-verified.
+            text, rephrased = draft, False
+            report = verify(text, False)
 
         # -- trace, explanation, confidence ----------------------------------------
         trace.verification = report.as_dict()
+        trace.policy_versions = resolutions
         trace.symbolic_facts = [
             {"subject": ref.subject, "predicate": ref.predicate,
-             "value": format_value(ref.value, program.value_type(ref.predicate), graph=graph),
+             "value": format_value(ref.value, program.value_type(ref.predicate), graph=view),
              "source": ref.source, "rule": ref.rule}
             for ref in reasoner.touched.values() if ref.source in ("record", "stated", "derived")
         ]
-        trace.rules_used = [o.as_dict(program, graph) for o in used]
-        trace.rules_considered = [o.as_dict(program, graph) for o in considered]
-        trace.retrieved_knowledge = [
-            {"id": c, "title": self.pack.policies.clause(c).title,
-             "document": self.pack.policies.clause(c).document,
-             "text": self.pack.policies.clause(c).text, "linked_by": "rule citation"}
-            for c in cited if self.pack.policies.clause(c)] or trace.retrieved_knowledge
+        trace.rules_used = [o.as_dict(program, view) for o in used]
+        trace.rules_considered = [o.as_dict(program, view) for o in considered]
+        trace.retrieved_knowledge = [{**c, "linked_by": "rule citation"} for c in cited] \
+            or trace.retrieved_knowledge
+        trace.followups = [{"goal": name, "value": _plain(extra.value),
+                            "rule": extra.decided_by.spec.code} for name, extra in followups]
         trace.reasoning_steps = self._steps(goal, subject, result, grounding, used, considered,
-                                            cases, report)
+                                            cases, report, resolutions)
+
+        if not report.passed:
+            # Not released: a decision that fails verification is not a decision.
+            return self._withheld(report, goal, route, trace, grounding, cited, resolutions)
+
         confidence, factors = self._confidence(route, interpretation, grounding, result,
                                                report, cases)
         trace.confidence, trace.confidence_factors = confidence, factors
 
         outcome = "conditional" if (result.status in (CONDITIONAL, "unknown") or cases) \
             else "answered"
+        value_type = program.value_type(goal.name)
         return AssistantAnswer(
             answer=text, pipeline=route.pipeline.value, pipeline_label=route.pipeline.label,
             outcome=outcome, confidence=confidence, goal=goal.name,
             decision=_plain(result.value) if result.status in ("determined", "default") else None,
             value=None if cases else _plain(result.value),
             subject=None if grounding.hypothetical else subject,
-            sources=[{"type": "policy", "id": c["id"], "title": c["title"],
-                      "document": c["document"], "text": c["text"]}
-                     for c in trace.retrieved_knowledge if "linked_by" in c]
-            + ([] if grounding.hypothetical else
-               [{"type": "record", "id": subject, "title": graph.display_name(subject)}]),
+            sources=cited + ([] if grounding.hypothetical else
+                             [{"type": "record", "id": subject,
+                               "title": view.display_name(subject)}]),
             explanation=self._explanation(goal, subject, result, grounding, used, considered,
-                                          cases, report, route),
+                                          cases, report, route, view),
             context=self._context(context, subject_type,
-                                  None if grounding.hypothetical else subject))
+                                  None if grounding.hypothetical else subject),
+            decision_label=_decision_label(outcome, goal, result, value_type, view, program),
+            decision_kind=_decision_kind(outcome, goal),
+            recommended_action=self._action(goal, result, cases, followups, conclusion,
+                                            audience, view),
+            verification=_verification(report),
+            policy_versions=resolutions,
+            rules_applied=[_rule_summary(o, program, view) for o in used],
+            facts=trace.symbolic_facts,
+            claims=claims)
+
+    # -- a case the rules don't define -----------------------------------------------
+    def _undefined_case(self, gap, goal, route, trace, req) -> AssistantAnswer:
+        conclusion = Conclusion(
+            kind="insufficient",
+            headline=f"I understand this is about {goal.description}, but the company "
+                     f"knowledge doesn't define it for this case",
+            reasons=[gap["detail"],
+                     f"Nothing says what applies to: \"{gap['case']}\", so I won't guess"])
+        text = realize(conclusion)
+        trace.knowledge_gap = gap
+        trace.reasoning_steps = [
+            f"Goal: {goal.name} — {goal.description}.",
+            f"Every rule for {goal.name} depends on {gap['input']}, and the description matches "
+            f"none of its defined values (best similarity {gap['similarity']:.2f}).",
+            f"Recorded a knowledge gap: {gap['summary']}.",
+        ]
+        trace.verification = run_checks(req.verifier.grounding(text, conclusion)).as_dict()
+        return AssistantAnswer(
+            answer=text, pipeline=Pipeline.INSUFFICIENT.value,
+            pipeline_label=Pipeline.INSUFFICIENT.label, outcome="insufficient",
+            confidence=0.0, goal=goal.name, knowledge_gap=gap,
+            decision_label="Not defined", decision_kind="not_covered",
+            recommended_action=_gap_action(req),
+            sources=[_clause_source(self.pack.policies.clause(c)) for c in gap["clauses"]
+                     if self.pack.policies.clause(c)],
+            explanation=[f"Understood the question as {goal.description}.",
+                         f"Found the rules that decide it ({', '.join(gap['clauses'])}).",
+                         "None of them covers the case described, so no answer was derived.",
+                         "Logged the gap for the policy owner."])
+
+    # -- a derived answer that failed verification ------------------------------------------
+    def _withheld(self, report, goal, route, trace, grounding, cited, resolutions):
+        failures = report.failures
+        gap = gaps.verification_failure(failures)
+        trace.knowledge_gap = gap
+        conclusion = Conclusion(
+            kind="insufficient",
+            headline="I can't release a decision for this case because it didn't pass "
+                     "verification",
+            reasons=["Failed check" + ("s" if len(failures) > 1 else "") + ": "
+                     + ", ".join(c.name for c in failures)])
+        return AssistantAnswer(
+            answer=realize(conclusion), pipeline=route.pipeline.value,
+            pipeline_label=route.pipeline.label, outcome="needs_review", confidence=0.0,
+            goal=goal.name, knowledge_gap=gap, sources=cited, policy_versions=resolutions,
+            decision_label="Needs review", decision_kind="needs_review",
+            recommended_action="Escalate to a team lead for manual review; do not act on an "
+                               "unverified decision.",
+            verification=_verification(report),
+            explanation=[f"Understood the question as {goal.description}.",
+                         "Derived an answer, then verified it.",
+                         "Verification failed, so the answer was withheld: "
+                         + "; ".join(f"{c.name} — {c.detail}" for c in failures) + "."])
 
     # -- enumeration -------------------------------------------------------------
-    def _enumerate(self, route, grounding: Grounding, trace) -> AssistantAnswer:
+    def _enumerate(self, route, grounding: Grounding, trace, req) -> AssistantAnswer:
         goal = route.goal
-        reasoner = Reasoner(self.program, self.graph)
+        view = req.view
+        reasoner = Reasoner(self.program, view)
         qualifying: list[str] = []
         by_code: dict = {}
         for subject in grounding.subjects:
             result = reasoner.evaluate(subject, goal.name)
             if result.status == "determined" and result.value is True:
-                qualifying.append(self.graph.display_name(subject))
+                qualifying.append(view.display_name(subject))
                 if result.decided_by:
                     by_code[result.decided_by.spec.code] = result.decided_by.spec
         rules = list(by_code.values())
-        cited = sorted({c for spec in rules for c in spec.clauses})
+        cited = self._cite(sorted({c for spec in rules for c in spec.clauses}), [])
         conclusion = Conclusion(
             kind="enumeration", items=qualifying,
             headline=(f"{len(qualifying)} of {len(grounding.subjects)} "
                       f"{goal.subject_type}s qualify" if qualifying
                       else f"none of the {goal.subject_type}s qualify"),
             reasons=[f"Checked against rule {', '.join(sorted(s.code for s in rules))} "
-                     f"(policy {', '.join(cited)})"] if rules else [])
+                     f"(policy {', '.join(c['id'] for c in cited)})"] if rules else [])
         text = realize(conclusion)
-        report = run_checks(self.verifier.citations(cited),
-                            self.verifier.grounding(text, conclusion))
+        report = run_checks(req.verifier.citations([c["id"] for c in cited]),
+                            req.verifier.policy_applicability(cited, []),
+                            req.verifier.authorization(reasoner),
+                            req.verifier.grounding(text, conclusion))
         trace.verification = report.as_dict()
         trace.rules_used = [{"rule": s.code, "name": s.rule.name, "clauses": s.clauses}
                             for s in rules]
@@ -400,20 +573,20 @@ class NeuroSymbolicController:
         return AssistantAnswer(
             answer=text, pipeline=route.pipeline.value, pipeline_label=route.pipeline.label,
             outcome="answered", confidence=confidence, goal=goal.name, decision=qualifying,
-            sources=[{"type": "policy", "id": c, "title": self.pack.policies.clause(c).title,
-                      "document": self.pack.policies.clause(c).document,
-                      "text": self.pack.policies.clause(c).text}
-                     for c in cited if self.pack.policies.clause(c)],
+            sources=cited, decision_label=f"{len(qualifying)} qualify", decision_kind="list",
+            verification=_verification(report),
+            rules_applied=[{"rule": s.code, "name": s.rule.name, "clauses": s.clauses,
+                            "because": s.because, "formula": ""} for s in rules],
             explanation=[f"Understood the question as {goal.description}.",
                          f"Evaluated the rule for every {goal.subject_type} rather than "
                          f"searching for examples.",
                          f"{len(qualifying)} qualified."])
 
     # -- cases --------------------------------------------------------------------
-    def _split_cases(self, goal: str, subject: str, grounding: Grounding) -> list[dict]:
+    def _split_cases(self, goal: str, subject: str, grounding: Grounding, view) -> list[dict]:
         """A hypothetical that turns on an unknown category is answered per category."""
-        program, graph = self.program, self.graph
-        probe = Reasoner(program, graph, stated=grounding.stated,
+        program = self.program
+        probe = Reasoner(program, view, stated=grounding.stated,
                          open_subjects=grounding.open_subjects)
         options = []
         subject_type = program.goals[goal].subject_type
@@ -426,7 +599,7 @@ class NeuroSymbolicController:
             # product's category on an order changes nothing the rules read.
             if attribute.subject_type != subject_type:
                 continue
-            instances = graph.entities_of_type(attribute.value_type)
+            instances = view.entities_of_type(attribute.value_type)
             if not 1 < len(instances) <= MAX_CASES:
                 continue
             if probe.evaluate(subject, predicate).status in (CONDITIONAL, "unknown"):
@@ -438,46 +611,60 @@ class NeuroSymbolicController:
         for instance in instances:
             stated = dict(grounding.stated)
             stated[(subject, predicate)] = instance.id
-            result = Reasoner(program, graph, stated=stated,
-                              open_subjects=grounding.open_subjects).evaluate(subject, goal)
+            case_reasoner = Reasoner(program, view, stated=stated,
+                                     open_subjects=grounding.open_subjects)
+            result = case_reasoner.evaluate(subject, goal)
             cases.append({"predicate": predicate, "value": instance.id,
-                          "label": instance.name, "result": result})
+                          "label": instance.name, "result": result, "reasoner": case_reasoner})
         return cases
+
+    # -- citations -------------------------------------------------------------------
+    def _cite(self, codes: list[str], resolutions: list[dict]) -> list[dict]:
+        """Each cited clause in the version that governed the case."""
+        by_policy = {r["policy"]: r for r in resolutions}
+        sources = []
+        for code in codes:
+            current = self.pack.policies.clause(code)
+            if current is None:
+                continue
+            resolution = by_policy.get(current.policy)
+            clause = current
+            if resolution is not None and resolution.get("number") is not None:
+                clause = self.pack.policies.clause(code, int(resolution["number"])) or current
+            sources.append(_clause_source(clause))
+        return sources
 
     # -- conclusion ---------------------------------------------------------------
     def _conclusion(self, goal, subject, result: GoalResult, grounding: Grounding, cases,
-                    consistency) -> Conclusion:
-        program, graph = self.program, self.graph
+                    consistency, followups, audience: "_Audience", view) -> Conclusion:
+        program = self.program
         value_type = program.value_type(goal.name)
         subject_label = SUBJECT_NOUNS.get(goal.subject_type, goal.subject_type) \
-            if grounding.hypothetical else graph.display_name(subject)
-        phrases = program.phrases.get(goal.name, {})
-        value_text = format_value(result.value, value_type, graph=graph, program=program)
+            if grounding.hypothetical else view.display_name(subject)
 
-        def headline_for(value: Any) -> str:
-            if isinstance(value, bool):
-                template = phrases.get("yes" if value else "no")
-                fallback = f"{goal.description}: {'yes' if value else 'no'}"
-            else:
-                template = phrases.get("value")
-                fallback = f"{goal.description}: {format_value(value, value_type, graph=graph)}"
-            if not template:
-                return fallback
-            return template.replace("{subject}", subject_label).replace(
-                "{value}", format_value(value, value_type, graph=graph, program=program))
+        def headline_for(name: str, value: Any) -> str:
+            return self._headline(name, value, subject_label, audience, view)
 
         c = Conclusion(kind=goal.goal_kind, status=result.status, subject=subject_label)
-        c.corrections = [f"you mentioned {r['stated']} for the {humanize(r['predicate'])}, but "
-                         f"the record shows {r['record']}, so I've used the record"
-                         for r in grounding.rejected]
+        c.corrections = [_correction(r, program) for r in grounding.rejected]
         c.notes = list(grounding.assumptions)
         relied = [a for a in grounding.accepted if a.get("status") == "stated by you"]
         if relied and not grounding.hypothetical:
-            c.notes.append("This relies on what you told me: " + ", ".join(
+            c.notes.append(("This relies on what the customer said: " if audience.staff
+                            else "This relies on what you told me: ") + ", ".join(
                 f"{humanize(a['predicate'])} = {a['value']}" for a in relied))
         if consistency is not None and not consistency.passed:
             c.notes.append("Note: the stored record disagrees with what the policy gives "
                            "for this case — " + consistency.detail)
+        for name, extra in followups:
+            because = extra.decided_by.because if extra.decided_by else ""
+            c.notes.append(headline_for(name, extra.value) + (f": {because}" if because else ""))
+        versions = _resolutions_from(result, cases)
+        if versions and any(not r["assumed"] for r in versions):
+            r = next(r for r in versions if not r["assumed"])
+            if len(view.policy_versions(r["policy"])) > 1:
+                c.notes.append(f"Applied {r['name']}, in force on the {r['basis'].split(' is ')[0]}"
+                               f" of {r['reference_date']}")
 
         if cases:
             c.status = CONDITIONAL
@@ -489,7 +676,7 @@ class NeuroSymbolicController:
                 if outcome.status in ("determined", "default"):
                     reason = outcome.decided_by.because if outcome.decided_by else \
                         _first_failure(outcome)
-                    verdict = _verdict(outcome.value, value_type, graph, program)
+                    verdict = _verdict(outcome.value, value_type, view, program, goal.name)
                     c.cases.append((f"it is {case['label']}",
                                     verdict + (f" — {reason}" if reason else "")))
                 else:
@@ -499,8 +686,9 @@ class NeuroSymbolicController:
 
         if result.status in ("determined", "default"):
             c.decision = result.value if isinstance(result.value, bool) else None
-            c.value = None if isinstance(result.value, bool) else value_text
-            c.headline = headline_for(result.value)
+            c.value = None if isinstance(result.value, bool) else \
+                _verdict(result.value, value_type, view, program, goal.name)
+            c.headline = headline_for(goal.name, result.value)
             if result.decided_by is not None:
                 c.reasons = [result.decided_by.because] if result.decided_by.because else []
             else:
@@ -515,14 +703,13 @@ class NeuroSymbolicController:
                 c.headline = "the answer depends on details I don't have yet"
                 for outcome in sorted(outcomes, key=lambda o: -o.priority):
                     differing = [a for a in _assumptions(outcome) if a not in common]
-                    shown = format_value(outcome.value, value_type, graph=graph, program=program)
                     c.cases.append((_join_plain(differing) or outcome.spec.rule.name,
-                                    _verdict(outcome.value, value_type, graph, program)
-                                    if isinstance(outcome.value, bool) else shown))
+                                    _verdict(outcome.value, value_type, view, program,
+                                             goal.name)))
                 c.conditions = sorted(common)
             else:
                 lead = result.decided_by
-                c.headline = headline_for(result.value)
+                c.headline = headline_for(goal.name, result.value)
                 # Not the rule's `because`: it states every condition as met, and here
                 # some of them are only assumed. The requirements are the honest reason.
                 c.reasons = []
@@ -535,7 +722,7 @@ class NeuroSymbolicController:
                 if failures and default is not None and \
                         repr(default.value) != repr(result.value):
                     c.notes.insert(0, f"Otherwise the answer is "
-                                      f"{_verdict(default.value, value_type, graph, program)}: "
+                                      f"{_verdict(default.value, value_type, view, program, goal.name)}: "
                                       f"{failures[0]}")
             return c
 
@@ -543,7 +730,7 @@ class NeuroSymbolicController:
             # Every rule that could produce the result was refuted: the answer is that
             # nothing applies, and the refutations say why.
             c.status = "determined"
-            c.headline = f"that doesn't apply to your {subject_label}"
+            c.headline = f"that doesn't apply to {audience.possessive} {subject_label}"
             c.reasons = _failures(result)[:2]
             return c
 
@@ -555,15 +742,74 @@ class NeuroSymbolicController:
             c.reasons = ["the company records don't hold what this depends on"]
         return c
 
+    def _headline(self, name: str, value: Any, subject_label: str, audience: "_Audience",
+                  view) -> str:
+        program = self.program
+        phrases = program.phrases.get(name, {})
+        value_type = program.value_type(name)
+        goal = program.goals.get(name)
+        description = goal.description if goal else humanize(name)
+        shown = _verdict(value, value_type, view, program, name)
+        if isinstance(value, bool):
+            template = phrases.get("yes" if value else "no")
+            fallback = f"{description}: {'yes' if value else 'no'}"
+        else:
+            template = phrases.get("value")
+            fallback = f"{description}: {shown}"
+        if not template:
+            return fallback
+        return audience.adapt(template).replace("{subject}", subject_label).replace(
+            "{value}", shown)
+
+    def _agreement_targets(self, goal, result, audience, subject, grounding, view):
+        if result.status not in ("determined", "default"):
+            return "", None, None
+        label = SUBJECT_NOUNS.get(goal.subject_type, goal.subject_type) \
+            if grounding.hypothetical else view.display_name(subject)
+        expected = self._headline(goal.name, result.value, label, audience, view)
+        if isinstance(result.value, bool):
+            return expected, self._headline(goal.name, not result.value, label, audience,
+                                             view), None
+        return expected, None, _verdict(result.value, self.program.value_type(goal.name), view,
+                                        self.program, goal.name)
+
+    # -- recommended action --------------------------------------------------------
+    def _action(self, goal, result, cases, followups, conclusion, audience, view) -> str | None:
+        program = self.program
+        if cases or result.status in (CONDITIONAL, "unknown"):
+            needed = conclusion.conditions or conclusion.missing or \
+                [a for a, _ in conclusion.cases][:3]
+            if not needed:
+                return None
+            who = "Confirm with the customer" if audience.staff else "Tell me"
+            return f"{who} whether {_join_plain(needed[:3])}, to get a definite decision."
+        steps = []
+        main = _action_text(program, goal.name, result.value, view)
+        if main:
+            steps.append(main)
+        for name, extra in followups:
+            extra_text = _action_text(program, name, extra.value, view)
+            if extra_text:
+                steps.insert(0, extra_text) if name == "approval_required" else \
+                    steps.append(extra_text)
+        return " ".join(steps) or None
+
     # -- explanation ----------------------------------------------------------------
-    def _steps(self, goal, subject, result, grounding, used, considered, cases, report):
+    def _steps(self, goal, subject, result, grounding, used, considered, cases, report,
+               resolutions):
         steps = [f"Goal: {goal.name}({subject}) — {goal.description}."]
         if grounding.hypothetical:
-            steps.append("No record was named; evaluated an open-world case linked to the "
-                         "person asking.")
+            steps.append("No record was named; evaluated an open-world case"
+                         + (" linked to the person asking." if any(
+                             p in ("placed_by", "claimant") for (_, p) in grounding.stated)
+                            else "."))
+        for resolution in resolutions:
+            steps.append(f"Resolved the {resolution['policy']} policy version: "
+                         f"{resolution['name']} — {resolution['basis']}.")
         for rejected in grounding.rejected:
-            steps.append(f"Rejected the statement {rejected['predicate']} = {rejected['stated']}: "
-                         f"the record says {rejected['record']}.")
+            steps.append(f"Rejected the {rejected.get('kind', 'statement')} "
+                         f"{rejected['predicate']} = {rejected['stated']}: "
+                         f"{rejected.get('reason') or 'the record says ' + str(rejected['record'])}.")
         for outcome in used:
             steps.append(f"Rule {outcome.spec.code} ({outcome.spec.rule.name}) {outcome.status}"
                          + (f": {outcome.because}" if outcome.because else "."))
@@ -583,14 +829,13 @@ class NeuroSymbolicController:
         return steps
 
     def _explanation(self, goal, subject, result, grounding, used, considered, cases, report,
-                     route) -> list[str]:
-        graph = self.graph
+                     route, view) -> list[str]:
         lines = [f"Understood the question as {goal.description}."]
         if grounding.hypothetical:
             lines.append("No specific record was named, so I treated it as a general case "
-                         "using what you said.")
+                         "using what was described.")
         else:
-            lines.append(f"Identified your {graph.display_name(subject)} ({subject}).")
+            lines.append(f"Identified the {view.display_name(subject)} ({subject}).")
         refused = result.status in ("default", "absent") or bool(cases)
         clauses = sorted({c for o in used + (considered if refused else [])
                           for c in o.spec.clauses})
@@ -598,12 +843,12 @@ class NeuroSymbolicController:
             titles = [f"{c} {self.pack.policies.clause(c).title}" for c in clauses
                       if self.pack.policies.clause(c)]
             lines.append("Retrieved the policy: " + "; ".join(titles) + ".")
-        facts = [f"{humanize(a['predicate'])} = {a['value']} (you said)"
+        facts = [f"{humanize(a['predicate'])} = {a['value']} (as stated)"
                  for a in grounding.accepted if a.get("status") == "stated by you"]
         if facts:
-            lines.append("Took these details from your question: " + ", ".join(facts) + ".")
+            lines.append("Took these details from the question: " + ", ".join(facts) + ".")
         if grounding.rejected:
-            lines.append("Set aside a detail that contradicted the company record.")
+            lines.append("Set aside a statement that the company records or policy contradict.")
         if used:
             lines.append("Applied the rules: " + ", ".join(
                 f"{o.spec.code} ({o.spec.rule.name})" for o in used) + ".")
@@ -643,13 +888,15 @@ class NeuroSymbolicController:
     def _grounding_outcome(self, grounding: Grounding, route, trace, subject_type):
         if grounding.denied:
             conclusion = Conclusion(kind="denied", headline=grounding.denied)
-            trace.reasoning_steps = ["The referenced record belongs to another account; "
+            trace.reasoning_steps = ["The referenced record is outside the person's access; "
                                      "access was refused before any reasoning."]
             return AssistantAnswer(answer=realize(conclusion), pipeline=Pipeline.INSUFFICIENT.value,
                                    pipeline_label="Access refused", outcome="denied",
-                                   confidence=0.0,
-                                   explanation=["Checked who owns the record.",
-                                                "It isn't yours, so nothing about it was used."])
+                                   confidence=0.0, decision_label="Access refused",
+                                   decision_kind="access_refused",
+                                   explanation=["Checked who may see the record.",
+                                                "It isn't accessible to you, so nothing about it "
+                                                "was used."])
         if grounding.clarification:
             clar = grounding.clarification
             conclusion = Conclusion(kind="clarification", prompt=clar.question,
@@ -657,7 +904,7 @@ class NeuroSymbolicController:
             trace.selected_pipeline = Pipeline.CLARIFICATION.value
             trace.pipeline_label = Pipeline.CLARIFICATION.label
             trace.pipeline_reason = (
-                f"The goal is clear, but it could apply to {len(clar.options)} of your "
+                f"The goal is clear, but it could apply to {len(clar.options)} "
                 f"{subject_type}s, and they would get different answers. Asking is more "
                 f"reliable than choosing one.")
             trace.reasoning_steps = [trace.pipeline_reason]
@@ -666,6 +913,8 @@ class NeuroSymbolicController:
                 pipeline_label=Pipeline.CLARIFICATION.label, outcome="clarification",
                 confidence=0.0, goal=route.goal.name if route.goal else None,
                 clarification={"question": clar.question, "options": clar.options},
+                decision_label="Clarification needed", decision_kind="clarification",
+                recommended_action=f"Choose which {subject_type} this is about.",
                 explanation=[f"Understood the question as {route.goal.description}.",
                              f"Found {len(clar.options)} {subject_type}s it could be about.",
                              "Asked which one, because the answer differs between them."])
@@ -676,6 +925,8 @@ class NeuroSymbolicController:
                 answer=realize(conclusion), pipeline=Pipeline.INSUFFICIENT.value,
                 pipeline_label=Pipeline.INSUFFICIENT.label, outcome="insufficient",
                 confidence=0.0, goal=route.goal.name if route.goal else None,
+                decision_label="Record not found", decision_kind="needs_information",
+                recommended_action=f"Share the {subject_type} number.",
                 explanation=[f"Understood the question as {route.goal.description}.",
                              "Could not find the record it depends on.",
                              "Said what is missing instead of guessing."])
@@ -689,10 +940,34 @@ class NeuroSymbolicController:
         merged["subjects"] = subjects
         return merged
 
+    def _finish(self, result: AssistantAnswer, trace: ReasoningTrace) -> None:
+        if not result.verification:
+            result.verification = {"status": "not_applicable", "passed": None,
+                                   "checks": (trace.verification or {}).get("checks", [])}
+        if result.knowledge_gap is None and trace.knowledge_gap:
+            result.knowledge_gap = trace.knowledge_gap
+        trace.decision = {"label": result.decision_label, "kind": result.decision_kind,
+                          "recommended_action": result.recommended_action,
+                          "outcome": result.outcome}
+
 
 # ---------------------------------------------------------------------------
 # helpers
 # ---------------------------------------------------------------------------
+
+class _Audience:
+    """Phrase for the person asking: "your order" to a customer, "the customer's order"
+    to a support agent handling it."""
+
+    def __init__(self, req: _Request, subject_type: str) -> None:
+        self.staff = req.staff and subject_type in CUSTOMER_RECORD_TYPES
+        self.possessive = "the customer's" if self.staff else "your"
+
+    def adapt(self, template: str) -> str:
+        if not self.staff:
+            return template
+        return template.replace("your ", "the customer's ").replace("you're ", "the customer is ")
+
 
 def _clamp(value: float) -> float:
     return max(0.0, min(1.0, value))
@@ -708,6 +983,39 @@ def _plain(value: Any) -> Any:
     return value
 
 
+def _clause_source(clause) -> dict[str, Any]:
+    return {"type": "policy", "id": clause.id, "title": clause.title,
+            "document": clause.document, "text": clause.text, "policy": clause.policy,
+            "version": clause.version, "effective": clause.effective,
+            "in_force": clause.in_force}
+
+
+def _verification(report: VerificationReport) -> dict[str, Any]:
+    return {"status": "passed" if report.passed else "needs_review", "passed": report.passed,
+            "checks": [c.as_dict() for c in report.checks]}
+
+
+def _resolutions(reasoner: Reasoner, cases: list[dict]) -> list[dict]:
+    found: dict[tuple[str, str], dict] = dict(reasoner.version_resolutions)
+    for case in cases:
+        for key, value in case["reasoner"].version_resolutions.items():
+            found.setdefault(key, value)
+    return list(found.values())
+
+
+def _resolutions_from(result: GoalResult, cases: list[dict]) -> list[dict]:
+    # Kept separate so the conclusion does not depend on reasoner internals beyond the
+    # resolutions recorded while proving this result.
+    return []
+
+
+def _gap_action(req: _Request) -> str:
+    if req.staff:
+        return ("Escalate to a team lead; don't improvise a policy. The gap has been logged for "
+                "the knowledge owner.")
+    return "Contact customer support for help with this; the gap has been logged."
+
+
 def _entities(interpretation: Interpretation) -> list[dict]:
     m = interpretation.mentions
     out = [{"type": r.entity_type, "id": r.entity_id, "text": r.text, "method": r.method}
@@ -719,6 +1027,64 @@ def _entities(interpretation: Interpretation) -> list[dict]:
     out += [{"type": q.kind, "value": q.value, "text": q.text, "method": "pattern"}
             for q in m.quantities]
     return out
+
+
+def _correction(rejected: dict, program) -> str:
+    kind = rejected.get("kind")
+    if kind == "policy claim":
+        return (f"you said the policy allows {rejected['stated']}, but {rejected['source']} "
+                f"sets the {humanize(rejected['predicate'])} at {rejected['record']}, so I've "
+                f"applied the policy as written")
+    if kind == "unverified claim":
+        description = program.inputs[rejected["predicate"]][0].description
+        return (f"you mentioned that {description}, but {rejected['reason'].split(', and ')[-1]}, "
+                f"so it hasn't been treated as approved")
+    return (f"you mentioned {rejected['stated']} for the {humanize(rejected['predicate'])}, but "
+            f"the record shows {rejected['record']}, so I've used the record")
+
+
+def _decision_label(outcome, goal, result, value_type, view, program) -> str:
+    if outcome == "conditional":
+        return "Depends on details"
+    value = result.value
+    if isinstance(value, bool):
+        return "Yes" if value else "No"
+    return _sentence_case(_verdict(value, value_type, view, program, goal.name))
+
+
+def _decision_kind(outcome, goal) -> str:
+    if outcome == "conditional":
+        return "needs_information"
+    return {"calculation": "amount", "recommendation": "recommendation",
+            "enumeration": "list"}.get(goal.goal_kind, "yes_no")
+
+
+def _action_text(program, goal: str, value: Any, view) -> str | None:
+    actions = program.actions.get(goal, {})
+    if isinstance(value, bool):
+        return actions.get("yes" if value else "no")
+    text = actions.get(str(value)) or actions.get("value")
+    if text:
+        shown = _verdict(value, program.value_type(goal), view, program, goal)
+        return text.replace("{value}", shown)
+    return None
+
+
+def _rule_summary(outcome: RuleOutcome, program, graph) -> dict[str, Any]:
+    import re
+
+    def plain(expression: str) -> str:
+        return re.sub(r"(\w+)\(([^()]*)\)", lambda m: humanize(m.group(1)), expression)
+
+    conditions = [plain(c.expression) for c in outcome.conditions
+                  if not c.expression.endswith("= ?")]
+    head = outcome.spec.rule.head
+    shown = format_value(outcome.value, program.value_type(head.predicate), graph=graph,
+                         program=program) if outcome.value is not None else "?"
+    formula = " AND ".join(conditions) + f" → {humanize(head.predicate)} = {shown}"
+    return {"rule": outcome.spec.code, "name": outcome.spec.rule.name,
+            "clauses": outcome.spec.clauses, "status": outcome.status,
+            "because": outcome.because, "formula": formula}
 
 
 def _failures(result: GoalResult) -> list[str]:
@@ -768,11 +1134,15 @@ def _join_plain(items: list[str]) -> str:
     return " and ".join(items)
 
 
-def _verdict(value: Any, value_type: str, graph, program) -> str:
+def _verdict(value: Any, value_type: str, graph, program, predicate: str | None = None) -> str:
     if value is True:
         return "yes"
     if value is False:
         return "no"
+    if predicate is not None:
+        label = program.label(predicate, value)
+        if label:
+            return label
     return format_value(value, value_type, graph=graph, program=program)
 
 

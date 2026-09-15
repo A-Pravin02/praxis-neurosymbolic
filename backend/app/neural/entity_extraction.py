@@ -259,6 +259,21 @@ def extract_mentions(question: str, graph: "KnowledgeGraph",
 
     mentions.quantities = extract_quantities(question, exclude_spans=id_spans)
 
+    # -- people named in the question ("Rohan's laptop", "Priya Nair") ----------
+    # Linked by a capitalised full name or a first name no other person shares. Whether
+    # the person asking may reason about them is decided later, by authorization.
+    capitalised = set(re.findall(r"\b([A-Z][a-z]{2,})(?:'s)?\b", question))
+    people = graph.entities_of_type("customer") + graph.entities_of_type("employee")
+    first_names: dict[str, list] = {}
+    for person in people:
+        first_names.setdefault(person.name.split()[0], []).append(person)
+    for person in people:
+        parts = person.name.split()
+        full = len(parts) > 1 and re.search(rf"\b{re.escape(person.name)}\b", question)
+        first = parts[0] in capitalised and len(first_names[parts[0]]) == 1
+        if (full or first) and all(r.entity_id != person.id for r in mentions.records):
+            mentions.records.append(EntityMention(person.id, person.type, person.name, "name"))
+
     # -- products and categories ----------------------------------------------
     words = [w for w in re.findall(r"[a-z0-9]+", question.lower()) if w not in _STOP]
     word_set = set(words) | {w.rstrip("s") for w in words}
