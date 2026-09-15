@@ -248,6 +248,8 @@ class Reasoner:
         self._active: set[tuple[str, str]] = set()
         # Variables in the rule being applied whose values hold only conditionally.
         self._provisional: dict[str, list[Unknown]] = {}
+        # For each provisional variable, every value the rules could give it.
+        self._alternatives: dict[str, list[Any]] = {}
         self.touched: dict[tuple[str, str, str], FactRef] = {}
 
     # -- public -------------------------------------------------------------
@@ -293,6 +295,10 @@ class Reasoner:
 
         if (subject, predicate) in self.stated:
             return self._fact(subject, predicate, self.stated[(subject, predicate)], "stated")
+        if self.program.is_verified_input(predicate) and not is_open:
+            # Only a record establishes a verified input. On a real record, no record
+            # means no: an approval nobody recorded is not an unknown approval.
+            return GoalResult(subject, predicate, "absent")
         if (self.program.is_input(predicate) or is_open) and not self.two_valued:
             return GoalResult(subject, predicate, UNKNOWN,
                               missing=[Unknown(predicate, subject)])
@@ -406,13 +412,13 @@ class Reasoner:
         conditions: list[ConditionResult] = []
         premises: list[GoalResult] = []
         failed: ConditionResult | None = None
-        outer_provisional = self._provisional
-        self._provisional = {}
+        outer_provisional, outer_alternatives = self._provisional, self._alternatives
+        self._provisional, self._alternatives = {}, {}
         try:
             return self._apply_body(spec, subject, rule, bindings, types, conditions, premises,
                                     failed)
         finally:
-            self._provisional = outer_provisional
+            self._provisional, self._alternatives = outer_provisional, outer_alternatives
 
     def _apply_body(self, spec, subject, rule, bindings, types, conditions, premises,
                     failed) -> RuleOutcome:
@@ -454,6 +460,19 @@ class Reasoner:
         return RuleOutcome(spec, CONDITIONAL if undecided else PROVED, head_value, bindings,
                            types, conditions, because=because, premises=premises)
 
+    def _fails_for_every_alternative(self, condition, bindings, names) -> bool:
+        provisional = [n for n in names if n in self._provisional]
+        if len(provisional) != 1 or not self._alternatives.get(provisional[0]):
+            return False
+        name = provisional[0]
+        for alternative in self._alternatives[name]:
+            trial = dict(bindings)
+            trial[name] = alternative
+            left, right = self._value(condition.left, trial), self._value(condition.right, trial)
+            if _is_open(left) or _is_open(right) or compare(condition.op, left, right):
+                return False
+        return True
+
     # -- conditions ---------------------------------------------------------
     def _fact_condition(self, condition, bindings, types, premises, index) -> ConditionResult:
         subject = self._value(condition.subject, bindings)
@@ -477,6 +496,8 @@ class Reasoner:
                     # The value holds only under the premise's own assumptions. Anything
                     # later refuted *by this value* is not refuted, only undecided.
                     self._provisional[condition.value.name] = list(premise.missing)
+                    self._alternatives[condition.value.name] = [
+                        o.value for o in premise.conditionals() if not _is_open(o.value)]
                 status = UNKNOWN if _is_open(value) else SATISFIED
                 return ConditionResult(index, f"{text} = {self._show(value, value_type)}",
                                        status, missing=_leaves(value))
@@ -520,8 +541,13 @@ class Reasoner:
             return ConditionResult(index, text, SATISFIED)
         provisional = [m for name in _var_names(condition.left) | _var_names(condition.right)
                        for m in self._provisional.get(name, [])]
-        if any(name in self._provisional
-               for name in _var_names(condition.left) | _var_names(condition.right)):
+        names = _var_names(condition.left) | _var_names(condition.right)
+        if any(name in self._provisional for name in names):
+            if self._fails_for_every_alternative(condition, bindings, names):
+                # Whichever rule ends up giving the value, the comparison fails: an
+                # electronics window is 10 days for standard and Plus members alike, so
+                # 17 days is past it without knowing the membership.
+                return ConditionResult(index, text, VIOLATED)
             return ConditionResult(index, text, UNKNOWN, missing=provisional)
         return ConditionResult(index, text, VIOLATED)
 

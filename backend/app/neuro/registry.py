@@ -16,6 +16,10 @@ _OVERRIDE: LLMProvider | None = None
 def _build(name: str) -> LLMProvider:
     if name == "mock":
         return MockLLMProvider(settings.llm_model)
+    if name == "local":
+        # Evaluation only: an open-weights model on this machine (needs torch + transformers).
+        from app.neuro.providers.local import LocalTransformersProvider
+        return LocalTransformersProvider()
     # Imported lazily so an offline deployment never needs the network stack.
     from app.neuro.providers.remote import (
         AnthropicProvider, OllamaProvider, OpenAICompatibleProvider,

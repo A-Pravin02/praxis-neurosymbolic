@@ -1096,9 +1096,27 @@ def _failures(result: GoalResult) -> list[str]:
     notes: list[str] = []
     for outcome in ordered:
         note = outcome.failed.note if outcome.failed else ""
+        deeper = _premise_failure(outcome)
+        if note and deeper and deeper not in note:
+            # "not eligible for return" says what failed; the premise says why.
+            note = f"{note}, because {deeper}"
         if note and note not in notes:
             notes.append(note)
     return notes
+
+
+def _premise_failure(outcome: RuleOutcome) -> str:
+    """When a rule failed on a derived premise, the premise's own reason."""
+    failed = outcome.failed
+    if failed is None:
+        return ""
+    for premise in outcome.premises:
+        head = f"{premise.predicate}({premise.subject})"
+        if failed.expression.startswith(head) and premise.status in ("default", "absent") \
+                and premise.refutations():
+            inner = _failures(premise)
+            return inner[0] if inner else ""
+    return ""
 
 
 def _first_failure(result: GoalResult) -> str:

@@ -101,7 +101,9 @@ _RELATIVE = re.compile(r"\b(?:whose|who|which|that|where|because|since)\s+(.{8,}
 _QUANTITY_TEXT = re.compile(
     r"(?:₹|rs\.?\s*)?\d[\d,]*(?:\.\d+)?\s*(?:days?|weeks?|months?|km|kms|rupees?)?"
     r"(?:\s+ago)?|\b(?:yesterday|a fortnight ago)\b", re.IGNORECASE)
-_THIRD_PARTY = re.compile(r"\b(?:my|our|the|a) (?:customer|client|buyer)'?s?\b", re.IGNORECASE)
+_THIRD_PARTY = re.compile(r"\b(?:my|our|the|a) (?:customer|client|buyer)(?:'s|s)?"
+                          r"(?:\s+(?:says|said|reports|reported|claims|told me|tells me)"
+                          r"(?:\s+that)?)?\b", re.IGNORECASE)
 
 
 def _statement_form(clause: str) -> str:
@@ -268,13 +270,14 @@ class QueryUnderstanding:
             # about the policy is a claim about the policy, checked later against it, not
             # a fact about the case. It is bound only if nothing else can be.
             for row, context in enumerate(contexts):
-                if POLICY_CLAIM_CUE.search(context) and len(numbers) > 1:
-                    scores[row, :] -= 1.0
+                if POLICY_CLAIM_CUE.search(context):
+                    scores[row, :] -= 10.0
             taken: set[int] = set()
             for column, predicate in sorted(enumerate(inputs),
                                             key=lambda pair: -float(scores[:, pair[0]].max())):
                 order = sorted(range(len(numbers)), key=lambda row: -float(scores[row, column]))
-                row = next((r for r in order if r not in taken), None)
+                row = next((r for r in order if r not in taken
+                            and not POLICY_CLAIM_CUE.search(contexts[r])), None)
                 if row is None:
                     continue
                 taken.add(row)

@@ -261,6 +261,14 @@ class FactGrounding:
                 f"conversation.")
             return
 
+        if products and len(own) == 1 and relevant == own and mentions.personal and \
+                not mentions.hypothetical:
+            # "My almonds order was delivered 20 days ago" names the one order of theirs
+            # that contains almonds. It is that order; a detail that contradicts its
+            # record is misleading, not a description of some other order.
+            grounding.subjects = own
+            return
+
         # What the person said narrows which record they mean: "I ordered this two weeks
         # ago" is the order delivered 14 days ago, not any delivered order. A candidate
         # the statements contradict is not the one being described.

@@ -141,8 +141,9 @@ def split_clauses(question: str) -> list[str]:
 # follows it: "can I...", "is it...", "have you..." ask; "have all the bills" states.
 _INTERROGATIVE = re.compile(
     r"^\s*(?:(?:how|what|why|where|when|which|who|whom|whose)\b|"
-    r"(?:can|could|may|might|am|is|are|was|were|will|would|shall|should|do|does|did|"
-    r"have|has)\s+(?:i|you|we|they|he|she|it|my|your|our|their|the|this|that|these|"
+    r"(?:can|could|may|might|will|would|shall|should|do|does|did|is|are|was|were)\s+"
+    r"(?!not\b)[a-z0-9'#-]+\b|"
+    r"(?:am|have|has)\s+(?:i|you|we|they|he|she|it|my|your|our|their|the|this|that|these|"
     r"those|there|a|an|any)\b)",
     re.IGNORECASE)
 

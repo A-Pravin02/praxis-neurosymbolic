@@ -154,9 +154,14 @@ def speech_act_from_form(question: str) -> str | None:
     clauses = split_clauses(text)
     # Questions first: in "who handles a customer whose reset email never arrives", the
     # word "email" in the description must not make the request an information lookup.
-    ordered = [c for c in reversed(clauses) if is_question_clause(c)] + \
-        [c for c in reversed(clauses) if not is_question_clause(c)]
-    for clause in ordered:
+    questions = [c for c in reversed(clauses) if is_question_clause(c)]
+    statements = [c for c in reversed(clauses) if not is_question_clause(c)]
+    # Among several questions ("what can I offer, and does it need approval?") the more
+    # specific kind of request wins, in the order the rules are listed.
+    for label, pattern in _FORM_RULES:
+        if any(pattern.search(c) for c in questions):
+            return label
+    for clause in statements:
         for label, pattern in _FORM_RULES:
             if pattern.search(clause):
                 return label
