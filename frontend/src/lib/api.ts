@@ -370,3 +370,74 @@ export const health = () =>
     "/health",
     { retryOnUnauthorized: false },
   );
+
+// --- copilot administration -----------------------------------------------------
+
+export interface CopilotEvaluationRun {
+  file: string;
+  split: string;
+  cases: number;
+  label: string;
+  llm_model?: string;
+  frozen?: boolean;
+  note?: string;
+  systems: Record<string, Record<string, number | null>>;
+  by_category: Record<string, Record<string, number | null>>;
+  not_run: Record<string, string>;
+}
+
+export interface CopilotValidation { ok: boolean; errors: string[]; summary: Record<string, number> }
+
+export const copilot = {
+  overview: () => request<{
+    company: string; as_of: string; revision: string;
+    counts: Record<string, number>; entity_types: Record<string, number>;
+    goals: { name: string; subject: string; kind: string; description: string }[];
+    evaluation: CopilotEvaluationRun | null;
+  }>("/copilot/overview"),
+  analytics: () => request<Record<string, unknown>>("/copilot/analytics"),
+  gaps: () => request<{
+    type: string; summary: string; detail: string; owner?: string | null; count: number;
+    last_seen: string; examples: { question: string; message_id: string }[];
+  }[]>("/copilot/gaps"),
+  review: () => request<{
+    message_id: string; at: string; question: string; answer: string; outcome: string;
+    pipeline: string; decision: string; reasons: string[]; gap: string | null;
+  }[]>("/copilot/review"),
+  trace: (id: string) => request<{ message_id: string; answer: string; neurosymbolic: import("./types").NeuroSymbolicAnswer }>(`/copilot/traces/${id}`),
+  policies: () => request<{
+    documents: { policy: string; version: number; title: string; effective: string;
+      superseded_on: string | null; in_force: boolean; file: string;
+      clauses: { id: string; title: string }[] }[];
+    files: Record<string, { name: string; bytes: number }[]>;
+  }>("/copilot/policies"),
+  rules: () => request<{
+    rules: { code: string; name: string; clauses: string[]; concludes: string; priority: number; source: string }[];
+    files: { name: string; bytes: number }[];
+  }>("/copilot/rules"),
+  readFile: (folder: string, name: string) =>
+    request<{ content: string }>(`/copilot/files/${folder}/${encodeURIComponent(name)}`),
+  validate: (folder: string, name: string, content: string) =>
+    request<CopilotValidation>("/copilot/validate", { method: "POST", body: { folder, name, content } }),
+  writeFile: (folder: string, name: string, content: string, note: string) =>
+    request<{ revision: string }>(`/copilot/files/${folder}/${encodeURIComponent(name)}`,
+      { method: "PUT", body: { content, note } }),
+  history: () => request<{ id: string; author: string; note: string; files: string[] }[]>("/copilot/history"),
+  restore: (id: string) => request<{ revision: string }>(`/copilot/history/${id}/restore`, { method: "POST" }),
+  graph: (type?: string) => request<{
+    types: string[];
+    entities: { id: string; type: string; name: string; attributes: Record<string, unknown>;
+      relations: { predicate: string; target: string; direction: string }[] }[];
+    attributes: Record<string, { subject: string; type: string }>;
+  }>(`/copilot/graph${type ? `?type=${encodeURIComponent(type)}` : ""}`),
+  upsertEntity: (payload: { id: string; type: string; name?: string; attributes: Record<string, unknown> }) =>
+    request<{ revision: string }>("/copilot/graph/entities", { method: "POST", body: payload }),
+  testRule: (payload: { goal: string; subject?: string; facts: Record<string, unknown> }) =>
+    request<{
+      goal: string; subject: string; status: string; value: string; label: string | null;
+      decided_by: string | null; because: string | null; missing: string[];
+      policy_versions: { name: string; basis: string }[];
+    }>("/copilot/rules/test", { method: "POST", body: payload }),
+  access: () => request<{ grants: { kind: string; scope: string; types: string[] }[]; roles: Record<string, string[]> }>("/copilot/access"),
+  evaluation: () => request<{ runs: CopilotEvaluationRun[] }>("/copilot/evaluation"),
+};

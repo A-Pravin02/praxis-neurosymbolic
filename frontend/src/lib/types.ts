@@ -146,7 +146,7 @@ export interface AssistantTurn {
 
 // --- neuro-symbolic assistant -------------------------------------------------------
 
-export type NsOutcome = "answered" | "conditional" | "clarification" | "insufficient" | "denied";
+export type NsOutcome = "answered" | "conditional" | "clarification" | "insufficient" | "denied" | "needs_review";
 export type NsLayer = "NEURAL" | "SYMBOLIC" | "HYBRID";
 
 export interface NsSource {
@@ -155,6 +155,55 @@ export interface NsSource {
   title: string;
   document?: string;
   text?: string;
+  policy?: string;
+  version?: number;
+  effective?: string;
+  in_force?: boolean;
+}
+
+export interface NsCheck {
+  check: string;
+  passed: boolean;
+  detail: string;
+}
+
+export interface NsPolicyVersion {
+  subject: string;
+  policy: string;
+  version: string;
+  name: string;
+  number: number | null;
+  effective_from: string;
+  superseded_on: string | null;
+  reference_date: string;
+  basis: string;
+  assumed: boolean;
+}
+
+export interface NsRuleSummary {
+  rule: string;
+  name: string;
+  clauses: string[];
+  status?: string;
+  because?: string;
+  formula: string;
+}
+
+export interface NsGap {
+  type: "uncovered_topic" | "undefined_case" | "missing_policy_parameter" | "unclear_request" | "verification_failure";
+  summary: string;
+  detail: string;
+  owner?: string | null;
+}
+
+export interface NsClaim {
+  kind: string;
+  predicate: string;
+  stated: string;
+  record: string;
+  confirmed: boolean;
+  source: string;
+  reason: string;
 }
 
 export interface NsCondition {
@@ -193,8 +242,10 @@ export interface NsTrace {
   neural_symbolic_loop: { iteration: number; symbolic_needed: string[]; accepted: string[] }[];
   grounding: {
     assumptions?: string[];
-    rejected_statements?: { predicate: string; stated: string; record: string }[];
+    rejected_statements?: { predicate: string; stated: string; record: string; kind?: string; reason?: string }[];
   };
+  policy_versions?: NsPolicyVersion[];
+  authorization?: { access: string; person: string | null; visible_records: number; withheld_records: number };
   verification: { passed?: boolean; checks?: { check: string; passed: boolean; detail: string }[] };
   selected_pipeline: string;
   pipeline_label: string;
@@ -216,6 +267,16 @@ export interface NeuroSymbolicAnswer {
   clarification: { question: string; options: { id: string; label: string; detail: string }[] } | null;
   goal: string | null;
   trace: NsTrace;
+  decision_label?: string;
+  decision_kind?: string;
+  recommended_action?: string | null;
+  verification?: { status: "passed" | "needs_review" | "not_applicable"; passed: boolean | null; checks: NsCheck[] };
+  knowledge_gap?: NsGap | null;
+  policy_versions?: NsPolicyVersion[];
+  rules_applied?: NsRuleSummary[];
+  facts?: { subject: string; predicate: string; value: string; source: string; rule?: string }[];
+  claims?: NsClaim[];
+  audience?: "staff" | "self";
 }
 
 export interface ChatMessage {

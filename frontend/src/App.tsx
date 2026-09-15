@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import AdminView from "./components/AdminView";
 import AuthView from "./components/AuthView";
 import ChatView from "./components/ChatView";
 import DocumentsView from "./components/DocumentsView";
@@ -30,6 +31,7 @@ export default function App() {
   const [pipelineMode, setPipelineMode] = useState<PipelineMode>("neurosymbolic");
   const [error, setError] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [view, setView] = useState<"chat" | "admin">("chat");
   const lastQuestion = useRef<string>("");
 
   useEffect(() => api.onSessionChange((session) => setUser(session?.user ?? null)), []);
@@ -190,6 +192,11 @@ export default function App() {
   // users who may run the benchmark. Hiding the selector keeps the UI honest
   // about what an ordinary user can choose; the API enforces it regardless.
   const canCompareModes = user.permissions.includes("eval:run");
+  const copilotWorkspace = user.tenant_slug === "meridian";
+  // The console is for people who administer knowledge or audit decisions; the API
+  // enforces the same permissions on every endpoint.
+  const canAdminister = copilotWorkspace &&
+    (user.roles.includes("admin") || user.permissions.includes("audit:read"));
 
   return (
     <div className={`app${panel ? " with-panel" : ""}`}>
@@ -198,11 +205,11 @@ export default function App() {
           <div className="brand-mark" aria-hidden="true">P</div>
           <div>
             <div className="brand-name">Praxis</div>
-            <div className="brand-sub">evidence-gated assistant</div>
+            <div className="brand-sub">{copilotWorkspace ? "decision copilot" : "evidence-gated assistant"}</div>
           </div>
         </div>
 
-        <button className="new-chat" onClick={startNewConversation}>+ New conversation</button>
+        <button className="new-chat" onClick={() => { setView("chat"); startNewConversation(); }}>+ New conversation</button>
 
         <div className="sidebar-section">Conversations</div>
         <div className="conversation-list">
@@ -213,7 +220,7 @@ export default function App() {
             <div
               key={conversation.id}
               className={`conversation-item${conversation.id === activeId ? " active" : ""}`}
-              onClick={() => void openConversation(conversation.id)}
+              onClick={() => { setView("chat"); void openConversation(conversation.id); }}
               role="button"
               tabIndex={0}
               onKeyDown={(event) => {
@@ -236,12 +243,19 @@ export default function App() {
         </div>
 
         <div className="sidebar-footer">
-          <button
-            className="link-button"
-            onClick={() => setPanel(panel === "documents" ? null : "documents")}
-          >
-            Documents &amp; rules
-          </button>
+          {canAdminister && (
+            <button className="link-button" onClick={() => { setView("admin"); setPanel(null); setSidebarOpen(false); }}>
+              Knowledge &amp; reliability
+            </button>
+          )}
+          {!copilotWorkspace && (
+            <button
+              className="link-button"
+              onClick={() => setPanel(panel === "documents" ? null : "documents")}
+            >
+              Documents &amp; rules
+            </button>
+          )}
           <div className="user-chip">
             <div className="avatar" aria-hidden="true">
               {(user.display_name || user.email).slice(0, 1).toUpperCase()}
@@ -257,6 +271,11 @@ export default function App() {
         </div>
       </nav>
 
+      {view === "admin" ? (
+        <main className="main">
+          <AdminView onClose={() => setView("chat")} />
+        </main>
+      ) : (
       <main className="main">
         <header className="topbar">
           <button
@@ -312,6 +331,7 @@ export default function App() {
           roles={user.roles}
         />
       </main>
+      )}
 
       {panel === "evidence" && (
         <EvidencePanel

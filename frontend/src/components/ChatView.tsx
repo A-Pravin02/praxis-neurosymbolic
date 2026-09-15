@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 
 import Markdown from "./Markdown";
-import { ClarificationOptions, HowDetermined, KnowledgeUsed, NsStatus } from "./ReasoningPanel";
+import { DecisionCard } from "./ReasoningPanel";
 import type { AssistantTurn, ChatMessage, PipelineMode } from "../lib/types";
 
 interface Props {
@@ -26,6 +26,13 @@ const CUSTOMER_SUGGESTIONS = [
   { kind: "Case analysis", text: "Can I return a product 20 days after delivery?" },
   { kind: "Enumeration", text: "Which products are eligible for same-day delivery?" },
 ];
+const SUPPORT_SUGGESTIONS = [
+  { kind: "Recommendation", text: "My customer's laptop arrived damaged 12 days ago and they want a replacement. What can I offer?" },
+  { kind: "Premise check", text: "The replacement policy is 30 days. Rohan's earbuds arrived damaged. Can they get a replacement?" },
+  { kind: "Routing", text: "Which team should a complaint about being charged twice go to?" },
+  { kind: "Knowledge gap", text: "Which team handles a customer who can't log in because their password reset email never arrives?" },
+];
+
 const EMPLOYEE_SUGGESTIONS = [
   { kind: "Calculation", text: "How much will I be reimbursed if my business trip cost ₹8,750?" },
   { kind: "Conditional", text: "Am I eligible for reimbursement if I drove 450 km and spent ₹4,200?" },
@@ -51,8 +58,9 @@ export default function ChatView({
   const neuroSymbolic = NS_WORKSPACES.has(workspace ?? "");
   const suggestions = !neuroSymbolic ? SUGGESTIONS
     : (roles ?? []).includes("customer") ? CUSTOMER_SUGGESTIONS
-    : (roles ?? []).includes("support") ? CUSTOMER_SUGGESTIONS
+    : (roles ?? []).some((role) => role === "support" || role === "admin") ? SUPPORT_SUGGESTIONS
     : EMPLOYEE_SUGGESTIONS;
+  const agent = (roles ?? []).some((role) => role === "support" || role === "admin");
   const [draft, setDraft] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -89,11 +97,14 @@ export default function ChatView({
       <div className="messages">
         {isEmpty ? (
           <div className="empty-state">
-            <h2>{neuroSymbolic ? `How can I help, ${displayName || "there"}?`
+            <h2>{neuroSymbolic ? (agent ? "Natural language in. Verified decision out."
+              : `How can I help, ${displayName || "there"}?`)
               : `Ask your workspace, ${displayName || "there"}`}</h2>
             <p>
               {neuroSymbolic
-                ? "Ask anything about orders, returns, refunds, delivery, leave or expenses, in your own words. I understand the question, then apply the company's actual rules to your records — and when a decision depends on something I don't know, I tell you exactly what."
+                ? (agent
+                  ? "Describe the customer's situation in your own words. Praxis applies the company's policies, the version in force and the customer's records, verifies the result, and tells you what you're allowed to offer — or exactly what it can't decide and why."
+                  : "Ask anything about orders, returns, refunds, delivery, leave or expenses, in your own words. I understand the question, then apply the company's actual rules to your records — and when a decision depends on something I don't know, I tell you exactly what.")
                 : "Answers are built from your documents, structured facts and rules. Every factual claim is checked against evidence before it reaches you — and when the evidence is not there, the assistant says so instead of guessing."}
             </p>
             <div className="suggestions">
@@ -153,7 +164,7 @@ export default function ChatView({
           </div>
           <p className="composer-hint">
             {neuroSymbolic
-              ? <>Enter to send. Decisions come from company rules applied to your records; open <strong>How was this determined?</strong> under any answer to see why.</>
+              ? <>Enter to send. Decisions come from company rules applied to authorized records and are verified before release; open <strong>Why this answer?</strong> under any answer.</>
               : <>Enter to send, Shift+Enter for a new line. Pipeline: <strong>{pipelineMode}</strong>. Praxis abstains when the knowledge base does not support an answer.</>}
           </p>
         </div>
@@ -203,10 +214,8 @@ function MessageRow({
 
         {turn && !streaming && turn.neurosymbolic && (
           <>
-            <ClarificationOptions ns={turn.neurosymbolic} onChoose={onSend} disabled={busy} />
-            <NsStatus ns={turn.neurosymbolic} latencyMs={turn.latency_ms} />
-            <KnowledgeUsed ns={turn.neurosymbolic} />
-            <HowDetermined ns={turn.neurosymbolic} />
+            <DecisionCard ns={turn.neurosymbolic} latencyMs={turn.latency_ms} onChoose={onSend}
+              busy={busy} />
           </>
         )}
         {turn && !streaming && !turn.neurosymbolic && <TurnFooter turn={turn} onInspect={onInspect} />}

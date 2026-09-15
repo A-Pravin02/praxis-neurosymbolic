@@ -1,11 +1,18 @@
-# Neuro-symbolic enterprise assistant
+# Praxis: neuro-symbolic decision intelligence
 
-> **Research question.** Can combining neural language understanding with symbolic
-> knowledge and rule-based reasoning produce a more accurate, explainable and reliable
-> enterprise chatbot than a conventional LLM/RAG system?
+> **Research question.** Does adding symbolic reasoning and verification reduce
+> hallucinated or unsupported enterprise decisions, compared with LLM and RAG baselines?
+>
+> **Product.** The *Support Decision Copilot*, a trustworthy AI decision copilot for
+> customer-service operations. See [PRODUCT.md](PRODUCT.md) for positioning, the
+> commercial model and the expansion plan.
 
-This document describes the system built to test that question, why each part exists,
-and what the measurements show — including where the system fails.
+This document describes the system, why each part exists, and what the measurements show.
+That includes where the system fails and which comparisons have not been run yet.
+
+**The principle.** Neural AI understands the situation the person describes. Symbolic AI
+decides what the enterprise's rules imply. A language model is never the authority for a
+business decision, and a decision that fails verification is not released.
 
 The demonstration company, **Meridian Marketplace**, is fictional. Everything about it
 lives in one directory, [`backend/data/meridian`](../backend/data/meridian); no module
@@ -72,6 +79,27 @@ flowchart TD
 | **Knowledge** | [`data/meridian`](../backend/data/meridian) | policies, rules, company graph, benchmark |
 | **Evaluation** | [`app/evaluation/ns_benchmark.py`](../backend/app/evaluation/ns_benchmark.py) | systems, metrics, reports |
 | **UI** | [`frontend/src/components/ReasoningPanel.tsx`](../frontend/src/components/ReasoningPanel.tsx) | status, sources, "How was this determined?" |
+
+### The Support Decision Copilot layer
+
+The verticalized product adds these capabilities to the same pipeline. Each one lives
+where the architecture says it should.
+
+| Capability | Layer | Where |
+|---|---|---|
+| Authorization before reasoning: the reasoner receives an *authorized view* of the graph, declared with `access` statements | SECURITY → SYMBOLIC | [`knowledge_graph.py`](../backend/app/symbolic/knowledge_graph.py) `AuthorizedGraph` |
+| Policy versioning: `version returns_policy(order) of returns on delivery_date` resolves the version in force on the case's own date | SYMBOLIC | [`reasoner.py`](../backend/app/symbolic/reasoner.py) `_resolve_version`, [`retrieval.py`](../backend/app/neural/retrieval.py) |
+| Recommended resolution, approval escalation, goodwill exceptions, routing — composed from the customer policies in the playbook's order | SYMBOLIC | [`04_support.rules`](../backend/data/meridian/rules/04_support.rules) |
+| Follow-ups: a goal whose result qualifies another's action (`followup recommended_resolution approval_required`) | HYBRID | controller |
+| Claims about the policy ("the policy is 30 days") checked against the parameters the proof read | HYBRID | [`claims.py`](../backend/app/hybrid/claims.py) |
+| Verified inputs: claims only a record can confirm ("the manager approved it") | HYBRID | grounding, reasoner (closed world) |
+| Ten-check verification with a release gate | HYBRID | [`verification.py`](../backend/app/hybrid/verification.py) |
+| Knowledge-gap classification | HYBRID | [`gaps.py`](../backend/app/hybrid/gaps.py) |
+| Recommended actions and decision labels, authored with the policy (`action`, `label`) | SYMBOLIC data | [`01_schema.rules`](../backend/data/meridian/rules/01_schema.rules) |
+| Knowledge administration: validate against the whole pack, snapshot, apply, restore | HYBRID | [`knowledge_store.py`](../backend/app/hybrid/knowledge_store.py), [`copilot.py`](../backend/app/api/routers/copilot.py) |
+
+The demonstration, generated from real runs by `scripts/demo_copilot.py`, is in
+[demo/DEMO.md](demo/DEMO.md).
 
 ---
 
@@ -223,13 +251,56 @@ When the reasoner reports an input it lacks, the neural layer is asked to look a
 **for exactly that input**, with the lower threshold that knowing what to look for
 justifies, and the reasoner re-evaluates. The trace records each round.
 
-### 3.7 Verification — HYBRID
+### 3.7 Verification — HYBRID, and a release gate
 
-1. **Record consistency** — a stored outcome (refund *rejected*) must agree with the
-   derived decision, or the disagreement is surfaced.
-2. **Constraints** — an amount must be a finite, non-negative number.
-3. **Citation integrity** — every clause a rule cites exists.
-4. **Answer grounding** — every figure in the reply appears in the conclusion.
+Every check is deterministic.
+
+1. **Fact validity.** Every record fact used is in the records with that value, and every
+   stated fact is one a person may state.
+2. **Authorization.** Every record the proof touched is visible to the person asking.
+3. **Policy applicability.** Every cited clause is from the policy version that governs the
+   case.
+4. **Policy version.** The version applied was in force on the case's date.
+5. **Symbolic provenance.** The decision came from a rule or a declared default.
+6. **Calculation.** An amount re-derives to the same value from scratch, and is valid and
+   non-negative.
+7. **Supported numbers.** Every figure in the reply appears in the conclusion.
+8. **Contradictions.** No conflict between rules of equal priority, the stored outcome
+   agrees with the derived one, and no rejected statement was used.
+9. **Answer agreement.** The reply's decision matches the symbolic result (a "no" is never
+   phrased as a "yes").
+10. **Unsupported claims.** A model's rephrasing adds no sentence the conclusion doesn't
+    support.
+
+Checks that don't apply are omitted; a yes/no decision has no calculation to re-derive. If
+a model's phrasing fails, the deterministic phrasing is used and re-verified. If a check of
+the reasoning itself fails, the answer is **withheld**: the outcome becomes `needs_review`,
+no decision is stated, and a `verification_failure` gap is logged.
+
+### 3.7a Claims, versions and gaps — HYBRID
+
+- **False premises.**
+  - *Policy claims:* a number the person attributes to the policy is never bound to the
+    case. After reasoning, it is compared with the policy parameters the proof actually
+    read, e.g. `damage_report_days(RETURNS-v2) = 15`. A mismatch is corrected in the
+    answer and cites the version.
+  - *Verified inputs:* approvals and other claims only a record can confirm. On a real
+    record, "no record" means no; they are never assumed.
+- **Policy versions.**
+  - Each version is a node with an effective date and its own parameters.
+  - Superseded clauses stay citeable, so a case governed by version 1 cites version 1, but
+    they are never retrieved as current policy.
+  - A general question with no date is answered under the version in force today, and the
+    trace records that this was assumed.
+- **Knowledge gaps.** Each unanswerable question is classified by which structure was
+  missing:
+  - *no goal or clause* → `uncovered_topic`;
+  - *a decision table over one input that matches no declared value* → `undefined_case`;
+  - *a rule condition whose policy parameter was never recorded* →
+    `missing_policy_parameter`;
+  - *a failed check* → `verification_failure`.
+
+  Gaps appear on the answer, and are aggregated for administrators by type and summary.
 
 ### 3.8 Generation — NEURAL, after the decision
 
@@ -263,6 +334,10 @@ chain-of-thought, because no step of the decision is a model reasoning in prose.
 | Deterministic calculations | Rule arithmetic; unknowns stay symbolic |
 | Symbolic validation of interpretations | Content-word and goal-kind checks in the router |
 | Never invent policy, prices, eligibility, refunds | The generator only phrases conclusions; grounding rejects new figures |
+| Policy versioning | The version in force on the case's date; superseded text is not retrieved as current |
+| Misleading user premises | Policy claims compared with parameters; approvals only from records |
+| Access control | The reasoner sees an authorized view; the verifier checks nothing outside it was used |
+| Output verification | Ten checks; failing answers withheld as `needs_review` |
 
 ---
 
@@ -270,18 +345,29 @@ chain-of-thought, because no step of the decision is a model reasoning in prose.
 
 ### Method
 
-Four systems on the same questions, knowledge and users
-([`ns_benchmark.py`](../backend/app/evaluation/ns_benchmark.py)):
+The systems run on the same questions, knowledge and users
+([`ns_benchmark.py`](../backend/app/evaluation/ns_benchmark.py)).
 
-- **neurosymbolic** — the full system
-- **neurosymbolic_lexical** — ablation: the semantic encoder replaced by lexical hashing
-- **rag_extractive** — retrieval over the same policy text and the person's own records,
-  answered with what was retrieved
-- **llm_rag** — the same retrieval with a real model writing the answer
+| System | Description |
+|---|---|
+| **llm_only** *(baseline 1)* | A language model with the person's identity and today's date, and no company knowledge |
+| **llm_rag** *(baseline 2)* | Adds retrieval over every policy document (superseded versions included, as a document index holds them) and the records the person may see |
+| **llm_rag_rules** *(baseline 3)* | The model extracts a goal, record and facts as JSON. A *basic* rule engine then decides with the same rules: two-valued (unknown = false), newest version always, statements accepted as given, no grounding, claim checks or verification. The model phrases the result |
+| **neurosymbolic** *(proposed)* | The full system, with the deterministic realizer |
+| **neurosymbolic_lexical** | Ablation: the semantic encoder replaced by lexical hashing |
+| **rag_extractive** | Retrieval answered by quoting what was retrieved |
 
-Scored by rule from each case's expectations: intent, record resolution, pipeline
-selection, rule execution, retrieval, explanation correctness, hallucination,
-unsupported answers, latency.
+Each case is scored by rule from its expectations:
+- final answer, decision, calculation and rule-execution accuracy;
+- policy compliance: no forbidden content, no wrong definite decision, no definite answer
+  to an unanswerable question;
+- intent, record resolution, pipeline selection, retrieval and explanation correctness;
+- hallucination and unsupported-answer rates, and latency.
+
+The language-model baselines run against any hosted provider (`LLM_PROVIDER=openai` with a
+base URL, key and model), or against an open-weights model on the local GPU
+(`LLM_PROVIDER=local`). When neither is configured they are reported as not run, never
+simulated.
 
 Three data sets, kept apart:
 
@@ -290,6 +376,7 @@ Three data sets, kept apart:
 | [`dev.yaml`](../backend/data/meridian/benchmark/dev.yaml) | 27 | calibrating thresholds only |
 | [`test.yaml`](../backend/data/meridian/benchmark/test.yaml) | 86 | **committed before its first run** (git `a7800ea`) |
 | [`holdout.yaml`](../backend/data/meridian/benchmark/holdout.yaml) | 40 | written after the test runs, **committed before its only run** |
+| [`copilot.yaml`](../backend/data/meridian/benchmark/copilot.yaml) | 53 | support-copilot questions in the nine specified categories (known, paraphrased, unseen, multi-hop, policy, calculation, conflicting-policy, missing-information, adversarial), **committed before its first run** (git `5b9a329`) |
 
 All ten requested categories are covered: known, paraphrased, unseen, multi-condition,
 multi-hop, ambiguous, calculation, missing information, misleading information,
@@ -322,6 +409,87 @@ estimate*: the fixes were informed by run 1's failures.
 | Pipeline selection | 0.850 | 0.250 | n/a |
 | Hallucination rate | 0.025 as scored — **0.05 in substance** (see below) | 0.000 | 0.000 |
 
+**Run 4 — copilot set, frozen, first run** ([report](benchmark/run4-copilot-frozen.md))
+
+| Metric | neurosymbolic | lexical ablation | extractive RAG |
+|---|---|---|---|
+| Final answer accuracy | **0.642** | 0.038 | 0.038 |
+| Decision accuracy | **0.720** | 0.000 | 0.000 |
+| Calculation accuracy | **0.750** | 0.000 | 0.000 |
+| Policy compliance | 0.906 | 1.000 | 0.962 |
+| Pipeline selection | 1.000 | 0.000 | n/a |
+| Hallucination rate | 0.094 | 0.000 | 0.038 |
+| Unsupported-answer rate | 0.000 | n/a | 0.000 |
+
+By category, the full system scored:
+- unseen support requests 0.86, known 0.83, calculation 0.80;
+- adversarial 0.67 and policy 0.67;
+- conflicting-policy 0.50, multi-hop 0.50, and paraphrased 0.17.
+
+The ablations score 1.000 on policy compliance because they almost never commit to an
+answer. Compliance has to be read together with accuracy.
+
+Run 4 exposed three genuine soundness bugs, not just misreadings:
+- An approval nobody recorded was treated as *unknown* rather than *absent*, producing a
+  provisional goodwill credit.
+- A number stated about the policy ("the window is 60 days") was bound to the case as its
+  delivery age.
+- A comparison that fails under every rule that could supply a value was reported as
+  undecided.
+
+**Run 5 — copilot set after those fixes, post-hoc** ([report](benchmark/run5-copilot-posthoc.md)):
+
+| Metric | Run 4 | Run 5 |
+|---|---|---|
+| Final answer accuracy | 0.642 | 0.774 |
+| Decision accuracy | 0.720 | 0.840 |
+| Calculation accuracy | 0.750 | 0.833 |
+| Policy compliance | 0.906 | 0.925 |
+| Hallucination rate | 0.094 | 0.075 |
+| Unsupported-answer rate | 0.000 | 0.000 |
+
+All three fixes are general, and none targets a question's wording. They were still
+prompted by this set's failures, so run 5 is not an unseen estimate.
+
+**Runs 6 and 7 — the earlier sets on the versioned knowledge pack, post-hoc**
+([test](benchmark/run6-test-v2pack.md), [hold-out](benchmark/run7-holdout-v2pack.md)).
+
+| Split | Final answer accuracy | Hallucination rate |
+|---|---|---|
+| Test | 0.756 | 0.081 |
+| Hold-out | 0.825 | 0.025 |
+
+Two test cases were written for the pre-versioning pack:
+- **M01** expects a "7-day" mention, but returns policy version 2 now governs that order.
+- **I03** expects a conditional answer, but the policy gives a definite no: the shoes were
+  delivered 14 days ago, past version 1's 7-day damage window.
+
+The files were not edited; both cases count as failures.
+
+### Not yet run: the language-model baselines
+
+`llm_only`, `llm_rag` and `llm_rag_rules` are implemented, but none has produced a result
+yet:
+- no hosted-provider key is configured on this machine;
+- the local open-weights model (Qwen2.5-1.5B-Instruct, 3.1 GB) could not be downloaded
+  here: the connection to Hugging Face ran at about 24 KB/s.
+
+**So the central comparison with LLM and RAG baselines is not measured in this
+repository yet.** The results above compare the full system with its lexical ablation and
+with retrieval alone. To complete it:
+
+```bash
+# hosted (e.g. a free Groq key)
+LLM_PROVIDER=openai LLM_BASE_URL=https://api.groq.com/openai/v1 LLM_API_KEY=... \
+LLM_MODEL=llama-3.3-70b-versatile python scripts/run_ns_benchmark.py --split copilot
+# or locally, once the model is downloaded (needs torch + transformers, ~6 GB GPU)
+LLM_PROVIDER=local python scripts/run_ns_benchmark.py --split copilot
+python scripts/demo_copilot.py        # the four-system demonstration, same configuration
+```
+
+Report the first run of that command as the frozen result: the copilot set was fixed
+before any of these systems ran on it.
+
 ### What the results show
 
 **1. Neural understanding is necessary.** Replacing the encoder with lexical matching
@@ -347,12 +515,13 @@ rather than guessing.
 
 ### What the results do not show
 
-- **No comparison against a real LLM.** `llm_rag` did not run: no model key was
-  configured, and it is reported as not run rather than simulated. **Without it, the
-  research question is only partly answered.** The extractive RAG baseline shows what
-  retrieval alone cannot do; it does not show what a fluent LLM would guess. Set
-  `LLM_PROVIDER=openai`, `LLM_BASE_URL` and `LLM_API_KEY` (a free Groq or Gemini key works)
-  and run `python scripts/run_ns_benchmark.py` to complete the comparison.
+- **No comparison against a real LLM yet.** See "Not yet run" above. **Without it, the
+  central research question is only partly answered.**
+- **No business-outcome measurements.** Handle time, first-contact resolution, escalation
+  and satisfaction need a pilot with agents; the protocol is in
+  [PILOT_STUDY_PROTOCOL.md](PILOT_STUDY_PROTOCOL.md). The console reports only what is
+  measured from real traffic: share verified, withheld, clarified, not covered and
+  escalated, premises rejected, and latency.
 - **One author.** The same person wrote the knowledge pack and all three question sets,
   and the hold-out set was written knowing run 1's failure modes. An independently
   written set is the proper next step.
@@ -378,9 +547,14 @@ rather than guessing.
   text. Extracting candidate rules from new policy documents for human review is future
   work.
 - **One item per order.** Orders contain a single product in the demo graph.
-- **The graph lives in files.** It is read-only and per-deployment; production use would
-  load it from operational systems with the same row-level tenant isolation as the rest
-  of the platform.
+- **The graph lives in files.** Administrators edit it through a validated,
+  snapshotted store on a Docker volume, per deployment. Production use would load records
+  from operational systems (orders, CRM, HR) with the same row-level tenant isolation as
+  the rest of the platform.
+- **Staff hypotheticals have no customer.** A support agent's general case ("my customer's
+  laptop…") has no membership tier. Rules that depend on it stay conditional, and the
+  order total is taken as the product's list price (stated in the reasons).
+- **Paraphrase remains the weakest category** (0.33 on the copilot set after fixes).
 - **English only.** The interrogative-form grammar is English.
 
 ---
@@ -399,10 +573,18 @@ Open http://localhost:8080. Password for every demo account: `Praxis-Demo-2026!`
 | `sam@meridian.test` | Standard customer, Pune | "How much will I get back if I cancel order 22003?" |
 | `dev@meridian.test` | Employee, grade L2, 4.5 years | "How much will I be reimbursed if my trip cost ₹8,750?" |
 | `ana@meridian.test` | Employee, grade L1, 1.3 years | "Why am I not eligible for the higher annual leave?" |
-| `support@meridian.test` | Support agent | "Can order 22003 be cancelled?" |
+| `rohan@meridian.test` | Standard customer, Mumbai; one order under each returns policy version | "My laptop arrived damaged. Can I get a replacement?" |
+| `support@meridian.test` | Support agent | "My customer's laptop arrived damaged 12 days ago and they want a replacement. What can I offer?" |
+| `admin@meridian.test` | Knowledge administrator | Sidebar → **Knowledge & reliability** |
 
 ```bash
 cd backend && python -m pytest -q                      # full suite
 python scripts/run_ns_benchmark.py                     # test set, all systems
 python scripts/run_ns_benchmark.py --split holdout     # hold-out set
+python scripts/run_ns_benchmark.py --split copilot     # Support Decision Copilot set
+python scripts/demo_copilot.py                         # four-system demonstration -> docs/demo/DEMO.md
 ```
+
+Administrative changes persist in the `praxis-knowledge` Docker volume. To reset to the
+pack in the repository, run `docker volume rm praxisvit_praxis-knowledge` and bring the
+stack up again.

@@ -21,7 +21,7 @@ from app.neural.encoder import Encoder, get_encoder
 from app.neural.query_understanding import QueryUnderstanding
 from app.neural.retrieval import PolicyIndex, parse_policies
 from app.symbolic.dsl import KnowledgeProgram, load_program
-from app.symbolic.knowledge_graph import KnowledgeGraph, load_graph
+from app.symbolic.knowledge_graph import KnowledgeGraph, load_graph_dir
 
 BACKEND_ROOT = Path(__file__).resolve().parents[2]
 
@@ -47,7 +47,7 @@ def default_pack_dir() -> Path:
 def load_pack(directory: str | None = None, encoder_kind: str | None = None) -> KnowledgePack:
     root = Path(directory) if directory else default_pack_dir()
     program = load_program(root / "rules")
-    graph = load_graph(next((root / "knowledge").glob("*.yaml")))
+    graph = load_graph_dir(root / "knowledge")
     encoder = get_encoder(encoder_kind)
     return KnowledgePack(
         name=root.name,

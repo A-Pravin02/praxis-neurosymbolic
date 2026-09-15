@@ -336,6 +336,39 @@ def load_graph(path: Path) -> KnowledgeGraph:
     return graph
 
 
+def load_graph_dir(directory: Path) -> KnowledgeGraph:
+    """Every YAML file in a directory, in name order. A later file may add entities or
+    override attributes of earlier ones - which is how administration edits are layered
+    over the curated base files without rewriting them."""
+    files = sorted(directory.glob("*.yaml"))
+    if not files:
+        raise ValueError(f"No knowledge files in {directory}")
+    as_of = None
+    merged: dict[str, dict] = {}
+    for path in files:
+        data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+        if as_of is None and data.get("as_of"):
+            as_of = data["as_of"]
+        for raw in data.get("entities", []) or []:
+            entity_id = str(raw["id"])
+            if entity_id in merged:
+                merged[entity_id]["attributes"].update(raw.get("attributes") or {})
+                if raw.get("name"):
+                    merged[entity_id]["name"] = raw["name"]
+            else:
+                if "type" not in raw:
+                    raise ValueError(f"{path.name}: new entity {entity_id} has no type")
+                merged[entity_id] = {"id": entity_id, "type": raw["type"],
+                                     "name": raw.get("name", entity_id),
+                                     "attributes": dict(raw.get("attributes") or {})}
+    if isinstance(as_of, str):
+        as_of = dt.date.fromisoformat(as_of)
+    graph = KnowledgeGraph([Entity(e["id"], e["type"], e["name"], e["attributes"])
+                            for e in merged.values()], as_of=as_of or dt.date.today())
+    graph.link_edges()
+    return graph
+
+
 @lru_cache(maxsize=4)
 def load_graph_cached(path: str) -> KnowledgeGraph:
     return load_graph(Path(path))

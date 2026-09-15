@@ -1,13 +1,22 @@
 # Praxis
 
-> **New: a general-purpose neuro-symbolic enterprise assistant.** Sign in as
-> `priya@meridian.test` or `dev@meridian.test` and ask anything about orders, returns,
-> refunds, delivery, leave or expenses, in your own words. Neural understanding maps the
-> question onto company goals; a three-valued rule engine decides it from company records;
-> every answer shows **how it was determined**. On a held-out benchmark it answers 80% of
-> questions correctly against 13% with lexical understanding and 15% for retrieval alone.
-> Architecture, rationale, results and limitations:
-> **[docs/NEURO_SYMBOLIC_ARCHITECTURE.md](docs/NEURO_SYMBOLIC_ARCHITECTURE.md)**.
+> **Praxis Support Decision Copilot — natural language in, verified enterprise decision
+> out.** Sign in as `support@meridian.test` and describe a customer's problem in your own
+> words: *"My customer's laptop arrived damaged 12 days ago and they want a replacement.
+> What can I offer?"*
+>
+> Neural understanding reads the situation. A three-valued rule engine then applies the
+> company's policies, including **the version in force on the delivery date**, to the
+> records the agent is **authorized** to see. False premises ("the policy is 30 days") are
+> checked against the policy. Ten deterministic checks verify the result before it is
+> released, and a failing answer is withheld. The agent gets a decision, a recommended
+> action, evidence and the rules applied, and administrators get knowledge-gap reports and
+> a no-code knowledge console (`admin@meridian.test`).
+>
+> - Research design, results, and the comparisons not yet run:
+>   **[docs/NEURO_SYMBOLIC_ARCHITECTURE.md](docs/NEURO_SYMBOLIC_ARCHITECTURE.md)**.
+> - Product, business model and expansion: **[docs/PRODUCT.md](docs/PRODUCT.md)**.
+> - Four-system demonstration: **[docs/demo/DEMO.md](docs/demo/DEMO.md)**.
 
 A ChatGPT-style assistant that treats a language model as a *language* engine, not
 a *truth* engine.

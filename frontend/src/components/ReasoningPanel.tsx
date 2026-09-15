@@ -8,6 +8,7 @@ const OUTCOME: Record<string, { label: string; tone: string }> = {
   clarification: { label: "Needs clarification", tone: "info" },
   insufficient: { label: "Not covered by company knowledge", tone: "info" },
   denied: { label: "Access refused", tone: "danger" },
+  needs_review: { label: "Withheld for review", tone: "danger" },
 };
 
 const LAYER_HINT: Record<NsLayer, string> = {
@@ -16,30 +17,172 @@ const LAYER_HINT: Record<NsLayer, string> = {
   HYBRID: "Hybrid: neural and symbolic working together",
 };
 
-export function NsStatus({ ns, latencyMs }: { ns: NeuroSymbolicAnswer; latencyMs: number }) {
+
+/* -------------------------------------------------------------------------------------
+ * The decision card: what an agent reads first.
+ *
+ * Decision, recommended action, verification and confidence are always visible. Evidence,
+ * the rules and "why" are one click away. The audit trace - candidate goals, similarity
+ * scores, condition-by-condition rule evaluation - is shown only to support and
+ * administrative roles: a customer needs the answer and its reason, not the machinery.
+ * ----------------------------------------------------------------------------------- */
+
+const KIND_TONE: Record<string, string> = {
+  yes_no: "ok", amount: "ok", recommendation: "ok", list: "ok", record: "info",
+  information: "info", needs_information: "warn", clarification: "info",
+  not_covered: "info", access_refused: "danger", needs_review: "danger",
+};
+
+export function DecisionCard({
+  ns, latencyMs, onChoose, busy,
+}: { ns: NeuroSymbolicAnswer; latencyMs: number; onChoose: (text: string) => void; busy: boolean }) {
+  const verification = ns.verification;
   const outcome = OUTCOME[ns.outcome] ?? { label: ns.outcome, tone: "neutral" };
-  const showConfidence = ["answered", "conditional"].includes(ns.outcome);
-  const colour = ns.confidence >= 0.7 ? "var(--ok)" : ns.confidence >= 0.45 ? "var(--warn)" : "var(--danger)";
+  const label = ns.decision_label || outcome.label;
+  const tone = ns.outcome === "answered" && ns.decision_label === "No" ? "warn"
+    : KIND_TONE[ns.decision_kind ?? ""] ?? outcome.tone;
+  const decided = ["answered", "conditional"].includes(ns.outcome);
+  const rejected = (ns.claims ?? []).filter((claim) => !claim.confirmed);
+  const unverifiedClaims = (ns.trace.grounding.rejected_statements ?? [])
+    .filter((r) => r.kind === "unverified claim");
+  const version = (ns.policy_versions ?? []).find((v) => !v.assumed);
+  const staff = ns.audience === "staff";
+
   return (
-    <div className="turn-status">
-      <span className={`badge ${outcome.tone}`}>
-        <span className="badge-dot" /> {outcome.label}
-      </span>
-      <span className="badge pipeline-badge" title={ns.trace.pipeline_reason}>
-        Pipeline {ns.pipeline} · {ns.pipeline_label}
-      </span>
-      {showConfidence && (
-        <span className="confidence-meter">
-          confidence
-          <span className="confidence-track">
-            <span className="confidence-fill"
-              style={{ width: `${Math.round(ns.confidence * 100)}%`, background: colour }} />
-          </span>
-          {(ns.confidence * 100).toFixed(0)}%
-        </span>
+    <section className="decision-card" aria-label="Decision">
+      <div className="decision-head">
+        <div className={`decision-label ${tone}`}>
+          <span className="decision-kicker">{outcome.label}</span>
+          <span className="decision-value">{label}</span>
+        </div>
+        <div className="decision-meta">
+          {verification && verification.status !== "not_applicable" && (
+            <span className={`badge ${verification.passed ? "ok" : "danger"}`}
+              title={verification.checks.map((c) => `${c.passed ? "✓" : "✕"} ${c.check}`).join("\n")}>
+              <span className="badge-dot" />
+              {verification.passed ? `Verified · ${verification.checks.length} checks` : "Needs review"}
+            </span>
+          )}
+          {decided && <Confidence value={ns.confidence} />}
+          <span className="badge neutral" title={ns.trace.pipeline_reason}>{ns.pipeline_label}</span>
+          {latencyMs > 0 && <span className="badge neutral">{latencyMs} ms</span>}
+        </div>
+      </div>
+
+      {ns.recommended_action && (
+        <div className="decision-action">
+          <span className="decision-action-label">Recommended action</span>
+          <p>{ns.recommended_action}</p>
+        </div>
       )}
-      {latencyMs > 0 && <span className="badge neutral">{latencyMs} ms</span>}
-    </div>
+
+      {(rejected.length > 0 || unverifiedClaims.length > 0) && (
+        <div className="decision-callout warn" role="note">
+          <strong>Premise checked and rejected.</strong>{" "}
+          {rejected.map((claim) => (
+            <span key={claim.predicate}>
+              The claim of {claim.stated} does not match {claim.source}, which sets {claim.record}.{" "}
+            </span>
+          ))}
+          {unverifiedClaims.length > 0 && <span>A stated approval has no matching record.</span>}
+        </div>
+      )}
+
+      {ns.knowledge_gap && ns.knowledge_gap.type !== "unclear_request" && (
+        <div className="decision-callout info" role="note">
+          <strong>Knowledge gap logged.</strong> {ns.knowledge_gap.summary}.
+          {ns.knowledge_gap.owner && <span className="ns-muted"> Owner: {ns.knowledge_gap.owner}.</span>}
+        </div>
+      )}
+
+      <ClarificationOptions ns={ns} onChoose={onChoose} disabled={busy} />
+
+      <div className="decision-sections">
+        {(ns.explanation.length > 0 || (ns.rules_applied ?? []).length > 0) && (
+          <details className="decision-section">
+            <summary>Why this answer?</summary>
+            <ul className="decision-why">
+              {ns.explanation.map((line, index) => <li key={index}>{line}</li>)}
+            </ul>
+            {version && (
+              <p className="ns-muted">Policy version applied: {version.name} — {version.basis}.</p>
+            )}
+            {(ns.rules_applied ?? []).length > 0 && (
+              <>
+                <div className="decision-subhead">Rules applied</div>
+                {(ns.rules_applied ?? []).map((rule) => (
+                  <div className="rule-summary" key={rule.rule}>
+                    <div className="rule-summary-head">
+                      <code>{rule.rule}</code> {rule.name}
+                      {rule.clauses.map((c) => <span key={c} className="ns-pill">{c}</span>)}
+                    </div>
+                    {rule.formula && <div className="rule-formula"><code>{rule.formula}</code></div>}
+                  </div>
+                ))}
+              </>
+            )}
+          </details>
+        )}
+
+        {ns.sources.length > 0 && (
+          <details className="decision-section">
+            <summary>Evidence ({ns.sources.length})</summary>
+            {ns.sources.map((source) => (
+              <div className="source-row" key={`${source.type}-${source.id}-${source.version ?? ""}`}>
+                <span className={`ns-source-kind ${source.type}`}>
+                  {source.type === "policy" ? source.id : "record"}
+                </span>
+                <div>
+                  <div className="source-title">
+                    {source.title}
+                    {source.type === "record" && <span className="ns-muted"> · {source.id}</span>}
+                    {source.type === "policy" && source.version && (
+                      <span className={`ns-pill${source.in_force === false ? " superseded" : ""}`}>
+                        v{source.version}{source.in_force === false ? " · superseded" : ""}
+                      </span>
+                    )}
+                  </div>
+                  {source.text && <div className="source-snippet">{source.text}</div>}
+                  {source.document && (
+                    <div className="source-meta">
+                      {source.document}{source.effective ? ` · effective ${source.effective}` : ""}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </details>
+        )}
+
+        {verification && verification.checks.length > 0 && (
+          <details className="decision-section">
+            <summary>Verification</summary>
+            <ul className="ns-checks">
+              {verification.checks.map((check) => (
+                <li key={check.check} className={check.passed ? "pass" : "fail"}>
+                  <span aria-hidden="true">{check.passed ? "✓" : "✕"}</span>
+                  <strong>{check.check}</strong> — {check.detail}
+                </li>
+              ))}
+            </ul>
+          </details>
+        )}
+
+        {staff && <HowDetermined ns={ns} />}
+      </div>
+    </section>
+  );
+}
+
+function Confidence({ value }: { value: number }) {
+  const percent = Math.round(value * 100);
+  return (
+    <span className="confidence-meter">
+      confidence
+      <meter className="confidence-gauge" min={0} max={100} low={45} high={70} optimum={100}
+        value={percent} aria-label={`Confidence ${percent}%`} />
+      {percent}%
+    </span>
   );
 }
 
@@ -66,36 +209,13 @@ export function ClarificationOptions({
   );
 }
 
-export function KnowledgeUsed({ ns }: { ns: NeuroSymbolicAnswer }) {
-  if (!ns.sources.length) return null;
-  return (
-    <details className="sources">
-      <summary>Sources &amp; knowledge used ({ns.sources.length})</summary>
-      {ns.sources.map((source) => (
-        <div className="source-row" key={`${source.type}-${source.id}`}>
-          <span className={`ns-source-kind ${source.type}`}>
-            {source.type === "policy" ? source.id : "record"}
-          </span>
-          <div>
-            <div className="source-title">
-              {source.title}
-              {source.type === "record" && <span className="ns-muted"> · {source.id}</span>}
-            </div>
-            {source.text && <div className="source-snippet">{source.text}</div>}
-            {source.document && <div className="source-meta">{source.document}</div>}
-          </div>
-        </div>
-      ))}
-    </details>
-  );
-}
 
 export function HowDetermined({ ns }: { ns: NeuroSymbolicAnswer }) {
   const [showTrace, setShowTrace] = useState(false);
   const trace = ns.trace;
   return (
     <details className="ns-how">
-      <summary>How was this determined?</summary>
+      <summary>Audit trace</summary>
 
       <ol className="ns-steps">
         {ns.explanation.map((step, index) => <li key={index}>{step}</li>)}

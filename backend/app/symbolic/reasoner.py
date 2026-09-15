@@ -215,12 +215,16 @@ class GoalResult:
             for premise in outcome.premises:
                 if premise.decided_by is not None and premise.source == "derived":
                     walk(premise.decided_by)
-                for conditional in premise.conditionals():
-                    walk(conditional)
+                if premise.status == CONDITIONAL:
+                    for conditional in premise.conditionals():
+                        walk(conditional)
 
         walk(self.decided_by)
-        for outcome in self.conditionals():
-            walk(outcome)
+        if self.status == CONDITIONAL:
+            # Undecided alternatives are part of the answer only while it is undecided; once
+            # a rule has determined the result, a lower-priority "might apply" was not used.
+            for outcome in self.conditionals():
+                walk(outcome)
         return list(found.values())
 
 

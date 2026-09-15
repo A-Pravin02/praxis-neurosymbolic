@@ -4252,5 +4252,8 @@
    ]
   }
  },
- "not_run": {}
+ "not_run": {},
+ "label": "Run 4 \u2014 copilot split, frozen, first run",
+ "frozen": true,
+ "note": "The split was committed (5b9a329) before any system ran on it. Knowledge pack and code as of commit 7935187 plus the harness."
 }

@@ -39,3 +39,8 @@ backend/data/*
 
 # Downloaded neural model weights.
 backend/.model_cache/
+
+# Runtime knowledge administration: change history and the revision marker.
+backend/data/meridian/.history/
+backend/data/meridian/REVISION
+backend/data/meridian/knowledge/zz_admin.yaml

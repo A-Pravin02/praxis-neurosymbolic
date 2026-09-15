@@ -9,7 +9,6 @@ the pipeline, the explanation, the sources and the full reasoning trace.
 from __future__ import annotations
 
 import uuid
-from functools import lru_cache
 from typing import Any
 
 from sqlalchemy import select
@@ -22,7 +21,8 @@ from app.orchestrator.pipeline import AssistantTurn, StageTiming
 from app.tenancy.context import Principal
 
 _GATE = {"answered": "ANSWER", "conditional": "ANSWER_WITH_CAVEAT",
-         "clarification": "ABSTAIN", "insufficient": "ABSTAIN", "denied": "DENY"}
+         "clarification": "ABSTAIN", "insufficient": "ABSTAIN", "denied": "DENY",
+         "needs_review": "ABSTAIN"}
 _SLUGS: dict[uuid.UUID, str | None] = {}
 
 
@@ -55,6 +55,7 @@ def answer(principal: Principal, question: str, context: dict[str, Any]) -> Assi
     verification = result.trace.get("verification") or {}
     status = ("INSUFFICIENT_EVIDENCE" if result.outcome == "insufficient"
               else "NOT_APPLICABLE" if result.outcome in ("clarification", "denied")
+              else "NEEDS_REVIEW" if result.outcome == "needs_review"
               else "VERIFIED" if verification.get("passed") else "UNVERIFIED")
     turn = AssistantTurn(
         answer=result.answer,
@@ -72,13 +73,37 @@ def answer(principal: Principal, question: str, context: dict[str, Any]) -> Assi
         "outcome": result.outcome, "confidence": result.confidence,
         "explanation": result.explanation, "sources": result.sources,
         "clarification": result.clarification, "goal": result.goal,
-        "context": result.context, "trace": result.trace,
+        "context": result.context,
+        "decision_label": result.decision_label, "decision_kind": result.decision_kind,
+        "recommended_action": result.recommended_action,
+        "verification": result.verification, "knowledge_gap": result.knowledge_gap,
+        "policy_versions": result.policy_versions, "rules_applied": result.rules_applied,
+        "facts": result.facts, "claims": result.claims,
+        # The audit trace holds only facts this person is authorized to see; the client
+        # shows it to support and administrative roles.
+        "trace": result.trace,
+        "audience": "staff" if {"support", "admin", "analyst"} & set(principal.roles)
+        else "self",
     }
     return turn
 
 
-@lru_cache(maxsize=1)
-def _controller():
-    from app.hybrid.controller import NeuroSymbolicController
+_CACHE: dict[str, Any] = {"revision": None, "controller": None}
 
-    return NeuroSymbolicController()
+
+def _controller():
+    """The controller for the current knowledge revision.
+
+    An administrator's change writes a new revision marker; the next request after it
+    loads the changed pack, so every worker converges on the same knowledge.
+    """
+    from app.hybrid import knowledge_store
+    from app.hybrid.controller import NeuroSymbolicController
+    from app.hybrid.knowledge_pack import default_pack_dir, load_pack
+
+    current = knowledge_store.revision(default_pack_dir())
+    if _CACHE["controller"] is None or _CACHE["revision"] != current:
+        load_pack.cache_clear()
+        _CACHE["controller"] = NeuroSymbolicController()
+        _CACHE["revision"] = current
+    return _CACHE["controller"]

@@ -439,7 +439,9 @@ MERIDIAN_USERS = [
     DemoUser("sam@meridian.test", "Sam Mehta", ["customer"], {"membership": "standard"}),
     DemoUser("dev@meridian.test", "Dev Rao", ["employee"], {"grade": "L2"}),
     DemoUser("ana@meridian.test", "Ana Joseph", ["employee"], {"grade": "L1"}),
+    DemoUser("rohan@meridian.test", "Rohan Iyer", ["customer"], {"membership": "standard"}),
     DemoUser("support@meridian.test", "Kiran Das", ["support"], {}),
+    DemoUser("admin@meridian.test", "Meera Pillai", ["admin"], {}),
 ]
 
 
