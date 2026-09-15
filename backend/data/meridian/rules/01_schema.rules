@@ -108,10 +108,10 @@ input receipts_attached(claim) -> flag true "receipts, bills or invoices are ava
 input receipts_attached(claim) -> flag false "the receipts or bills were lost, are missing, or were never kept"
 input claim_submitted_after_days(claim) -> days "how many days after the trip the claim is submitted"
 input exception_approved(order) -> flag true "a manager, supervisor or team lead has already approved an exception or special refund for this order" verified
-input issue_type(ticket) -> enum payment "money was deducted or charged twice, a payment failed, or a refund has not arrived"
-input issue_type(ticket) -> enum delivery "a package is late, delayed, lost or has not been delivered"
-input issue_type(ticket) -> enum damaged_item "an item arrived damaged, defective, broken or was the wrong product"
-input issue_type(ticket) -> enum cancellation "the customer wants to cancel or change an order"
+input issue_type(ticket) -> enum payment "money was charged twice, deducted for a failed payment, or a refund has not reached the bank"
+input issue_type(ticket) -> enum delivery "a package or parcel with ordered goods is late, delayed, lost in transit or was never delivered"
+input issue_type(ticket) -> enum damaged_item "an ordered item arrived damaged, defective, broken or was the wrong product"
+input issue_type(ticket) -> enum cancellation "someone wants to cancel an order or change the items or delivery address on it"
 
 # --- goals: what a person can ask the assistant to determine ----------------
 goal return_allowed(order) decision "whether an item that was bought can be sent back to the seller"
@@ -133,6 +133,7 @@ goal approval_required(order) decision "whether a refund, replacement or return 
 goal goodwill_credit(order) calculation "how much goodwill credit or compensation can be given as an exception when no standard remedy applies"
 goal handling_team(ticket) recommendation "which team or desk a customer support issue should be routed or escalated to"
 
+lookup salary(employee) "an employee's monthly salary, pay or compensation" : monthly_salary
 lookup order_tracking(order) "where an order or package is right now and when it is expected to arrive" : order_status carrier promised_delivery delivered_on
 
 # --- how answers are phrased: {subject} is the record, {value} the result ---------
@@ -189,6 +190,7 @@ action cancellation_allowed yes "Cancel the order."
 action cancellation_allowed no "The order can't be cancelled now; the delivery can be refused or the item returned after it arrives."
 action refund_required yes "No action needed: the refund is issued automatically (REF-4)."
 action handling_team value "Route the ticket to {value}."
+action goodwill_credit value "Issue a goodwill credit of {value}; the approval is already recorded on the order (SUP-3)."
 action travel_claim_eligible no "Don't submit this as a business travel claim."
 action travel_claim_eligible yes "Submit the claim with receipts for expenses above the receipt threshold (TRV-4)."
 

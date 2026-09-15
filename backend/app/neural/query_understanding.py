@@ -42,6 +42,9 @@ INPUT_THRESHOLD = 0.70
 TARGETED_INPUT_THRESHOLD = 0.64
 # Two values of one input closer than this are ambiguous, and neither is asserted.
 INPUT_MARGIN = 0.03
+# A claim only a record can confirm is reported back to the person, so it needs clearer
+# evidence than an ordinary statement before it is raised at all.
+VERIFIED_INPUT_THRESHOLD = 0.75
 
 UNIT_OF_INPUT = {"money": "money", "days": "days", "distance": "distance"}
 # Words that make a stated number a claim about what the policy says.
@@ -93,6 +96,27 @@ class Interpretation:
         }
 
 
+_RELATIVE = re.compile(r"\b(?:whose|who|which|that|where|because|since)\s+(.{8,})$",
+                       re.IGNORECASE)
+_QUANTITY_TEXT = re.compile(
+    r"(?:₹|rs\.?\s*)?\d[\d,]*(?:\.\d+)?\s*(?:days?|weeks?|months?|km|kms|rupees?)?"
+    r"(?:\s+ago)?|\b(?:yesterday|a fortnight ago)\b", re.IGNORECASE)
+_THIRD_PARTY = re.compile(r"\b(?:my|our|the|a) (?:customer|client|buyer)'?s?\b", re.IGNORECASE)
+
+
+def _statement_form(clause: str) -> str:
+    """The words that carry the statement: quantities are read separately, and "my
+    customer's laptop" states the same thing as "the laptop"."""
+    text = _QUANTITY_TEXT.sub(" ", clause)
+    text = _THIRD_PARTY.sub("the", text)
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def _embedded_statement(clause: str) -> str:
+    match = _RELATIVE.search(clause)
+    return _statement_form(match.group(1)) if match else ""
+
+
 def _clause_around(question: str, quantity) -> str:
     """The clause a quantity was written in."""
     for clause in split_clauses(question):
@@ -127,6 +151,23 @@ class QueryUnderstanding:
         # for in every question, so an unconfirmed one is reported whatever was asked.
         relevant |= {p for p in self.program.inputs if self.program.is_verified_input(p)}
         interpretation.inputs = self.detect_inputs(interpretation, relevant, INPUT_THRESHOLD)
+
+        # A claim is not the request: in "The manager already approved this. Can I return
+        # my earbuds?" the first sentence is about approvals and the question is about a
+        # return. Intent is re-read without the clauses that only make a claim.
+        claim_text = [i.evidence for i in interpretation.inputs
+                      if self.program.is_verified_input(i.predicate)]
+        if claim_text:
+            remaining = [c for c in interpretation.clauses
+                         if not any(_statement_form(c) == e or c == e for e in claim_text)]
+            if remaining and len(remaining) < len(interpretation.clauses):
+                interpretation.candidates = self.intents.candidates(". ".join(remaining))
+                again: set[str] = set()
+                for candidate in interpretation.candidates[:3]:
+                    again |= self.program.input_predicates_for(candidate.name)
+                extra = self.detect_inputs(interpretation, again, INPUT_THRESHOLD)
+                known = {i.predicate for i in interpretation.inputs}
+                interpretation.inputs += [i for i in extra if i.predicate not in known]
         return interpretation
 
     # -- inputs -----------------------------------------------------------------
@@ -146,7 +187,13 @@ class QueryUnderstanding:
         # Only declarative clauses can *state* something. "Can I return the shoes?"
         # asks about returns; it does not say why the shoes are coming back, and
         # scoring it as a statement read a change-of-mind reason into every question.
-        clauses = [c for c in interpretation.clauses if not is_question_clause(c)]
+        # A question can still carry a description in a relative clause: "which team
+        # handles a customer *whose payment was deducted twice*" states the case.
+        clauses = [_statement_form(c) for c in interpretation.clauses
+                   if not is_question_clause(c)]
+        clauses += [d for c in interpretation.clauses if is_question_clause(c)
+                    for d in [_embedded_statement(c)] if d]
+        clauses = [c for c in dict.fromkeys(clauses) if c]
         if not options or not clauses:
             return []
 
@@ -175,7 +222,16 @@ class QueryUnderstanding:
         for predicate, ranked in best.items():
             ranked.sort(key=lambda item: -item[0])
             score, row, facet, value = ranked[0]
-            if score < threshold:
+            required = threshold
+            if self.program.is_verified_input(predicate):
+                required = max(threshold, VERIFIED_INPUT_THRESHOLD)
+            elif len(self.program.inputs.get(predicate, [])) > 3:
+                # Choosing one of many categories is a classification, not the confirmation
+                # of something the rules already expect; the looser targeted threshold of
+                # the neural-symbolic loop would let "the reset email never arrives" pass
+                # for an undelivered parcel.
+                required = max(threshold, INPUT_THRESHOLD)
+            if score < required:
                 continue
             if len(ranked) > 1 and score - ranked[1][0] < INPUT_MARGIN:
                 continue

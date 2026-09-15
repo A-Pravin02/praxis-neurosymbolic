@@ -118,6 +118,9 @@ _FORM_RULES: list[tuple[str, re.Pattern]] = [
     ("explain", re.compile(r"^\s*(why|how come)\b|\bwhy\b|\bwhat (is|was) the reason\b|"
                            r"\bexplain\b", re.I)),
     ("resolve", re.compile(r"\bwhat (should|do|can|must) (i|we)\s+do\b|\bwhat now\b|"
+                           r"\bwhat (can|could|should|may) (i|we) offer\b|\bwhat options\b|"
+                           r"\bwhat are (my|our|their|the) options\b|\bwho (should )?handles?\b|"
+                           r"\bwhich (team|desk)\b|\bwhere (should|do) (i|we) (route|escalate)\b|"
                            r"\bwhat are my options\b|\bhow (do|can|should) (i|we) "
                            r"(fix|handle|deal)\b", re.I)),
     ("enumerate", re.compile(r"^\s*what can (i|we) (get|buy|order|have)\b", re.I)),
@@ -146,7 +149,14 @@ def speech_act_from_form(question: str) -> str | None:
     # can I exchange it?" is a statement followed by a yes/no question. Reading the
     # form of each clause, last first, finds the actual request; anchored patterns
     # such as "^can" would never match it inside the whole sentence.
-    for clause in reversed(split_clauses(text)):
+    from app.neural.entity_extraction import is_question_clause
+
+    clauses = split_clauses(text)
+    # Questions first: in "who handles a customer whose reset email never arrives", the
+    # word "email" in the description must not make the request an information lookup.
+    ordered = [c for c in reversed(clauses) if is_question_clause(c)] + \
+        [c for c in reversed(clauses) if not is_question_clause(c)]
+    for clause in ordered:
         for label, pattern in _FORM_RULES:
             if pattern.search(clause):
                 return label

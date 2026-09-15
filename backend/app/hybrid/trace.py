@@ -31,6 +31,12 @@ class ReasoningTrace:
     why_neural: str = ""
     why_symbolic: str = ""
     components: list[dict[str, str]] = field(default_factory=list)
+    policy_versions: list[dict[str, Any]] = field(default_factory=list)
+    claims: list[dict[str, Any]] = field(default_factory=list)
+    followups: list[dict[str, Any]] = field(default_factory=list)
+    authorization: dict[str, Any] = field(default_factory=dict)
+    knowledge_gap: dict[str, Any] | None = None
+    decision: dict[str, Any] = field(default_factory=dict)
     confidence: float = 0.0
     confidence_factors: dict[str, float] = field(default_factory=dict)
     latency_ms: int = 0

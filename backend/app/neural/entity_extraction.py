@@ -130,6 +130,8 @@ def split_clauses(question: str) -> list[str]:
         # "Can I return the almonds", the whole sentence read as a question and the
         # damage was never registered.
         part = re.sub(r"^(?:if|when|as|after)\s+", "", part, flags=re.IGNORECASE)
+        # "..., so can I return it?" - a leading connective hides the question's form.
+        part = re.sub(r"^(?:so|and|but|then|also)\s+", "", part, flags=re.IGNORECASE)
         if part and len(part) > 2:
             clauses.append(part)
     return clauses or [question.strip()]

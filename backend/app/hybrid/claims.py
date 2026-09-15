@@ -64,7 +64,8 @@ def check_policy_claims(interpretation: "Interpretation", grounding: "Grounding"
                      if UNIT_OF_INPUT.get(program.value_type(p.predicate)) == quantity.kind]
         if not same_unit:
             continue
-        stated = format_value(quantity.value, quantity.kind)
+        stated = format_value(quantity.value, program.value_type(same_unit[0].predicate)) + \
+            {"days": " days", "distance": " km"}.get(quantity.kind, "")
         if any(_equal(p.value, quantity.value) for p in same_unit):
             match = next(p for p in same_unit if _equal(p.value, quantity.value))
             claims.append(_claim(match, stated, clause, graph, program, resolutions,

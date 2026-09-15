@@ -51,7 +51,14 @@ COMPATIBLE_KINDS = {
     "decide": {"decision", "explanation", "calculation"},
     "enumerate": {"enumeration"},
     "locate": {"lookup"},
+    # "What can I offer?" asks for a course of action, which a recommendation goal gives.
+    "resolve": {"recommendation", "decision", "calculation", "explanation"},
 }
+# The goal kind each speech act asks for in the first place; used to break near-ties.
+PRIMARY_KIND = {"decide": "decision", "calculate": "calculation", "explain": "explanation",
+                "enumerate": "enumeration", "locate": "lookup", "resolve": "recommendation"}
+# Within KIND_WINDOW of the top candidate, this goal kind is preferred for the act.
+PREFERRED_KIND = {"resolve": "recommendation"}
 
 
 class Pipeline(str, Enum):
@@ -197,6 +204,15 @@ class ReasoningRouter:
                           if c.goal_kind in wanted and top.score - c.score <= KIND_WINDOW]
             if compatible:
                 top = compatible[0]
+        preferred = PREFERRED_KIND.get(act)
+        if preferred and top.goal_kind != preferred:
+            better = [c for c in candidates
+                      if c.goal_kind == preferred and top.score - c.score <= KIND_WINDOW]
+            if better:
+                top = better[0]
+                # The kind of answer asked for has been decided; ties are broken only
+                # among goals that give it.
+                wanted = {preferred}
         near = [c for c in candidates if top.score - c.score <= TIE_WINDOW
                 and (not wanted or c.goal_kind in wanted or c is top)]
         chosen = top
@@ -206,7 +222,11 @@ class ReasoningRouter:
             # then the prerequisite over the goal that depends on it. "Can I return the
             # shoes?" scores return and replacement almost equally; replacement depends on
             # return being allowed and needs a damage report nobody gave.
+            primary = PRIMARY_KIND.get(act)
             ranked = sorted(near, key=lambda c: (
+                # The kind of answer the question's form asks for comes first: "is that
+                # reimbursable?" asks yes or no, however many amounts it mentions.
+                0 if c.goal_kind == primary else 1,
                 -len(support_for(c)),
                 sum(1 for other in near if other.name != c.name
                     and c.name in self.program.dependencies(other.name)) * -1,
@@ -313,6 +333,24 @@ class ReasoningRouter:
                     ("HYBRID", "Ask the neural layer again for any input the calculation lacks"),
                     ("SYMBOLIC", "Verify the result against the rule constraints"),
                     ("NEURAL", "State the amount and how it was calculated")],
+            )
+
+        if goal.goal_kind == "recommendation":
+            return RouteDecision(
+                Pipeline.MULTI_HOP if len(entity_types) > 2 else Pipeline.POLICY,
+                f"The question asks what should be done. The recommendation is the first "
+                f"remedy or route the rules allow for this case, so it composes the underlying "
+                f"policy decisions ({', '.join(sorted(program.dependencies(goal.name) & set(program.goals)))}) "
+                f"across {' → '.join(entity_types)} rather than guessing a course of action.",
+                goal=goal, goal_score=score, symbolic_required=True,
+                symbolic_reason=why_symbolic, neural_reason=neural_reason,
+                required_knowledge=required, clauses=clauses,
+                stages=base_stages + [
+                    ("SYMBOLIC", "Evaluate each remedy's rules in the playbook's order"),
+                    ("SYMBOLIC", "Resolve the policy version in force for the case"),
+                    ("HYBRID", "Check claims and approvals against the records"),
+                    ("SYMBOLIC", "Verify the decision"),
+                    ("NEURAL", "State the recommendation and the next action")],
             )
 
         if goal.goal_kind == "enumeration":

@@ -45,7 +45,9 @@ _GENERIC = {
     "our", "you", "are", "was", "were", "is", "be", "my", "me", "do", "did", "if", "it",
     "whose", "who's", "isn't", "can't", "won't", "don't", "doesn't",
 }
-UNDEFINED_CASE_THRESHOLD = 0.62
+# A description the input layer could not classify at its own threshold matches no
+# defined value.
+UNDEFINED_CASE_THRESHOLD = 0.70
 
 
 def content_terms(text: str, known: set[str]) -> list[str]:
@@ -73,8 +75,8 @@ def undefined_case(interpretation: "Interpretation", goal, result: "GoalResult",
                    pack: "KnowledgePack") -> dict[str, Any] | None:
     """The rules decide this kind of question, but none of them for the case described.
 
-    Applies when the goal's value is a function of one input - every rule concluding it
-    branches on that input - the reasoner still lacks it after the neural-symbolic loop,
+    Applies when the goal is a decision table over one input - every rule concluding it
+    maps one value of that input to a result - the reasoner still lacks it after the neural-symbolic loop,
     and the question *describes* a case that matches none of the input's declared values.
     """
     program = pack.program
@@ -83,7 +85,11 @@ def undefined_case(interpretation: "Interpretation", goal, result: "GoalResult",
         return None
     missing = {m.predicate for m in result.missing if program.is_input(m.predicate)}
     for predicate in sorted(missing):
-        if not all(any(c.predicate == predicate for c in spec.rule.body) for spec in specs):
+        # Only a decision table over the input: every rule maps one value of it to one
+        # result. A calculation or an eligibility rule that merely *uses* the input is
+        # missing information, not an undefined case.
+        if not all(len(spec.rule.body) == 1 and spec.rule.body[0].predicate == predicate
+                   for spec in specs):
             continue
         values = [v for v in program.inputs.get(predicate, []) if v.value is not None]
         if len(values) < 2:
@@ -100,7 +106,8 @@ def undefined_case(interpretation: "Interpretation", goal, result: "GoalResult",
         return {
             "type": "undefined_case",
             "summary": f"{_goal_phrase(goal)} is not defined for: \"{description}\"",
-            "detail": (f"{', '.join(clauses)} define {humanize(goal.name)} only for "
+            "detail": (f"{', '.join(clauses)} {'defines' if len(clauses) == 1 else 'define'} "
+                       f"the {humanize(goal.name)} only for "
                        f"{', '.join(defined[:-1])} and {defined[-1]}."),
             "goal": goal.name, "input": predicate, "defined_values": defined,
             "clauses": clauses, "case": description, "similarity": round(best, 3),

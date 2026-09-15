@@ -190,5 +190,5 @@ def test_every_answer_records_why_its_pipeline_was_chosen():
 def test_the_answer_figures_all_come_from_the_reasoning():
     answer = ask("How much will I get back if I cancel order 22003?", "sam@meridian.test")
     checks = {c["check"]: c for c in answer.trace["verification"]["checks"]}
-    assert checks["answer grounding"]["passed"] is True
+    assert checks["supported numbers"]["passed"] is True
     assert answer.value == pytest.approx(3324.05)

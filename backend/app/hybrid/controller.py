@@ -398,7 +398,7 @@ class NeuroSymbolicController:
         audience = _Audience(req, subject_type)
         consistency = req.verifier.record_consistency(goal.name, subject, result)
         conclusion = self._conclusion(goal, subject, result, grounding, cases, consistency,
-                                      followups, audience, view)
+                                      followups, audience, view, resolutions)
         draft = realize(conclusion)
         text, rephrased = self.realizer.realize(conclusion)
 
@@ -452,6 +452,8 @@ class NeuroSymbolicController:
         confidence, factors = self._confidence(route, interpretation, grounding, result,
                                                report, cases)
         trace.confidence, trace.confidence_factors = confidence, factors
+        if result.status in ("default", "absent") and not cases:
+            trace.knowledge_gap = gaps.missing_parameter(result, self.pack, view)
 
         outcome = "conditional" if (result.status in (CONDITIONAL, "unknown") or cases) \
             else "answered"
@@ -477,6 +479,7 @@ class NeuroSymbolicController:
             policy_versions=resolutions,
             rules_applied=[_rule_summary(o, program, view) for o in used],
             facts=trace.symbolic_facts,
+            knowledge_gap=trace.knowledge_gap,
             claims=claims)
 
     # -- a case the rules don't define -----------------------------------------------
@@ -636,7 +639,8 @@ class NeuroSymbolicController:
 
     # -- conclusion ---------------------------------------------------------------
     def _conclusion(self, goal, subject, result: GoalResult, grounding: Grounding, cases,
-                    consistency, followups, audience: "_Audience", view) -> Conclusion:
+                    consistency, followups, audience: "_Audience", view,
+                    resolutions: list[dict]) -> Conclusion:
         program = self.program
         value_type = program.value_type(goal.name)
         subject_label = SUBJECT_NOUNS.get(goal.subject_type, goal.subject_type) \
@@ -659,12 +663,10 @@ class NeuroSymbolicController:
         for name, extra in followups:
             because = extra.decided_by.because if extra.decided_by else ""
             c.notes.append(headline_for(name, extra.value) + (f": {because}" if because else ""))
-        versions = _resolutions_from(result, cases)
-        if versions and any(not r["assumed"] for r in versions):
-            r = next(r for r in versions if not r["assumed"])
-            if len(view.policy_versions(r["policy"])) > 1:
-                c.notes.append(f"Applied {r['name']}, in force on the {r['basis'].split(' is ')[0]}"
-                               f" of {r['reference_date']}")
+        for r in resolutions:
+            # Worth saying only when the policy has changed: which version decided it.
+            if not r["assumed"] and len(r["versions_available"]) > 1:
+                c.notes.append(f"Applied {r['name']}, in force on {r['reference_date']}")
 
         if cases:
             c.status = CONDITIONAL
@@ -787,11 +789,11 @@ class NeuroSymbolicController:
         main = _action_text(program, goal.name, result.value, view)
         if main:
             steps.append(main)
+        # A follow-up that gates the remedy (an approval) comes before it.
         for name, extra in followups:
             extra_text = _action_text(program, name, extra.value, view)
             if extra_text:
-                steps.insert(0, extra_text) if name == "approval_required" else \
-                    steps.append(extra_text)
+                steps.insert(0, extra_text)
         return " ".join(steps) or None
 
     # -- explanation ----------------------------------------------------------------
@@ -1001,12 +1003,6 @@ def _resolutions(reasoner: Reasoner, cases: list[dict]) -> list[dict]:
         for key, value in case["reasoner"].version_resolutions.items():
             found.setdefault(key, value)
     return list(found.values())
-
-
-def _resolutions_from(result: GoalResult, cases: list[dict]) -> list[dict]:
-    # Kept separate so the conclusion does not depend on reasoner internals beyond the
-    # resolutions recorded while proving this result.
-    return []
 
 
 def _gap_action(req: _Request) -> str:
