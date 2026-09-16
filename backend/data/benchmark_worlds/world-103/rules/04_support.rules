@@ -1,0 +1,91 @@
+# =============================================================================
+# Support operations: what an agent may offer, when it needs approval, and who owns
+# an issue. These rules compose the customer policies instead of restating them: the
+# recommended resolution *is* the replacement, return and cancellation rules, applied
+# in the order the playbook sets (SUP-1).
+# =============================================================================
+
+# --- resolution: the first remedy the customer is eligible for ---------------------
+
+rule R-SUP-REPL "Offer a replacement" [SUP-1, RET-5] priority 400
+  if   replacement_available(?o) = true               otherwise "a replacement isn't available for this order"
+  then recommended_resolution(?o) = "replacement"
+  because "the item qualifies for a replacement: it arrived damaged, defective or wrong, was reported in time, and the product is in stock"
+end
+
+rule R-SUP-REFUND "Full refund when a damaged item can't be replaced" [SUP-1, RET-5] priority 300
+  if   return_allowed(?o) = true                      otherwise "the item isn't eligible for return"
+  and  return_reason(?o) = ?k
+  and  ?k in ["damaged_on_arrival", "wrong_item"]     otherwise "a full refund without inspection only applies to damaged, defective or wrong items" requires "the item arrived damaged, defective or wrong"
+  and  contains(?o) = ?p
+  and  in_stock(?p) = false                           otherwise "the product is in stock, so a replacement comes first"
+  then recommended_resolution(?o) = "full_refund"
+  because "the item is eligible for return because it arrived {k}, but the product is out of stock, so it can't be replaced"
+end
+
+rule R-SUP-CANCEL "Cancel an order that hasn't shipped" [SUP-1, CAN-1, CAN-2] priority 200
+  if   cancellation_allowed(?o) = true                otherwise "the order can no longer be cancelled"
+  then recommended_resolution(?o) = "cancel_order"
+  because "the order hasn't shipped, so it can still be cancelled"
+end
+
+rule R-SUP-RETURN "Accept a standard return" [SUP-1, RET-1] priority 100
+  if   return_allowed(?o) = true                      otherwise "the item isn't eligible for return under the returns policy"
+  then recommended_resolution(?o) = "return_and_refund_after_inspection"
+  because "the item is eligible for return under the returns policy"
+end
+
+rule R-SUP-GOODWILL "Goodwill credit with a recorded supervisor approval" [SUP-3] priority 50
+  if   exception_approved(?o) = true                  otherwise "there is no supervisor approval recorded on the order for an exception"
+  then recommended_resolution(?o) = "goodwill_credit"
+  because "a supervisor's approval for an exception is recorded on the order"
+end
+
+# --- approval ------------------------------------------------------------------------
+
+rule R-SUP-APPROVAL "Team-lead approval for a high-value remedy" [SUP-2]
+  if   recommended_resolution(?o) = ?r
+  and  ?r in ["replacement", "full_refund", "return_and_refund_after_inspection"] otherwise "no refund, replacement or return is being issued"
+  and  order_total(?o) = ?t
+  and  approval_threshold(meridian) = ?lim
+  and  ?t > ?lim                                      otherwise "the order total of {t} is not above the {lim} approval threshold"
+  then approval_required(?o) = true
+  because "the order total of {t} is above the {lim} threshold, so a team lead must approve the remedy before it is issued"
+end
+
+# --- goodwill credit -------------------------------------------------------------------
+
+rule R-SUP-CREDIT "Goodwill credit amount" [SUP-3]
+  if   exception_approved(?o) = true                  otherwise "there is no supervisor approval recorded on the order for an exception"
+  and  order_total(?o) = ?t
+  and  goodwill_rate(meridian) = ?r
+  and  goodwill_cap(meridian) = ?cap
+  then goodwill_credit(?o) = min(?t * ?r, ?cap)
+  because "the approved exception allows {r} of the {t} order total, capped at {cap}"
+end
+
+# --- routing -----------------------------------------------------------------------------
+
+rule R-ROUTE-PAY "Payment issues" [SUP-4]
+  if   issue_type(?t) = "payment"                     otherwise "it isn't a payment issue" requires "it is a payment problem"
+  then handling_team(?t) = "payments_team"
+  because "payment problems are owned by the Payments team"
+end
+
+rule R-ROUTE-DEL "Delivery issues" [SUP-4]
+  if   issue_type(?t) = "delivery"                    otherwise "it isn't a delivery issue" requires "it is a late, lost or undelivered package"
+  then handling_team(?t) = "logistics_desk"
+  because "late, lost and undelivered packages are owned by the Logistics desk"
+end
+
+rule R-ROUTE-DMG "Damaged or wrong items" [SUP-4]
+  if   issue_type(?t) = "damaged_item"                otherwise "it isn't a damaged-item issue" requires "it is a damaged, defective or wrong item"
+  then handling_team(?t) = "returns_desk"
+  because "damaged, defective and wrong items are owned by the Returns desk"
+end
+
+rule R-ROUTE-CAN "Cancellations and order changes" [SUP-4]
+  if   issue_type(?t) = "cancellation"                otherwise "it isn't a cancellation request" requires "it is a request to cancel or change an order"
+  then handling_team(?t) = "order_care"
+  because "cancellations and order changes are owned by Order care"
+end

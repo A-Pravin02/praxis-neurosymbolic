@@ -244,8 +244,11 @@ class Reasoner:
         self.max_depth = max_depth
         # Ablations used only by the evaluation baselines: a classical rule engine treats
         # an unknown as false, and a naive one always applies the newest policy version.
-        self.two_valued = two_valued
-        self.latest_versions = latest_versions
+        from app.hybrid import ablations
+
+        self.two_valued = two_valued or ablations.active("two_valued")
+        self.latest_versions = latest_versions or ablations.active("latest_version")
+        self.trust_statements = ablations.active("trust_statements")
         # (subject, policy) -> which version governed the case and why
         self.version_resolutions: dict[tuple[str, str], dict[str, Any]] = {}
         self._memo: dict[tuple[str, str], GoalResult] = {}
@@ -275,6 +278,9 @@ class Reasoner:
     def _evaluate(self, subject: str, predicate: str) -> GoalResult:
         is_open = subject in self.open_subjects
 
+        if self.trust_statements and (subject, predicate) in self.stated:
+            # Ablation only: what the person said wins over what the company recorded.
+            return self._fact(subject, predicate, self.stated[(subject, predicate)], "stated")
         recorded = self.graph.values(subject, predicate)
         if recorded:
             return self._fact(subject, predicate, recorded[0], "record")

@@ -31,6 +31,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
+from app.hybrid import ablations
 from app.symbolic.reasoner import Reasoner, VIOLATED
 from app.symbolic.render import format_value, humanize
 
@@ -414,6 +415,15 @@ class FactGrounding:
                             stated=grounding.stated)
 
         for statement in interpretation.inputs:
+            if ablations.active("trust_statements") and \
+                    self.program.is_verified_input(statement.predicate):
+                # Ablation only: a claimed approval is taken as recorded.
+                grounding.stated[(subject, statement.predicate)] = statement.value
+                grounding.accepted.append({"predicate": statement.predicate,
+                                           "value": str(statement.value),
+                                           "status": "stated by you (trusted: ablation)",
+                                           "evidence": statement.evidence})
+                continue
             if self.program.is_verified_input(statement.predicate) and \
                     statement.predicate not in needed:
                 # A claim the records must confirm is checked even when this decision
@@ -433,10 +443,11 @@ class FactGrounding:
         value_type = self.program.value_type(statement.predicate)
         shown = format_value(statement.value, value_type, graph=self.graph)
 
-        if self.program.is_verified_input(statement.predicate):
+        trusting = ablations.active("trust_statements")
+        if self.program.is_verified_input(statement.predicate) and not trusting:
             return self._verify_claim(grounding, statement, subject)
 
-        if subject not in grounding.open_subjects:
+        if subject not in grounding.open_subjects and not trusting:
             known = baseline.evaluate(subject, statement.predicate)
             if known.status == "determined" and known.source in ("record", "derived"):
                 if _same(known.value, statement.value, tolerance=_tolerance(value_type)):

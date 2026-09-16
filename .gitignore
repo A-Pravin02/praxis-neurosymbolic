@@ -36,6 +36,9 @@ dataset_ingestion_summary.json
 !backend/data/
 backend/data/*
 !backend/data/meridian/
+# The generated benchmark is frozen and committed: a reported result must be
+# reproducible from the exact worlds and questions it was scored on.
+!backend/data/benchmark_worlds/
 
 # Downloaded neural model weights.
 backend/.model_cache/

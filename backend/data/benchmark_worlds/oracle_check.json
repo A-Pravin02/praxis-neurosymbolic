@@ -1,0 +1,82 @@
+{
+  "agree": 3914,
+  "total": 6,
+  "by_goal": {
+    "annual_leave_days": [
+      32,
+      32
+    ],
+    "approval_required": [
+      768,
+      768
+    ],
+    "cancellation_allowed": [
+      336,
+      336
+    ],
+    "cancellation_refund": [
+      96,
+      96
+    ],
+    "delay_compensation": [
+      48,
+      48
+    ],
+    "free_delivery": [
+      122,
+      122
+    ],
+    "goodwill_credit": [
+      192,
+      192
+    ],
+    "recommended_resolution": [
+      768,
+      768
+    ],
+    "refund_approved": [
+      32,
+      32
+    ],
+    "refund_required": [
+      48,
+      48
+    ],
+    "reimbursable_amount": [
+      96,
+      96
+    ],
+    "replacement_available": [
+      576,
+      576
+    ],
+    "return_allowed": [
+      576,
+      576
+    ],
+    "senior_leave_eligible": [
+      32,
+      32
+    ],
+    "travel_claim_eligible": [
+      192,
+      192
+    ]
+  },
+  "mutants": {
+    "newest policy version for every order": 71,
+    "oldest policy version for every order": 80,
+    "Plus extension ignored": 90,
+    "return window exclusive": 109,
+    "stock ignored for replacements": 24,
+    "cancellation fee charged to Plus members": 24,
+    "delay threshold inclusive": 9,
+    "goodwill without a recorded approval": 168,
+    "approval threshold ignored": 147,
+    "receipts never required": 64,
+    "service years not checked": 16,
+    "inspection result ignored": 6
+  },
+  "survivors": [],
+  "disagreements": []
+}

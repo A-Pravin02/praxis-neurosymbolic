@@ -29,7 +29,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from app.core.logging import get_logger, log_event
-from app.hybrid import gaps
+from app.hybrid import ablations, gaps
 from app.hybrid.claims import check_policy_claims
 from app.hybrid.grounding import Actor, FactGrounding, Grounding
 from app.hybrid.knowledge_pack import KnowledgePack, load_pack
@@ -101,7 +101,11 @@ class _Request:
 
 
 class NeuroSymbolicController:
-    def __init__(self, pack: KnowledgePack | None = None, *, llm=None) -> None:
+    def __init__(self, pack: KnowledgePack | None = None, *, llm=None,
+                 ablations: frozenset[str] = frozenset()) -> None:
+        # Mechanisms switched off for the ablation study (app/hybrid/ablations.py). Always
+        # empty in the deployed service.
+        self.ablations = frozenset(ablations)
         self.pack = pack or load_pack()
         self.program = self.pack.program
         self.graph = self.pack.graph
@@ -115,7 +119,16 @@ class NeuroSymbolicController:
     # =======================================================================
     def answer(self, question: str, *, actor_email: str, actor_roles: tuple[str, ...] = (),
                context: dict | None = None) -> AssistantAnswer:
+        with ablations.applied(self.ablations):
+            return self._answer(question, actor_email=actor_email, actor_roles=actor_roles,
+                                context=context)
+
+    def _answer(self, question: str, *, actor_email: str, actor_roles: tuple[str, ...],
+                context: dict | None) -> AssistantAnswer:
         started = time.perf_counter()
+        if ablations.active("no_authorization"):
+            # Ablation only: the person keeps their identity but every record is visible.
+            actor_roles = tuple(actor_roles) + ("admin",)
         actor = FactGrounding(self.pack).actor(actor_email, tuple(actor_roles))
         # Authorization before reasoning: every later step sees only this view.
         view = self.graph.view_for(actor.access_kind, actor.id, self.program)
@@ -520,7 +533,7 @@ class NeuroSymbolicController:
         trace.reasoning_steps = self._steps(goal, subject, result, grounding, used, considered,
                                             cases, report, resolutions)
 
-        if not report.passed:
+        if not report.passed and not ablations.active("no_verification"):
             # Not released: a decision that fails verification is not a decision.
             return self._withheld(report, goal, route, trace, grounding, cited, resolutions)
 

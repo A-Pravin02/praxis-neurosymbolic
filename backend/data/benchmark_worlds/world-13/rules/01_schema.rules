@@ -1,0 +1,233 @@
+# =============================================================================
+# Meridian Marketplace knowledge schema
+#
+# This file is what the NEURAL layer reads to understand questions. It lists the
+# goals a person can ask about and the facts a person can state in their own
+# words. Nothing here is an example question: descriptions are written from the
+# policy side, and a new policy extends what the assistant understands by adding
+# a goal here and rules beside it.
+# =============================================================================
+
+entity customer order product category return refund payment employee claim grade company policy_version ticket
+
+# --- structural attributes: the company records, authoritative --------------
+attribute membership_tier(customer) -> text
+attribute city(customer) -> text
+attribute email(customer) -> text
+attribute placed_by(order) -> customer
+attribute contains(order) -> product
+attribute paid_with(order) -> payment
+attribute order_status(order) -> text
+attribute placed_on(order) -> date
+attribute delivered_on(order) -> date
+attribute promised_delivery(order) -> date
+attribute carrier(order) -> text
+attribute order_total(order) -> money
+attribute delivery_fee_paid(order) -> money
+attribute product_name(product) -> text
+attribute product_category(product) -> category
+attribute price(product) -> money
+attribute in_stock(product) -> flag
+attribute same_day_eligible(product) -> flag
+attribute return_window_days(category) -> days
+attribute plus_extension_days(category) -> days
+attribute non_returnable(category) -> flag
+attribute excluded_from_damage_returns(category) -> flag
+attribute payment_status(payment) -> text
+attribute payment_method(payment) -> text
+attribute return_for(return) -> order
+attribute return_started_on(return) -> date
+attribute inspection_result(return) -> text
+attribute refund_for_return(refund) -> return
+attribute refund_status(refund) -> text
+attribute grade(employee) -> grade
+attribute joined_on(employee) -> date
+attribute travel_cap(grade) -> money
+attribute claimant(claim) -> employee
+attribute today(company) -> date
+attribute cancellation_fee_rate(company) -> percent
+attribute cancellation_fee_cap(company) -> money
+attribute free_delivery_threshold_plus(company) -> money
+attribute free_delivery_threshold_standard(company) -> money
+attribute delay_threshold_days(company) -> days
+attribute plus_delay_credit(company) -> money
+attribute senior_service_years(company) -> years
+attribute annual_leave_base(company) -> days
+attribute annual_leave_senior(company) -> days
+attribute min_trip_km(company) -> distance
+attribute receipt_threshold(company) -> money
+attribute claim_deadline_days(company) -> days
+attribute mileage_rate(company) -> money
+attribute monthly_salary(employee) -> money
+attribute exception_approved(order) -> flag
+attribute approval_threshold(company) -> money
+attribute goodwill_rate(company) -> percent
+attribute goodwill_cap(company) -> money
+
+# --- policy versions: one node per version, parameters on the version ------------
+attribute policy(policy_version) -> text
+attribute version(policy_version) -> number
+attribute effective_from(policy_version) -> date
+attribute supersedes(policy_version) -> policy_version
+attribute damage_report_days(policy_version) -> days
+
+# --- derived attributes: computed by rules, never stored --------------------
+attribute days_since_delivery(order) -> days
+attribute delivery_date(order) -> date
+attribute returns_policy(order) -> policy_version
+attribute order_category(order) -> category
+attribute order_membership(order) -> text
+attribute effective_return_window(order) -> days
+attribute cancellation_fee(order) -> money
+attribute cancellation_refund(order) -> money
+attribute days_late(order) -> days
+attribute delay_compensation(order) -> money
+attribute return_started_after_days(return) -> days
+attribute service_years(employee) -> years
+attribute annual_leave_days(employee) -> days
+attribute claim_cap(claim) -> money
+attribute reimbursable_amount(claim) -> money
+attribute recommended_resolution(order) -> text
+attribute approval_required(order) -> flag
+attribute goodwill_credit(order) -> money
+attribute handling_team(ticket) -> text
+
+# --- which policy version governs a case: the one in force on its date ------------
+version returns_policy(order) of returns on delivery_date
+
+# --- inputs: what a person may tell us about their own case -----------------
+input return_reason(order) -> enum change_of_mind "the customer no longer wants the item, changed their mind, or bought it by mistake"
+input return_reason(order) -> enum damaged_on_arrival "the product arrived broken, cracked, smashed, damaged, faulty or defective"
+input return_reason(order) -> enum wrong_item "a different or incorrect product was delivered instead of the one that was ordered"
+input days_since_delivery(order) -> days "how many days ago the item was delivered or received"
+input claimed_amount(claim) -> money "the amount of money spent on the business trip or being claimed back"
+input travel_distance_km(claim) -> distance "how far the employee travelled on the trip"
+input travel_mode(claim) -> enum own_vehicle "the employee drove their own car or rode their own motorbike"
+input travel_mode(claim) -> enum public_transport "the employee travelled by train, bus, flight or taxi"
+input receipts_attached(claim) -> flag true "receipts, bills or invoices are available for the expenses"
+input receipts_attached(claim) -> flag false "the receipts or bills were lost, are missing, or were never kept"
+input claim_submitted_after_days(claim) -> days "how many days after the trip the claim is submitted"
+input exception_approved(order) -> flag true "a manager, supervisor or team lead has already approved an exception or special refund for this order" verified
+input issue_type(ticket) -> enum payment "money was charged twice, deducted for a failed payment, or a refund has not reached the bank"
+input issue_type(ticket) -> enum delivery "a package or parcel with ordered goods is late, delayed, lost in transit or was never delivered"
+input issue_type(ticket) -> enum damaged_item "an ordered item arrived damaged, defective, broken or was the wrong product"
+input issue_type(ticket) -> enum cancellation "someone wants to cancel an order or change the items or delivery address on it"
+
+# --- goals: what a person can ask the assistant to determine ----------------
+goal return_allowed(order) decision "whether an item that was bought can be sent back to the seller"
+goal replacement_available(order) decision "whether a faulty, damaged or wrong item can be exchanged for a new one of the same product instead of money back"
+goal cancellation_allowed(order) decision "whether an order that has been placed can still be cancelled or stopped"
+goal cancellation_refund(order) calculation "how much money comes back when an order is cancelled, after any cancellation charge"
+goal refund_approved(return) explanation "whether the money for a returned item was paid back or refused, and the reason"
+goal refund_required(order) decision "whether money deducted for an order that did not go through will be given back"
+goal delay_compensation(order) calculation "what compensation a customer receives when a package arrives late or is delayed"
+goal free_delivery(order) decision "whether an order ships without a delivery or shipping charge"
+goal same_day_product(product) enumeration "which products can be delivered on the same day they are ordered"
+goal annual_leave_days(employee) calculation "how many days of annual leave or paid vacation an employee is entitled to each year"
+goal senior_leave_eligible(employee) decision "whether an employee qualifies for the higher annual leave entitlement given to long-serving staff"
+goal travel_claim_eligible(claim) decision "whether a business trip expense qualifies to be paid back by the company"
+goal reimbursable_amount(claim) calculation "how much money an employee is paid back for the cost of a business trip"
+
+goal recommended_resolution(order) recommendation "what remedy or resolution can be offered to a customer with a problem order: a replacement, a refund, a cancellation, a return or nothing"
+goal approval_required(order) decision "whether a refund, replacement or return must be approved by a team lead or escalated before it is issued"
+goal goodwill_credit(order) calculation "how much goodwill credit or compensation can be given as an exception when no standard remedy applies"
+goal handling_team(ticket) recommendation "which team or desk a customer support issue should be routed or escalated to"
+
+lookup salary(employee) "an employee's monthly salary, pay or compensation" : monthly_salary
+lookup order_tracking(order) "where an order or package is right now and when it is expected to arrive" : order_status carrier promised_delivery delivered_on
+
+# --- how answers are phrased: {subject} is the record, {value} the result ---------
+say return_allowed yes "your {subject} can be returned"
+say return_allowed no "your {subject} can't be returned"
+say replacement_available yes "a replacement can be sent for your {subject}"
+say replacement_available no "a replacement isn't available for your {subject}"
+say cancellation_allowed yes "your {subject} can still be cancelled"
+say cancellation_allowed no "your {subject} can no longer be cancelled"
+say cancellation_refund value "cancelling your {subject} would refund {value}"
+say refund_approved yes "the refund for your {subject} was approved"
+say refund_approved no "the refund for your {subject} was not approved"
+say refund_required yes "the money for your {subject} will be refunded"
+say refund_required no "no automatic refund applies to your {subject}"
+say delay_compensation value "you're owed {value} in delay compensation for your {subject}"
+say free_delivery yes "your {subject} ships free"
+say free_delivery no "your {subject} doesn't qualify for free delivery"
+say annual_leave_days value "you're entitled to {value} days of annual leave a year"
+say senior_leave_eligible yes "you qualify for the higher annual leave entitlement"
+say senior_leave_eligible no "you don't yet qualify for the higher annual leave entitlement"
+say travel_claim_eligible yes "this trip qualifies for reimbursement"
+say travel_claim_eligible no "this trip doesn't qualify for reimbursement"
+say reimbursable_amount value "you would be reimbursed {value}"
+say recommended_resolution value "the recommended resolution for your {subject} is to {value}"
+say approval_required yes "team-lead approval is required before issuing a remedy on your {subject}"
+say approval_required no "no team-lead approval is needed for your {subject}"
+say goodwill_credit value "a goodwill credit of {value} can be issued for your {subject}"
+say handling_team value "this issue should be routed to {value}"
+
+# --- how text results read, and what to do next ------------------------------------
+label recommended_resolution replacement "offer a replacement of the same product"
+label recommended_resolution full_refund "issue a full refund of the order total"
+label recommended_resolution cancel_order "cancel the order"
+label recommended_resolution return_and_refund_after_inspection "accept the return and refund it after inspection"
+label recommended_resolution goodwill_credit "issue the approved goodwill credit"
+label recommended_resolution no_standard_remedy "decline, because no standard remedy applies"
+label handling_team payments_team "the Payments team"
+label handling_team logistics_desk "the Logistics desk"
+label handling_team returns_desk "the Returns desk"
+label handling_team order_care "Order care"
+
+action recommended_resolution replacement "Create a replacement order for the same product and arrange collection of the damaged item. No refund is issued."
+action recommended_resolution full_refund "Arrange collection of the item and refund the full order total to the original payment method."
+action recommended_resolution cancel_order "Cancel the order; the refund is the order total minus any cancellation fee (REF-1)."
+action recommended_resolution return_and_refund_after_inspection "Book the return pickup and refund only after the item passes inspection (RET-6)."
+action recommended_resolution goodwill_credit "Issue the goodwill credit that is recorded as approved on the order (SUP-3)."
+action recommended_resolution no_standard_remedy "Explain that no standard remedy applies. Do not promise a refund or replacement; a goodwill credit needs a supervisor approval recorded on the order (SUP-3)."
+action approval_required yes "Get team-lead approval recorded on the order before issuing the remedy (SUP-2)."
+action replacement_available yes "Create a replacement order for the same product; no refund is issued."
+action replacement_available no "Don't offer a replacement."
+action return_allowed yes "Book the return pickup."
+action return_allowed no "Don't accept a return under the standard policy."
+action cancellation_allowed yes "Cancel the order."
+action cancellation_allowed no "The order can't be cancelled now; the delivery can be refused or the item returned after it arrives."
+action refund_required yes "No action needed: the refund is issued automatically (REF-4)."
+action handling_team value "Route the ticket to {value}."
+action goodwill_credit value "Issue a goodwill credit of {value}; the approval is already recorded on the order (SUP-3)."
+action travel_claim_eligible no "Don't submit this as a business travel claim."
+action travel_claim_eligible yes "Submit the claim with receipts for expenses above the receipt threshold (TRV-4)."
+
+followup recommended_resolution approval_required
+followup replacement_available approval_required
+followup return_allowed approval_required
+
+# --- who may reason over what: authorization happens before reasoning -------------------
+access public: company category product grade policy_version
+access customer own: customer order payment return refund
+access employee own: employee claim
+access support all: customer order payment return refund ticket
+access admin all: *
+
+recorded refund_approved as refund_status via refund_for_return true "approved" false "rejected"
+
+# --- relevance: which of a person's records a question plausibly concerns --------
+# These narrow "my order" to candidate records. They never decide the answer.
+relevant order_tracking when order_status(?x) in ["placed", "packed", "shipped", "out_for_delivery"]
+relevant cancellation_allowed when order_status(?x) in ["placed", "packed", "shipped", "out_for_delivery"]
+relevant cancellation_refund when order_status(?x) in ["placed", "packed"]
+relevant return_allowed when order_status(?x) = "delivered"
+relevant replacement_available when order_status(?x) = "delivered"
+relevant delay_compensation when order_status(?x) in ["shipped", "out_for_delivery"]
+relevant refund_required when order_status(?x) = "payment_failed"
+relevant free_delivery when order_status(?x) in ["placed", "packed", "shipped"]
+
+default return_allowed = false
+default replacement_available = false
+default cancellation_allowed = false
+default refund_approved = false
+default refund_required = false
+default free_delivery = false
+default same_day_product = false
+default senior_leave_eligible = false
+default travel_claim_eligible = false
+default delay_compensation = 0
+default recommended_resolution = "no_standard_remedy"
+default approval_required = false
+default goodwill_credit = 0

@@ -1,0 +1,1216 @@
+# Generated world, seed 103. Do not edit: regenerate instead.
+as_of: 2026-12-14
+entities:
+- id: meridian
+  type: company
+  name: Meridian Marketplace
+  attributes:
+    cancellation_fee_rate: 0.07
+    cancellation_fee_cap: 350
+    free_delivery_threshold_plus: 299
+    free_delivery_threshold_standard: 699
+    delay_threshold_days: 6
+    plus_delay_credit: 150
+    senior_service_years: 4
+    annual_leave_base: 15
+    min_trip_km: 75
+    receipt_threshold: 1200
+    claim_deadline_days: 21
+    mileage_rate: 8
+    approval_threshold: 12000
+    goodwill_rate: 0.05
+    goodwill_cap: 400
+    annual_leave_senior: 18
+- id: RETURNS-v1
+  type: policy_version
+  name: Returns policy version 1
+  attributes:
+    policy: returns
+    version: 1
+    effective_from: 2026-04-10
+    damage_report_days: 5
+- id: RETURNS-v2
+  type: policy_version
+  name: Returns policy version 2
+  attributes:
+    policy: returns
+    version: 2
+    effective_from: 2026-12-06
+    damage_report_days: 9
+    supersedes: RETURNS-v1
+- id: fashion
+  type: category
+  name: Fashion
+  attributes:
+    return_window_days: 45
+    plus_extension_days: 12
+- id: home
+  type: category
+  name: Home
+  attributes:
+    return_window_days: 21
+    plus_extension_days: 20
+- id: electronics
+  type: category
+  name: Electronics
+  attributes:
+    return_window_days: 14
+    plus_extension_days: 0
+- id: grocery
+  type: category
+  name: Grocery
+  attributes:
+    return_window_days: 0
+    plus_extension_days: 0
+    non_returnable: true
+- id: gift_card
+  type: category
+  name: Gift card
+  attributes:
+    return_window_days: 0
+    plus_extension_days: 0
+    non_returnable: true
+    excluded_from_damage_returns: true
+- id: PRD-311
+  type: product
+  name: Vertex 15 Laptop
+  attributes:
+    product_name: Vertex 15 Laptop
+    product_category: electronics
+    price: 87439
+    in_stock: true
+    same_day_eligible: false
+- id: PRD-316
+  type: product
+  name: Pulse Wireless Earbuds
+  attributes:
+    product_name: Pulse Wireless Earbuds
+    product_category: electronics
+    price: 4099
+    in_stock: false
+    same_day_eligible: true
+- id: PRD-325
+  type: product
+  name: Orbit Smartwatch
+  attributes:
+    product_name: Orbit Smartwatch
+    product_category: electronics
+    price: 11029
+    in_stock: true
+    same_day_eligible: true
+- id: PRD-330
+  type: product
+  name: Lumen Tablet
+  attributes:
+    product_name: Lumen Tablet
+    product_category: electronics
+    price: 19359
+    in_stock: true
+    same_day_eligible: false
+- id: PRD-337
+  type: product
+  name: Stride Running Shoes
+  attributes:
+    product_name: Stride Running Shoes
+    product_category: fashion
+    price: 3599
+    in_stock: false
+    same_day_eligible: false
+- id: PRD-343
+  type: product
+  name: Monsoon Rain Jacket
+  attributes:
+    product_name: Monsoon Rain Jacket
+    product_category: fashion
+    price: 1599
+    in_stock: true
+    same_day_eligible: true
+- id: PRD-345
+  type: product
+  name: Denim Weekend Jeans
+  attributes:
+    product_name: Denim Weekend Jeans
+    product_category: fashion
+    price: 2149
+    in_stock: true
+    same_day_eligible: true
+- id: PRD-347
+  type: product
+  name: Brass Table Lamp
+  attributes:
+    product_name: Brass Table Lamp
+    product_category: home
+    price: 2369
+    in_stock: false
+    same_day_eligible: true
+- id: PRD-354
+  type: product
+  name: Cotton Duvet Cover
+  attributes:
+    product_name: Cotton Duvet Cover
+    product_category: home
+    price: 2659
+    in_stock: true
+    same_day_eligible: false
+- id: PRD-356
+  type: product
+  name: Cast Iron Skillet
+  attributes:
+    product_name: Cast Iron Skillet
+    product_category: home
+    price: 1059
+    in_stock: true
+    same_day_eligible: false
+- id: PRD-361
+  type: product
+  name: Kashmiri Saffron 2g
+  attributes:
+    product_name: Kashmiri Saffron 2g
+    product_category: grocery
+    price: 309
+    in_stock: true
+    same_day_eligible: true
+- id: PRD-365
+  type: product
+  name: Cold Brew Coffee Pack
+  attributes:
+    product_name: Cold Brew Coffee Pack
+    product_category: grocery
+    price: 479
+    in_stock: true
+    same_day_eligible: false
+- id: PRD-367
+  type: product
+  name: Store Gift Card
+  attributes:
+    product_name: Store Gift Card
+    product_category: gift_card
+    price: 3609
+    in_stock: false
+    same_day_eligible: false
+- id: CUST-3483
+  type: customer
+  name: Kabir Khan
+  attributes:
+    membership_tier: plus
+    city: mumbai
+    email: kabir.khan@w103.test
+- id: CUST-3484
+  type: customer
+  name: Anjali Das
+  attributes:
+    membership_tier: standard
+    city: delhi
+    email: anjali.das@w103.test
+- id: CUST-3485
+  type: customer
+  name: Vikram Reddy
+  attributes:
+    membership_tier: plus
+    city: delhi
+    email: vikram.reddy@w103.test
+- id: CUST-3486
+  type: customer
+  name: Meera Thomas
+  attributes:
+    membership_tier: standard
+    city: chennai
+    email: meera.thomas@w103.test
+- id: CUST-3487
+  type: customer
+  name: Farhan Pillai
+  attributes:
+    membership_tier: plus
+    city: kolkata
+    email: farhan.pillai@w103.test
+- id: CUST-3488
+  type: customer
+  name: Siddharth Gupta
+  attributes:
+    membership_tier: standard
+    city: chennai
+    email: siddharth.gupta@w103.test
+- id: PAY-7865
+  type: payment
+  attributes:
+    payment_status: captured
+    payment_method: upi
+- id: PAY-7866
+  type: payment
+  attributes:
+    payment_status: captured
+    payment_method: upi
+- id: PAY-7867
+  type: payment
+  attributes:
+    payment_status: captured
+    payment_method: upi
+- id: PAY-7868
+  type: payment
+  attributes:
+    payment_status: captured
+    payment_method: wallet
+- id: PAY-7869
+  type: payment
+  attributes:
+    payment_status: captured
+    payment_method: card
+- id: PAY-7870
+  type: payment
+  attributes:
+    payment_status: captured
+    payment_method: upi
+- id: PAY-7871
+  type: payment
+  attributes:
+    payment_status: captured
+    payment_method: card
+- id: PAY-7872
+  type: payment
+  attributes:
+    payment_status: captured
+    payment_method: card
+- id: PAY-7873
+  type: payment
+  attributes:
+    payment_status: captured
+    payment_method: card
+- id: PAY-7874
+  type: payment
+  attributes:
+    payment_status: captured
+    payment_method: upi
+- id: PAY-7875
+  type: payment
+  attributes:
+    payment_status: captured
+    payment_method: card
+- id: PAY-7876
+  type: payment
+  attributes:
+    payment_status: captured
+    payment_method: upi
+- id: PAY-7877
+  type: payment
+  attributes:
+    payment_status: captured
+    payment_method: upi
+- id: PAY-7878
+  type: payment
+  attributes:
+    payment_status: captured
+    payment_method: wallet
+- id: PAY-7879
+  type: payment
+  attributes:
+    payment_status: failed
+    payment_method: upi
+- id: PAY-7880
+  type: payment
+  attributes:
+    payment_status: captured
+    payment_method: card
+- id: PAY-7881
+  type: payment
+  attributes:
+    payment_status: captured
+    payment_method: upi
+- id: PAY-7882
+  type: payment
+  attributes:
+    payment_status: captured
+    payment_method: wallet
+- id: PAY-7883
+  type: payment
+  attributes:
+    payment_status: captured
+    payment_method: wallet
+- id: PAY-7884
+  type: payment
+  attributes:
+    payment_status: captured
+    payment_method: upi
+- id: PAY-7885
+  type: payment
+  attributes:
+    payment_status: captured
+    payment_method: card
+- id: PAY-7886
+  type: payment
+  attributes:
+    payment_status: captured
+    payment_method: wallet
+- id: PAY-7887
+  type: payment
+  attributes:
+    payment_status: captured
+    payment_method: upi
+- id: PAY-7888
+  type: payment
+  attributes:
+    payment_status: captured
+    payment_method: wallet
+- id: PAY-7889
+  type: payment
+  attributes:
+    payment_status: captured
+    payment_method: card
+- id: PAY-7890
+  type: payment
+  attributes:
+    payment_status: captured
+    payment_method: upi
+- id: PAY-7891
+  type: payment
+  attributes:
+    payment_status: captured
+    payment_method: upi
+- id: PAY-7892
+  type: payment
+  attributes:
+    payment_status: captured
+    payment_method: wallet
+- id: PAY-7893
+  type: payment
+  attributes:
+    payment_status: captured
+    payment_method: upi
+- id: PAY-7894
+  type: payment
+  attributes:
+    payment_status: captured
+    payment_method: wallet
+- id: PAY-7895
+  type: payment
+  attributes:
+    payment_status: failed
+    payment_method: card
+- id: PAY-7896
+  type: payment
+  attributes:
+    payment_status: captured
+    payment_method: wallet
+- id: PAY-7897
+  type: payment
+  attributes:
+    payment_status: captured
+    payment_method: wallet
+- id: PAY-7898
+  type: payment
+  attributes:
+    payment_status: captured
+    payment_method: wallet
+- id: PAY-7899
+  type: payment
+  attributes:
+    payment_status: captured
+    payment_method: card
+- id: PAY-7900
+  type: payment
+  attributes:
+    payment_status: captured
+    payment_method: card
+- id: PAY-7901
+  type: payment
+  attributes:
+    payment_status: captured
+    payment_method: card
+- id: PAY-7902
+  type: payment
+  attributes:
+    payment_status: captured
+    payment_method: card
+- id: PAY-7903
+  type: payment
+  attributes:
+    payment_status: captured
+    payment_method: wallet
+- id: PAY-7904
+  type: payment
+  attributes:
+    payment_status: captured
+    payment_method: wallet
+- id: PAY-7905
+  type: payment
+  attributes:
+    payment_status: captured
+    payment_method: wallet
+- id: PAY-7906
+  type: payment
+  attributes:
+    payment_status: captured
+    payment_method: upi
+- id: PAY-7907
+  type: payment
+  attributes:
+    payment_status: captured
+    payment_method: upi
+- id: PAY-7908
+  type: payment
+  attributes:
+    payment_status: captured
+    payment_method: upi
+- id: PAY-7909
+  type: payment
+  attributes:
+    payment_status: captured
+    payment_method: upi
+- id: PAY-7910
+  type: payment
+  attributes:
+    payment_status: captured
+    payment_method: wallet
+- id: PAY-7911
+  type: payment
+  attributes:
+    payment_status: failed
+    payment_method: wallet
+- id: PAY-7912
+  type: payment
+  attributes:
+    payment_status: captured
+    payment_method: upi
+- id: ORD-42144
+  type: order
+  name: Cast Iron Skillet order
+  attributes:
+    placed_by: CUST-3483
+    contains: PRD-356
+    paid_with: PAY-7865
+    order_status: placed
+    placed_on: 2026-12-13
+    carrier: BlueDart
+    order_total: 1059
+    delivery_fee_paid: 0
+    promised_delivery: 2026-12-19
+- id: ORD-42171
+  type: order
+  name: Denim Weekend Jeans order
+  attributes:
+    placed_by: CUST-3483
+    contains: PRD-345
+    paid_with: PAY-7866
+    order_status: packed
+    placed_on: 2026-12-12
+    carrier: Ekart
+    order_total: 2149
+    delivery_fee_paid: 0
+    promised_delivery: 2026-12-17
+- id: ORD-42198
+  type: order
+  name: Stride Running Shoes order
+  attributes:
+    placed_by: CUST-3483
+    contains: PRD-337
+    paid_with: PAY-7867
+    order_status: out_for_delivery
+    placed_on: 2026-12-03
+    carrier: Ekart
+    order_total: 3599
+    delivery_fee_paid: 0
+    promised_delivery: 2026-12-08
+- id: ORD-42224
+  type: order
+  name: Monsoon Rain Jacket order
+  attributes:
+    placed_by: CUST-3483
+    contains: PRD-343
+    paid_with: PAY-7868
+    order_status: delivered
+    placed_on: 2026-10-14
+    carrier: Shadowfax
+    order_total: 1599
+    delivery_fee_paid: 0
+    promised_delivery: 2026-10-18
+    delivered_on: 2026-10-18
+- id: ORD-42234
+  type: order
+  name: Orbit Smartwatch order
+  attributes:
+    placed_by: CUST-3483
+    contains: PRD-325
+    paid_with: PAY-7869
+    order_status: delivered
+    placed_on: 2026-12-03
+    carrier: Shadowfax
+    order_total: 11029
+    delivery_fee_paid: 0
+    promised_delivery: 2026-12-07
+    delivered_on: 2026-12-07
+- id: ORD-42242
+  type: order
+  name: Kashmiri Saffron 2g order
+  attributes:
+    placed_by: CUST-3483
+    contains: PRD-361
+    paid_with: PAY-7870
+    order_status: delivered
+    placed_on: 2026-12-10
+    carrier: BlueDart
+    order_total: 309
+    delivery_fee_paid: 0
+    promised_delivery: 2026-12-12
+    delivered_on: 2026-12-12
+- id: ORD-42264
+  type: order
+  name: Store Gift Card order
+  attributes:
+    placed_by: CUST-3483
+    contains: PRD-367
+    paid_with: PAY-7871
+    order_status: payment_failed
+    placed_on: 2026-12-13
+    carrier: Delhivery
+    order_total: 3609
+    delivery_fee_paid: 0
+- id: ORD-42289
+  type: order
+  name: Lumen Tablet order
+  attributes:
+    placed_by: CUST-3483
+    contains: PRD-330
+    paid_with: PAY-7872
+    order_status: delivered
+    placed_on: 2026-10-19
+    carrier: Ekart
+    order_total: 19359
+    delivery_fee_paid: 0
+    promised_delivery: 2026-10-22
+    delivered_on: 2026-10-22
+- id: ORD-42293
+  type: order
+  name: Kashmiri Saffron 2g order
+  attributes:
+    placed_by: CUST-3484
+    contains: PRD-361
+    paid_with: PAY-7873
+    order_status: placed
+    placed_on: 2026-12-14
+    carrier: Delhivery
+    order_total: 309
+    delivery_fee_paid: 59
+    promised_delivery: 2026-12-17
+- id: ORD-42310
+  type: order
+  name: Brass Table Lamp order
+  attributes:
+    placed_by: CUST-3484
+    contains: PRD-347
+    paid_with: PAY-7874
+    order_status: packed
+    placed_on: 2026-12-12
+    carrier: BlueDart
+    order_total: 2369
+    delivery_fee_paid: 0
+    promised_delivery: 2026-12-17
+- id: ORD-42330
+  type: order
+  name: Denim Weekend Jeans order
+  attributes:
+    placed_by: CUST-3484
+    contains: PRD-345
+    paid_with: PAY-7875
+    order_status: out_for_delivery
+    placed_on: 2026-12-01
+    carrier: Shadowfax
+    order_total: 2149
+    delivery_fee_paid: 0
+    promised_delivery: 2026-12-06
+- id: ORD-42345
+  type: order
+  name: Cast Iron Skillet order
+  attributes:
+    placed_by: CUST-3484
+    contains: PRD-356
+    paid_with: PAY-7876
+    order_status: delivered
+    placed_on: 2026-11-21
+    carrier: BlueDart
+    order_total: 1059
+    delivery_fee_paid: 0
+    promised_delivery: 2026-11-25
+    delivered_on: 2026-11-25
+- id: ORD-42378
+  type: order
+  name: Pulse Wireless Earbuds order
+  attributes:
+    placed_by: CUST-3484
+    contains: PRD-316
+    paid_with: PAY-7877
+    order_status: delivered
+    placed_on: 2026-12-03
+    carrier: BlueDart
+    order_total: 4099
+    delivery_fee_paid: 0
+    promised_delivery: 2026-12-07
+    delivered_on: 2026-12-07
+- id: ORD-42404
+  type: order
+  name: Cold Brew Coffee Pack order
+  attributes:
+    placed_by: CUST-3484
+    contains: PRD-365
+    paid_with: PAY-7878
+    order_status: delivered
+    placed_on: 2026-12-10
+    carrier: BlueDart
+    order_total: 479
+    delivery_fee_paid: 59
+    promised_delivery: 2026-12-12
+    delivered_on: 2026-12-12
+- id: ORD-42422
+  type: order
+  name: Cotton Duvet Cover order
+  attributes:
+    placed_by: CUST-3484
+    contains: PRD-354
+    paid_with: PAY-7879
+    order_status: payment_failed
+    placed_on: 2026-12-13
+    carrier: BlueDart
+    order_total: 2659
+    delivery_fee_paid: 0
+- id: ORD-42456
+  type: order
+  name: Vertex 15 Laptop order
+  attributes:
+    placed_by: CUST-3484
+    contains: PRD-311
+    paid_with: PAY-7880
+    order_status: delivered
+    placed_on: 2026-10-29
+    carrier: Delhivery
+    order_total: 87439
+    delivery_fee_paid: 0
+    promised_delivery: 2026-11-01
+    delivered_on: 2026-11-01
+    exception_approved: true
+- id: ORD-42481
+  type: order
+  name: Monsoon Rain Jacket order
+  attributes:
+    placed_by: CUST-3485
+    contains: PRD-343
+    paid_with: PAY-7881
+    order_status: placed
+    placed_on: 2026-12-13
+    carrier: Delhivery
+    order_total: 1599
+    delivery_fee_paid: 0
+    promised_delivery: 2026-12-19
+- id: ORD-42511
+  type: order
+  name: Stride Running Shoes order
+  attributes:
+    placed_by: CUST-3485
+    contains: PRD-337
+    paid_with: PAY-7882
+    order_status: packed
+    placed_on: 2026-12-13
+    carrier: Ekart
+    order_total: 3599
+    delivery_fee_paid: 0
+    promised_delivery: 2026-12-18
+- id: ORD-42532
+  type: order
+  name: Cast Iron Skillet order
+  attributes:
+    placed_by: CUST-3485
+    contains: PRD-356
+    paid_with: PAY-7883
+    order_status: out_for_delivery
+    placed_on: 2026-12-02
+    carrier: Ekart
+    order_total: 1059
+    delivery_fee_paid: 0
+    promised_delivery: 2026-12-07
+- id: ORD-42568
+  type: order
+  name: Denim Weekend Jeans order
+  attributes:
+    placed_by: CUST-3485
+    contains: PRD-345
+    paid_with: PAY-7884
+    order_status: delivered
+    placed_on: 2026-10-11
+    carrier: BlueDart
+    order_total: 2149
+    delivery_fee_paid: 0
+    promised_delivery: 2026-10-15
+    delivered_on: 2026-10-15
+- id: ORD-42588
+  type: order
+  name: Lumen Tablet order
+  attributes:
+    placed_by: CUST-3485
+    contains: PRD-330
+    paid_with: PAY-7885
+    order_status: delivered
+    placed_on: 2026-12-03
+    carrier: Shadowfax
+    order_total: 19359
+    delivery_fee_paid: 0
+    promised_delivery: 2026-12-07
+    delivered_on: 2026-12-07
+- id: ORD-42617
+  type: order
+  name: Cold Brew Coffee Pack order
+  attributes:
+    placed_by: CUST-3485
+    contains: PRD-365
+    paid_with: PAY-7886
+    order_status: delivered
+    placed_on: 2026-12-10
+    carrier: Ekart
+    order_total: 479
+    delivery_fee_paid: 0
+    promised_delivery: 2026-12-12
+    delivered_on: 2026-12-12
+- id: ORD-42627
+  type: order
+  name: Vertex 15 Laptop order
+  attributes:
+    placed_by: CUST-3485
+    contains: PRD-311
+    paid_with: PAY-7887
+    order_status: payment_failed
+    placed_on: 2026-12-13
+    carrier: Delhivery
+    order_total: 87439
+    delivery_fee_paid: 0
+- id: ORD-42645
+  type: order
+  name: Pulse Wireless Earbuds order
+  attributes:
+    placed_by: CUST-3485
+    contains: PRD-316
+    paid_with: PAY-7888
+    order_status: delivered
+    placed_on: 2026-10-20
+    carrier: Ekart
+    order_total: 4099
+    delivery_fee_paid: 0
+    promised_delivery: 2026-10-23
+    delivered_on: 2026-10-23
+- id: ORD-42668
+  type: order
+  name: Denim Weekend Jeans order
+  attributes:
+    placed_by: CUST-3486
+    contains: PRD-345
+    paid_with: PAY-7889
+    order_status: placed
+    placed_on: 2026-12-14
+    carrier: Ekart
+    order_total: 2149
+    delivery_fee_paid: 0
+    promised_delivery: 2026-12-19
+- id: ORD-42692
+  type: order
+  name: Stride Running Shoes order
+  attributes:
+    placed_by: CUST-3486
+    contains: PRD-337
+    paid_with: PAY-7890
+    order_status: packed
+    placed_on: 2026-12-12
+    carrier: BlueDart
+    order_total: 3599
+    delivery_fee_paid: 0
+    promised_delivery: 2026-12-17
+- id: ORD-42699
+  type: order
+  name: Brass Table Lamp order
+  attributes:
+    placed_by: CUST-3486
+    contains: PRD-347
+    paid_with: PAY-7891
+    order_status: out_for_delivery
+    placed_on: 2026-12-03
+    carrier: BlueDart
+    order_total: 2369
+    delivery_fee_paid: 0
+    promised_delivery: 2026-12-08
+- id: ORD-42722
+  type: order
+  name: Cast Iron Skillet order
+  attributes:
+    placed_by: CUST-3486
+    contains: PRD-356
+    paid_with: PAY-7892
+    order_status: delivered
+    placed_on: 2026-11-19
+    carrier: Delhivery
+    order_total: 1059
+    delivery_fee_paid: 0
+    promised_delivery: 2026-11-23
+    delivered_on: 2026-11-23
+- id: ORD-42742
+  type: order
+  name: Pulse Wireless Earbuds order
+  attributes:
+    placed_by: CUST-3486
+    contains: PRD-316
+    paid_with: PAY-7893
+    order_status: delivered
+    placed_on: 2026-12-04
+    carrier: Delhivery
+    order_total: 4099
+    delivery_fee_paid: 0
+    promised_delivery: 2026-12-08
+    delivered_on: 2026-12-08
+- id: ORD-42756
+  type: order
+  name: Cold Brew Coffee Pack order
+  attributes:
+    placed_by: CUST-3486
+    contains: PRD-365
+    paid_with: PAY-7894
+    order_status: delivered
+    placed_on: 2026-12-11
+    carrier: Shadowfax
+    order_total: 479
+    delivery_fee_paid: 59
+    promised_delivery: 2026-12-13
+    delivered_on: 2026-12-13
+- id: ORD-42762
+  type: order
+  name: Lumen Tablet order
+  attributes:
+    placed_by: CUST-3486
+    contains: PRD-330
+    paid_with: PAY-7895
+    order_status: payment_failed
+    placed_on: 2026-12-13
+    carrier: Ekart
+    order_total: 19359
+    delivery_fee_paid: 0
+- id: ORD-42784
+  type: order
+  name: Vertex 15 Laptop order
+  attributes:
+    placed_by: CUST-3486
+    contains: PRD-311
+    paid_with: PAY-7896
+    order_status: delivered
+    placed_on: 2026-10-20
+    carrier: Delhivery
+    order_total: 87439
+    delivery_fee_paid: 0
+    promised_delivery: 2026-10-23
+    delivered_on: 2026-10-23
+    exception_approved: true
+- id: ORD-42795
+  type: order
+  name: Brass Table Lamp order
+  attributes:
+    placed_by: CUST-3487
+    contains: PRD-347
+    paid_with: PAY-7897
+    order_status: placed
+    placed_on: 2026-12-13
+    carrier: Ekart
+    order_total: 2369
+    delivery_fee_paid: 0
+    promised_delivery: 2026-12-19
+- id: ORD-42826
+  type: order
+  name: Denim Weekend Jeans order
+  attributes:
+    placed_by: CUST-3487
+    contains: PRD-345
+    paid_with: PAY-7898
+    order_status: packed
+    placed_on: 2026-12-13
+    carrier: Ekart
+    order_total: 2149
+    delivery_fee_paid: 0
+    promised_delivery: 2026-12-19
+- id: ORD-42834
+  type: order
+  name: Lumen Tablet order
+  attributes:
+    placed_by: CUST-3487
+    contains: PRD-330
+    paid_with: PAY-7899
+    order_status: shipped
+    placed_on: 2026-12-02
+    carrier: Ekart
+    order_total: 19359
+    delivery_fee_paid: 0
+    promised_delivery: 2026-12-07
+- id: ORD-42860
+  type: order
+  name: Stride Running Shoes order
+  attributes:
+    placed_by: CUST-3487
+    contains: PRD-337
+    paid_with: PAY-7900
+    order_status: delivered
+    placed_on: 2026-10-16
+    carrier: Ekart
+    order_total: 3599
+    delivery_fee_paid: 0
+    promised_delivery: 2026-10-20
+    delivered_on: 2026-10-20
+- id: ORD-42889
+  type: order
+  name: Orbit Smartwatch order
+  attributes:
+    placed_by: CUST-3487
+    contains: PRD-325
+    paid_with: PAY-7901
+    order_status: delivered
+    placed_on: 2026-12-01
+    carrier: Delhivery
+    order_total: 11029
+    delivery_fee_paid: 0
+    promised_delivery: 2026-12-05
+    delivered_on: 2026-12-05
+- id: ORD-42914
+  type: order
+  name: Kashmiri Saffron 2g order
+  attributes:
+    placed_by: CUST-3487
+    contains: PRD-361
+    paid_with: PAY-7902
+    order_status: delivered
+    placed_on: 2026-12-11
+    carrier: Delhivery
+    order_total: 309
+    delivery_fee_paid: 0
+    promised_delivery: 2026-12-13
+    delivered_on: 2026-12-13
+- id: ORD-42921
+  type: order
+  name: Vertex 15 Laptop order
+  attributes:
+    placed_by: CUST-3487
+    contains: PRD-311
+    paid_with: PAY-7903
+    order_status: payment_failed
+    placed_on: 2026-12-13
+    carrier: Shadowfax
+    order_total: 87439
+    delivery_fee_paid: 0
+- id: ORD-42930
+  type: order
+  name: Pulse Wireless Earbuds order
+  attributes:
+    placed_by: CUST-3487
+    contains: PRD-316
+    paid_with: PAY-7904
+    order_status: delivered
+    placed_on: 2026-10-22
+    carrier: BlueDart
+    order_total: 4099
+    delivery_fee_paid: 0
+    promised_delivery: 2026-10-25
+    delivered_on: 2026-10-25
+- id: ORD-42967
+  type: order
+  name: Denim Weekend Jeans order
+  attributes:
+    placed_by: CUST-3488
+    contains: PRD-345
+    paid_with: PAY-7905
+    order_status: placed
+    placed_on: 2026-12-14
+    carrier: BlueDart
+    order_total: 2149
+    delivery_fee_paid: 0
+    promised_delivery: 2026-12-20
+- id: ORD-42999
+  type: order
+  name: Cotton Duvet Cover order
+  attributes:
+    placed_by: CUST-3488
+    contains: PRD-354
+    paid_with: PAY-7906
+    order_status: packed
+    placed_on: 2026-12-12
+    carrier: Delhivery
+    order_total: 2659
+    delivery_fee_paid: 0
+    promised_delivery: 2026-12-17
+- id: ORD-43000
+  type: order
+  name: Stride Running Shoes order
+  attributes:
+    placed_by: CUST-3488
+    contains: PRD-337
+    paid_with: PAY-7907
+    order_status: shipped
+    placed_on: 2026-12-01
+    carrier: Delhivery
+    order_total: 3599
+    delivery_fee_paid: 0
+    promised_delivery: 2026-12-06
+- id: ORD-43037
+  type: order
+  name: Brass Table Lamp order
+  attributes:
+    placed_by: CUST-3488
+    contains: PRD-347
+    paid_with: PAY-7908
+    order_status: delivered
+    placed_on: 2026-11-16
+    carrier: Delhivery
+    order_total: 2369
+    delivery_fee_paid: 0
+    promised_delivery: 2026-11-20
+    delivered_on: 2026-11-20
+- id: ORD-43074
+  type: order
+  name: Vertex 15 Laptop order
+  attributes:
+    placed_by: CUST-3488
+    contains: PRD-311
+    paid_with: PAY-7909
+    order_status: delivered
+    placed_on: 2026-12-01
+    carrier: Ekart
+    order_total: 87439
+    delivery_fee_paid: 0
+    promised_delivery: 2026-12-05
+    delivered_on: 2026-12-05
+- id: ORD-43078
+  type: order
+  name: Cold Brew Coffee Pack order
+  attributes:
+    placed_by: CUST-3488
+    contains: PRD-365
+    paid_with: PAY-7910
+    order_status: delivered
+    placed_on: 2026-12-11
+    carrier: Shadowfax
+    order_total: 479
+    delivery_fee_paid: 59
+    promised_delivery: 2026-12-13
+    delivered_on: 2026-12-13
+- id: ORD-43103
+  type: order
+  name: Cast Iron Skillet order
+  attributes:
+    placed_by: CUST-3488
+    contains: PRD-356
+    paid_with: PAY-7911
+    order_status: payment_failed
+    placed_on: 2026-12-13
+    carrier: Ekart
+    order_total: 1059
+    delivery_fee_paid: 0
+- id: ORD-43137
+  type: order
+  name: Orbit Smartwatch order
+  attributes:
+    placed_by: CUST-3488
+    contains: PRD-325
+    paid_with: PAY-7912
+    order_status: delivered
+    placed_on: 2026-11-02
+    carrier: Delhivery
+    order_total: 11029
+    delivery_fee_paid: 0
+    promised_delivery: 2026-11-05
+    delivered_on: 2026-11-05
+    exception_approved: true
+- id: RTN-7950
+  type: return
+  name: Return of the Monsoon Rain Jacket
+  attributes:
+    return_for: ORD-42224
+    return_started_on: 2026-12-14
+    inspection_result: passed
+- id: RTN-7959
+  type: return
+  name: Return of the Cast Iron Skillet
+  attributes:
+    return_for: ORD-42345
+    return_started_on: 2026-12-14
+    inspection_result: passed
+- id: RTN-7961
+  type: return
+  name: Return of the Denim Weekend Jeans
+  attributes:
+    return_for: ORD-42568
+    return_started_on: 2026-12-10
+    inspection_result: passed
+- id: RTN-7968
+  type: return
+  name: Return of the Cast Iron Skillet
+  attributes:
+    return_for: ORD-42722
+    return_started_on: 2026-12-13
+    inspection_result: failed
+- id: RFD-7950
+  type: refund
+  name: Refund for return RTN-7950
+  attributes:
+    refund_for_return: RTN-7950
+    refund_status: approved
+- id: RFD-7959
+  type: refund
+  name: Refund for return RTN-7959
+  attributes:
+    refund_for_return: RTN-7959
+    refund_status: approved
+- id: RFD-7961
+  type: refund
+  name: Refund for return RTN-7961
+  attributes:
+    refund_for_return: RTN-7961
+    refund_status: approved
+- id: RFD-7968
+  type: refund
+  name: Refund for return RTN-7968
+  attributes:
+    refund_for_return: RTN-7968
+    refund_status: rejected
+- id: L1
+  type: grade
+  name: L1
+  attributes:
+    travel_cap: 3500
+- id: L2
+  type: grade
+  name: L2
+  attributes:
+    travel_cap: 8000
+- id: L3
+  type: grade
+  name: L3
+  attributes:
+    travel_cap: 13500
+- id: EMP-4259
+  type: employee
+  name: Karthik Varma
+  attributes:
+    grade: L1
+    joined_on: 2023-07-22
+    email: karthik.varma@staff103.test
+    monthly_salary: 200000
+- id: EMP-4260
+  type: employee
+  name: Meera Kulkarni
+  attributes:
+    grade: L2
+    joined_on: 2022-06-15
+    email: meera.kulkarni@staff103.test
+    monthly_salary: 280000
+- id: EMP-4261
+  type: employee
+  name: Zoya Bose
+  attributes:
+    grade: L3
+    joined_on: 2023-04-03
+    email: zoya.bose@staff103.test
+    monthly_salary: 280000
+- id: EMP-4262
+  type: employee
+  name: Siddharth Reddy
+  attributes:
+    grade: L2
+    joined_on: 2020-10-02
+    email: siddharth.reddy@staff103.test
+    monthly_salary: 190000
