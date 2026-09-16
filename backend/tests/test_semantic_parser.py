@@ -1,0 +1,107 @@
+"""The language-model parser may only choose from the pack's closed schema.
+
+Every test uses a scripted model, so what is tested is the validation around the model:
+whatever it replies, nothing undeclared, unstated or malformed reaches reasoning.
+"""
+from __future__ import annotations
+
+import json
+
+from app.hybrid.controller import NeuroSymbolicController
+from app.hybrid.knowledge_pack import load_pack
+from app.neural.semantic_parser import LLMSemanticParser
+from app.neuro.base import Completion
+from app.neuro.providers.mock import MockLLMProvider
+
+
+class Scripted:
+    name = "scripted"
+    model = "scripted-1"
+
+    def __init__(self, *replies: str) -> None:
+        self.replies = list(replies)
+        self.prompts: list[str] = []
+
+    def complete(self, request):
+        self.prompts.append(request.messages[-1].content)
+        text = self.replies.pop(0) if self.replies else "{}"
+        return Completion(text=text, model=self.model, provider=self.name)
+
+
+def _parser(*replies):
+    pack = load_pack(None, "hashing")
+    llm = Scripted(*replies)
+    return LLMSemanticParser(pack.program, pack.graph, pack.policies, llm, pack.understanding), llm
+
+
+def test_an_undeclared_goal_is_never_coerced_to_the_nearest_one():
+    parser, _ = _parser(json.dumps({"goal": "loyalty_points", "request": "calculate",
+                                    "stated": {}}))
+    interpretation = parser.understand("How many loyalty points did I earn on order 12345?")
+    assert interpretation.candidates == []
+    assert interpretation.parsed
+
+
+def test_a_declared_goal_is_taken_with_its_schema_kind():
+    parser, _ = _parser(json.dumps({"goal": "refund_required", "request": "decide",
+                                    "stated": {}}))
+    interpretation = parser.understand("Is order 22002 refunded automatically?")
+    assert [c.name for c in interpretation.candidates] == ["refund_required"]
+    assert interpretation.candidates[0].goal_kind == "decision"
+
+
+def test_an_enumeration_value_outside_the_declared_set_is_rejected():
+    parser, _ = _parser(json.dumps({"goal": "return_allowed", "request": "decide",
+                                    "stated": {"return_reason": "customer_is_angry"}}))
+    interpretation = parser.understand("Can I return order 12346?")
+    assert interpretation.inputs == []
+    assert interpretation.parse["rejected"][0]["fact"] == "return_reason"
+
+
+def test_a_number_the_question_never_states_cannot_be_stated_by_the_parser():
+    parser, _ = _parser(json.dumps({"goal": "reimbursable_amount", "request": "calculate",
+                                    "stated": {"claimed_amount": 8750,
+                                               "travel_distance_km": 300}}))
+    interpretation = parser.understand("I spent ₹8,750 on a business trip. How much back?")
+    stated = {i.predicate: i.value for i in interpretation.inputs}
+    assert stated == {"claimed_amount": 8750.0}
+
+
+def test_a_reply_that_is_not_json_falls_back_to_embedding_understanding():
+    parser, _ = _parser("Sure! The goal is probably cancellations.")
+    interpretation = parser.understand("Can I cancel order 12345?")
+    assert not interpretation.parsed
+    assert "fallback" in interpretation.encoder
+
+
+def test_the_parser_never_sees_a_record():
+    parser, llm = _parser(json.dumps({"goal": "cancellation_allowed", "request": "decide",
+                                      "stated": {}}))
+    parser.understand("Can I cancel order 12345?")
+    prompt = llm.prompts[0]
+    assert "62999" not in prompt and "Priya" not in prompt and "shipped" not in prompt
+
+
+def test_no_goal_and_no_clause_is_reported_as_not_covered_not_answered():
+    pack = load_pack(None, "hashing")
+    llm = Scripted(json.dumps({"goal": "none", "request": "inform", "clause": None,
+                               "stated": {}}))
+    controller = NeuroSymbolicController(pack, llm=MockLLMProvider())
+    controller.understanding = LLMSemanticParser(pack.program, pack.graph, pack.policies, llm,
+                                                 pack.understanding)
+    answer = controller.answer("Can I pick up order 12345 from one of your stores?",
+                               actor_email="priya@meridian.test")
+    assert answer.outcome == "insufficient"
+    assert answer.decision is None
+
+
+def test_a_parsed_goal_is_still_decided_by_the_rules_not_the_model():
+    pack = load_pack(None, "hashing")
+    llm = Scripted(json.dumps({"goal": "cancellation_allowed", "request": "decide",
+                               "stated": {}}))
+    controller = NeuroSymbolicController(pack, llm=MockLLMProvider())
+    controller.understanding = LLMSemanticParser(pack.program, pack.graph, pack.policies, llm,
+                                                 pack.understanding)
+    answer = controller.answer("Can I cancel order 12345?", actor_email="priya@meridian.test")
+    # ORD-12345 has shipped: the rules say no, whatever a model might believe.
+    assert answer.outcome == "answered" and answer.decision is False

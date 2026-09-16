@@ -102,7 +102,7 @@ class _Request:
 
 class NeuroSymbolicController:
     def __init__(self, pack: KnowledgePack | None = None, *, llm=None,
-                 ablations: frozenset[str] = frozenset()) -> None:
+                 ablations: frozenset[str] = frozenset(), understanding: str = "encoder") -> None:
         # Mechanisms switched off for the ablation study (app/hybrid/ablations.py). Always
         # empty in the deployed service.
         self.ablations = frozenset(ablations)
@@ -115,6 +115,15 @@ class NeuroSymbolicController:
             llm = get_llm()
         self.llm = llm
         self.realizer = LanguageModelRealizer(llm)
+        # How language becomes structure: by embedding similarity (offline, the default),
+        # or by the language model as a semantic parser into the pack's closed schema.
+        # Everything after understanding is identical either way.
+        self.understanding = self.pack.understanding
+        if understanding == "llm":
+            from app.neural.semantic_parser import LLMSemanticParser
+            self.understanding = LLMSemanticParser(self.program, self.graph,
+                                                   self.pack.policies, llm,
+                                                   self.pack.understanding)
 
     # =======================================================================
     def answer(self, question: str, *, actor_email: str, actor_roles: tuple[str, ...] = (),
@@ -134,7 +143,7 @@ class NeuroSymbolicController:
         view = self.graph.view_for(actor.access_kind, actor.id, self.program)
         req = _Request(actor, view, FactGrounding(self.pack, view), Verifier(self.pack, view))
 
-        interpretation = self.pack.understanding.understand(question)
+        interpretation = self.understanding.understand(question)
         route = self.router.route(interpretation)
 
         trace = ReasoningTrace(
@@ -178,9 +187,11 @@ class NeuroSymbolicController:
     def _retrieval(self, route: RouteDecision, trace: ReasoningTrace, req) -> AssistantAnswer:
         top = route.clauses[0]
         # An overview question ("what is the leave policy") is answered by every clause
-        # on the topic, not only the single closest one.
-        chosen = [c for c in route.clauses
-                  if c.score >= RETRIEVAL_ACCEPT and c.score >= top.score - 0.08][:3]
+        # on the topic, not only the single closest one. A clause the semantic parser
+        # selected has already been checked by the router and is used as chosen.
+        chosen = route.clauses[:1] if route.selected_by_parser else [
+            c for c in route.clauses
+            if c.score >= RETRIEVAL_ACCEPT and c.score >= top.score - 0.08][:3]
         conclusion = Conclusion(kind="retrieval", clauses=[
             {"id": c.clause.id, "title": c.clause.title, "document": c.clause.document,
              "text": c.clause.text} for c in chosen])
@@ -425,7 +436,7 @@ class NeuroSymbolicController:
             if result.status not in (CONDITIONAL, "unknown") or not wanted:
                 break
             asked |= wanted
-            found = self.pack.understanding.detect_inputs(interpretation, wanted,
+            found = self.understanding.detect_inputs(interpretation, wanted,
                                                           TARGETED_INPUT_THRESHOLD)
             accepted = [f for f in found if req.grounder.accept_statement(
                 grounding, f, subject, subject_type, needed, reasoner)]

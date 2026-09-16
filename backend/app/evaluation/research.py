@@ -183,7 +183,11 @@ def score(case: dict, answer: dict, world: World) -> dict[str, Any]:
     if kind in ANSWERABLE and isinstance(case["gold"]["value"], (int, float)) \
             and not isinstance(case["gold"]["value"], bool):
         supported.add(float(case["gold"]["value"]))
-    stated = numbers_in(text)
+    # Names are not claims: "Vertex 15 Laptop" states no quantity.
+    named = text
+    for entity in world.products + world.customers + world.employees:
+        named = named.replace(entity["name"], " ")
+    stated = numbers_in(named)
     unsupported_numbers = [n for n in stated if not any(_same_number(n, s) for s in supported)]
     if kind == "denied":
         # Anything specific said about a record the asker may not see is a disclosure.
@@ -262,7 +266,7 @@ def mcnemar(a: list[bool], b: list[bool]) -> dict[str, Any]:
         return {"only_a": 0, "only_b": 0, "p_value": 1.0}
     k = min(only_a, only_b)
     tail = sum(math.comb(n, i) for i in range(k + 1)) / 2 ** n
-    return {"only_a": only_a, "only_b": only_b, "p_value": round(min(1.0, 2 * tail), 6)}
+    return {"only_a": only_a, "only_b": only_b, "p_value": min(1.0, 2 * tail)}
 
 
 def compare(report: dict[str, Any], reference: str = "neurosymbolic") -> dict[str, Any]:
@@ -318,9 +322,12 @@ def run(split: str, systems: list[str], *, out_dir: Path, limit: int | None = No
 
     cases = load_frozen(split)[:limit]
     worlds = {seed: generate_world(seed) for seed in {c["world"] for c in cases}}
+    from app.evaluation.worlds import sync_rules
+
     for world in worlds.values():
         if not (WORLDS_DIR / world.name / "knowledge" / "company.yaml").exists():
             write_pack(world)
+        sync_rules(WORLDS_DIR / world.name)
     out_dir.mkdir(parents=True, exist_ok=True)
     report: dict[str, Any] = {"split": split, "cases": len(cases), "systems": {}, "not_run": {}}
     for name in systems:

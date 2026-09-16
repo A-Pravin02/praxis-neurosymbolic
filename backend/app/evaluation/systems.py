@@ -1,6 +1,11 @@
 """Systems compared by the research benchmark, each built for one knowledge pack.
 
-    neurosymbolic            the full system; answers phrased by the deterministic realizer
+    neurosymbolic            the full system, offline: embedding understanding, answers
+                             phrased by the deterministic realizer
+    ns_parser                the full system with the language model as semantic parser
+                             (the same model the LLM baselines use); decisions still symbolic
+    ns_parser_llm            ns_parser, with answers also phrased by the model
+    ns_parser_<ablation>     each ablation below, on the parser configuration
     neurosymbolic_llm        the full system; answers phrased by the language model, whose
                              wording is checked against the established conclusion
     neurosymbolic_lexical    ablation: semantic encoder replaced by lexical hashing
@@ -36,7 +41,7 @@ ABLATIONS = {
 
 
 def _neurosymbolic(*, ablations: frozenset[str] = frozenset(), realizer: str = "template",
-                   encoder: str | None = None):
+                   encoder: str | None = None, understanding: str = "encoder"):
     def build(pack):
         import time
 
@@ -46,13 +51,17 @@ def _neurosymbolic(*, ablations: frozenset[str] = frozenset(), realizer: str = "
 
         if encoder is not None:
             pack = load_pack(str(pack.directory), encoder)
-        if realizer == "llm":
-            llm = nb._llm()
-            if llm is None:
-                return None
-        else:
-            llm = MockLLMProvider("praxis-mock-1")
-        controller = NeuroSymbolicController(pack, llm=llm, ablations=ablations)
+        model = nb._llm() if "llm" in (realizer, understanding) else None
+        if "llm" in (realizer, understanding) and model is None:
+            return None
+        llm = model if realizer == "llm" else MockLLMProvider("praxis-mock-1")
+        controller = NeuroSymbolicController(pack, llm=llm, ablations=ablations,
+                                             understanding=understanding)
+        if understanding == "llm" and realizer != "llm":
+            # The parser needs the model even when answers are phrased by templates.
+            from app.neural.semantic_parser import LLMSemanticParser
+            controller.understanding = LLMSemanticParser(
+                pack.program, pack.graph, pack.policies, model, pack.understanding)
 
         def run(case: dict):
             started = time.perf_counter()
@@ -101,6 +110,11 @@ def _selfcheck(pack):
 
 BUILDERS: dict[str, Callable] = {
     "neurosymbolic": _neurosymbolic(),
+    # Same model as the LLM baselines, used only to parse the question into the schema.
+    "ns_parser": _neurosymbolic(understanding="llm"),
+    "ns_parser_llm": _neurosymbolic(understanding="llm", realizer="llm"),
+    **{f"ns_parser_{name[3:]}": _neurosymbolic(ablations=frozenset(flags), understanding="llm")
+       for name, flags in ABLATIONS.items()},
     "neurosymbolic_llm": _neurosymbolic(realizer="llm"),
     "neurosymbolic_lexical": _neurosymbolic(encoder="hashing"),
     **{name: _neurosymbolic(ablations=frozenset(flags)) for name, flags in ABLATIONS.items()},

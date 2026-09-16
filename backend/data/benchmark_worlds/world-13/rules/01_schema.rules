@@ -102,7 +102,7 @@ input return_reason(order) -> enum wrong_item "a different or incorrect product 
 input days_since_delivery(order) -> days "how many days ago the item was delivered or received"
 input claimed_amount(claim) -> money "the amount of money spent on the business trip or being claimed back"
 input travel_distance_km(claim) -> distance "how far the employee travelled on the trip"
-input travel_mode(claim) -> enum own_vehicle "the employee drove their own car or rode their own motorbike"
+input travel_mode(claim) -> enum own_vehicle "the employee travelled in their own vehicle: drove their own car or rode their own motorbike"
 input travel_mode(claim) -> enum public_transport "the employee travelled by train, bus, flight or taxi"
 input receipts_attached(claim) -> flag true "receipts, bills or invoices are available for the expenses"
 input receipts_attached(claim) -> flag false "the receipts or bills were lost, are missing, or were never kept"

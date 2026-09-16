@@ -25,8 +25,9 @@ fee.
 ## REF-2 Refund approval for returns
 
 A refund for a returned item is approved when the return was started within the
-item's return window (including any Meridian Plus extension, or the 7-day window
-for damaged, defective or wrong items) and the returned item passed inspection.
+item's return window (including any Meridian Plus extension, or the damage reporting
+period of the returns policy version that governs the order, for damaged, defective or
+wrong items) and the returned item passed inspection.
 
 ## REF-3 Refund rejection
 

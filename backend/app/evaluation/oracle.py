@@ -319,5 +319,19 @@ def supported_numbers(world: World, *records: dict, question: str = "") -> set[f
             numbers.add(float(days_since_delivery(world, record)))
         if record.get("promised_delivery"):
             numbers.add(float((world.as_of - record["promised_delivery"]).days))
+        # Intermediate quantities a correct explanation legitimately states: the fee
+        # deducted, the window that applied, the uncapped goodwill amount, and so on.
+        if "customer" in record and "product" in record:
+            numbers.add(float(return_window(world, record)))
+            numbers.add(round(float(cancellation_fee(world, record)), 2))
+            numbers.add(round(record["total"] * p["cancellation_fee_rate"], 2))
+            numbers.add(round(record["total"] * p["goodwill_rate"], 2))
+            numbers.add(float(governing_version(world, record)["damage_report_days"]))
+            if record.get("promised_delivery"):
+                numbers.add(float(delay_compensation(world, record).value))
+        if "joined_on" in record:
+            years = service_years(world, record)
+            numbers |= {round(years, 1), float(int(years)), round(years, 2)}
+            numbers.add(float(world.grades[record["grade"]]))
     numbers |= {float(n.replace(",", "")) for n in re.findall(r"\d[\d,]*(?:\.\d+)?", question)}
     return numbers

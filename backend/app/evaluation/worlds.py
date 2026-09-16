@@ -645,5 +645,21 @@ Travel claims must be submitted within {p['claim_deadline_days']} days of the tr
     return docs
 
 
+def sync_rules(root: Path) -> bool:
+    """Refresh a world's rule files from the source pack.
+
+    The rules are part of the system under test, not of the benchmark: a world freezes its
+    records, its policy text and its questions, but it is always answered by the current
+    rules. Returns True when a file changed.
+    """
+    changed = False
+    for rules in sorted((SOURCE_PACK / "rules").glob("*.rules")):
+        target = root / "rules" / rules.name
+        if not target.exists() or target.read_bytes() != rules.read_bytes():
+            shutil.copyfile(rules, target)
+            changed = True
+    return changed
+
+
 def build_all(seeds: tuple[int, ...] = DEV_SEEDS + TEST_SEEDS) -> list[Path]:
     return [write_pack(generate_world(seed)) for seed in seeds]

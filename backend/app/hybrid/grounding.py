@@ -173,9 +173,12 @@ class FactGrounding:
         explicit = [m.entity_id for m in mentions.records if m.entity_type == subject_type]
         # A mention of a related record points at the one asked about: an order id in a
         # question about a refund, a return id in a question about an order, a customer
-        # named by a support agent in a question about "their order".
+        # named by a support agent in a question about "their order". When the record
+        # itself is named by its id, other mentions only describe it: "Meera Reddy
+        # received a damaged laptop (order ORD-51089)" is about ORD-51089, and a colleague
+        # who shares the customer's name must neither widen the choice nor refuse it.
         named_person = False
-        for mention in mentions.records:
+        for mention in ([] if explicit else mentions.records):
             if mention.entity_type != subject_type and mention.entity_id != actor.id:
                 if not self._may_access(actor, mention.entity_id):
                     grounding.denied = (

@@ -31,7 +31,9 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "backend"))
 
 from app.evaluation import oracle  # noqa: E402
-from app.evaluation.worlds import DEV_SEEDS, TEST_SEEDS, generate_world, write_pack  # noqa: E402
+from app.evaluation.worlds import (  # noqa: E402
+    DEV_SEEDS, TEST_SEEDS, WORLDS_DIR, generate_world, sync_rules, write_pack,
+)
 from app.hybrid.knowledge_pack import load_pack  # noqa: E402
 from app.symbolic.reasoner import Reasoner  # noqa: E402
 
@@ -60,7 +62,11 @@ def oracle_gold(gold: oracle.Gold):
 
 def check_world(seed: int) -> tuple[Counter, list[dict]]:
     world = generate_world(seed)
-    pack = load_pack(str(write_pack(world)), "hashing")
+    root = WORLDS_DIR / world.name
+    if not (root / "knowledge" / "company.yaml").exists():
+        write_pack(world)
+    sync_rules(root)
+    pack = load_pack(str(root), "hashing")
     tally: Counter = Counter()
     disagreements: list[dict] = []
 

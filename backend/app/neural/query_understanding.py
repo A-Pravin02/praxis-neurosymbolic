@@ -77,6 +77,11 @@ class Interpretation:
     inputs: list[StatedInput] = field(default_factory=list)
     encoder: str = ""
     semantic: bool = False
+    # Set only by the language-model parser: what it chose, and a policy clause it
+    # selected for a question about what a policy says (validated to exist).
+    parse: dict | None = None
+    selected_clause: str | None = None
+    parsed: bool = False
 
     @property
     def top(self) -> IntentCandidate | None:
@@ -93,9 +98,12 @@ class Interpretation:
             "mentions": self.mentions.as_dict(),
             "stated_inputs": [i.as_dict() for i in self.inputs],
             "encoder": self.encoder, "semantic_understanding": self.semantic,
+            **({"parse": self.parse} if self.parse else {}),
         }
 
 
+_HYPOTHETICAL_CLAUSE = re.compile(r"^\s*(?:if|suppose|supposing|assuming|in case|what if)\b",
+                                  re.IGNORECASE)
 _RELATIVE = re.compile(r"\b(?:whose|who|which|that|where|because|since)\s+(.{8,})$",
                        re.IGNORECASE)
 _QUANTITY_TEXT = re.compile(
@@ -238,6 +246,10 @@ class QueryUnderstanding:
             if len(ranked) > 1 and score - ranked[1][0] < INPUT_MARGIN:
                 continue
             clause = clauses[row]
+            if self.program.is_verified_input(predicate) and _HYPOTHETICAL_CLAUSE.match(clause):
+                # "If I cancel order 41472, how much money will I get back?" imagines a
+                # case; it claims nothing, and least of all that someone approved it.
+                continue
             if value.value is None:
                 # A one-sided flag: the negation in the clause decides its value.
                 stated.append(StatedInput(predicate, not is_negated(clause), score, clause,

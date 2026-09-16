@@ -50,6 +50,8 @@ GOAL_SUGGEST = 0.45       # close enough to offer as "did you mean", not to act 
 RETRIEVAL_ACCEPT = 0.55   # a policy clause this relevant answers an informational question
 TIE_WINDOW = 0.03         # goals this close are resolved by the rule graph, not by score
 KIND_WINDOW = 0.06        # a goal of the requested kind this close to the top is preferred
+# A clause the semantic parser selected is used unless the encoder finds it unrelated.
+PARSED_CLAUSE_FLOOR = 0.40
 CASE_ACTS = {"decide", "calculate", "explain", "locate", "enumerate", "resolve", "compare"}
 # Which goal kinds can answer each kind of request.
 COMPATIBLE_KINDS = {
@@ -105,6 +107,7 @@ class RouteDecision:
     stages: list[tuple[str, str]] = field(default_factory=list)  # (layer, stage)
     clauses: list[RetrievedClause] = field(default_factory=list)
     alternatives: list["IntentCandidate"] = field(default_factory=list)
+    selected_by_parser: bool = False
 
     def as_dict(self) -> dict:
         return {
@@ -144,6 +147,9 @@ class ReasoningRouter:
         goal, score, support = self._choose_goal(interpretation)
         clauses = self.pack.policies.search(interpretation.question, k=3)
         top_clause = clauses[0].score if clauses else 0.0
+
+        if interpretation.parsed and goal is None:
+            return self._parsed_without_goal(interpretation, neural_reason)
 
         # An informational question is answered from policy text, even if it is about a
         # topic a goal also covers: "what is the leave policy" asks what the policy
@@ -187,6 +193,28 @@ class ReasoningRouter:
 
         return self._reasoning(goal, score, support, act, interpretation, clauses,
                                neural_reason)
+
+    def _parsed_without_goal(self, interpretation, neural_reason) -> RouteDecision:
+        """The semantic parser found no goal: a policy clause, a knowledge gap, or chat.
+
+        The parser's "none" is an answer, not a failure to be rescued by similarity: the
+        nearest goal is exactly what it has ruled out. A policy clause it selected is still
+        checked - it must exist, be in force, and not be unrelated to the question by the
+        encoder's measure - before its text is used.
+        """
+        selected = interpretation.selected_clause
+        if selected:
+            ranked = self.pack.policies.search(interpretation.question,
+                                               k=len(self.pack.policies.clauses))
+            chosen = [c for c in ranked if c.clause.id == selected]
+            if chosen and chosen[0].score >= PARSED_CLAUSE_FLOOR:
+                decision = self._retrieval(chosen, neural_reason)
+                decision.selected_by_parser = True
+                return decision
+        if self._off_topic(interpretation):
+            return self._general(interpretation, neural_reason)
+        clauses = self.pack.policies.search(interpretation.question, k=3)
+        return self._insufficient(interpretation, clauses, neural_reason)
 
     # -- topicality ---------------------------------------------------------
     def _domain_vocabulary(self) -> set[str]:
