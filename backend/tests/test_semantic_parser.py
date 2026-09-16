@@ -38,8 +38,10 @@ def test_an_undeclared_goal_is_never_coerced_to_the_nearest_one():
     parser, _ = _parser(json.dumps({"goal": "loyalty_points", "request": "calculate",
                                     "stated": {}}))
     interpretation = parser.understand("How many loyalty points did I earn on order 12345?")
-    assert interpretation.candidates == []
-    assert interpretation.parsed
+    # Not coerced to any goal by the parser: an undeclared name is a failed parse, and
+    # understanding falls back rather than inventing a "loyalty_points" goal.
+    assert not interpretation.parsed
+    assert "loyalty_points" not in [c.name for c in interpretation.candidates]
 
 
 def test_a_declared_goal_is_taken_with_its_schema_kind():
@@ -105,3 +107,17 @@ def test_a_parsed_goal_is_still_decided_by_the_rules_not_the_model():
     answer = controller.answer("Can I cancel order 12345?", actor_email="priya@meridian.test")
     # ORD-12345 has shipped: the rules say no, whatever a model might believe.
     assert answer.outcome == "answered" and answer.decision is False
+
+
+def test_a_misspelt_goal_name_is_repaired_by_spelling_alone():
+    parser, _ = _parser(json.dumps({"goal": "cancelation_allowed", "request": "decide",
+                                    "stated": {}}))
+    interpretation = parser.understand("Can order 22003 still be cancelled?")
+    assert [c.name for c in interpretation.candidates] == ["cancellation_allowed"]
+
+
+def test_an_invalid_goal_is_a_parse_failure_not_a_judgement_that_nothing_covers_it():
+    parser, _ = _parser(json.dumps({"goal": "SUP-3", "request": "resolve", "stated": {}}))
+    interpretation = parser.understand("How much goodwill credit can order 12349 get?")
+    assert not interpretation.parsed
+    assert "fallback" in interpretation.encoder

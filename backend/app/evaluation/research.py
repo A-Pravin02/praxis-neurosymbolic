@@ -253,6 +253,7 @@ def summarise(rows: list[dict]) -> dict[str, Any]:
         "answers_with_unsupported_number": _metric(rows, lambda r: r["unsupported_numbers"] > 0),
         "numbers_stated": numbers,
         "unsupported_number_share": round(unsupported / numbers, 4) if numbers else None,
+        "parse_failure_rate": _metric(rows, lambda r: r.get("parse_failed")),
         "mean_latency_ms": round(_mean([r["latency_ms"] for r in rows]) or 0.0, 1),
     }
 
@@ -357,6 +358,12 @@ def run(split: str, systems: list[str], *, out_dir: Path, limit: int | None = No
             answer = answer if isinstance(answer, Answer) else _from_system_answer(answer)
             row = score(case, answer.as_dict(), worlds[case["world"]])
             row["raw"] = answer.raw[:1500]
+            # A model reply the structured-output contract could not read. Scored from
+            # whatever text there was, and reported so a baseline's losses to formatting
+            # are visible rather than hidden inside its accuracy.
+            from app.evaluation.ns_benchmark import _parse_json
+            row["parse_failed"] = bool(answer.raw) and not _parse_json(
+                answer.raw.split("REVISED:")[-1])
             return row
 
         with path.open("a", encoding="utf-8") as sink:

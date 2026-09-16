@@ -40,6 +40,25 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def _hide_vision_packages() -> None:
+    """Keep transformers from importing torchvision/torchaudio, which a text model never uses.
+
+    A machine whose torchvision was built for a different torch fails inside transformers'
+    import of *any* model class ("operator torchvision::nms does not exist"). Hiding the two
+    packages from this process avoids changing the machine's installed packages.
+    """
+    import importlib.util
+
+    real = importlib.util.find_spec
+
+    def find_spec(name, *args, **kwargs):
+        if name.split(".")[0] in ("torchvision", "torchaudio"):
+            return None
+        return real(name, *args, **kwargs)
+
+    importlib.util.find_spec = find_spec
+
+
 class Generator:
     def __init__(self, path: str, *, four_bit: bool, batch: int, window_ms: int,
                  cache: Path) -> None:
@@ -198,7 +217,8 @@ def main() -> None:
     parser.add_argument("--window-ms", type=int, default=40)
     parser.add_argument("--cache")
     args = parser.parse_args()
-    cache = Path(args.cache) if args.cache else \
+    _hide_vision_packages()
+    cache =Path(args.cache) if args.cache else \
         ROOT / "eval_reports" / "llm_cache" / f"{Path(args.model).name}.sqlite"
     generator = Generator(args.model, four_bit=args.four_bit, batch=args.batch,
                           window_ms=args.window_ms, cache=cache)

@@ -28,6 +28,7 @@ exactly that input, with its declared values, and nothing else.
 """
 from __future__ import annotations
 
+import difflib
 import json
 import re
 from typing import TYPE_CHECKING, Any
@@ -125,9 +126,19 @@ class LLMSemanticParser:
             interpretation.encoder = f"{self.name} (fallback: {self.fallback.encoder.name})"
             return interpretation
 
-        goal = str(parsed.get("goal") or "none")
+        goal = self._spelling(str(parsed.get("goal") or "none"))
         request = str(parsed.get("request") or "")
         candidates = self._candidate(goal)
+        if not candidates and goal.lower() != "none":
+            # Not a declared goal and not "none": the parse failed. That is different from
+            # the parser judging the question out of scope, and must not be reported as
+            # "not covered" - understanding falls back to the embedding interpreter.
+            log_event(logger, 30, "semantic parser named an undeclared goal; using embeddings",
+                      goal=goal[:60])
+            interpretation = self.fallback.understand(question)
+            interpretation.encoder = f"{self.name} (fallback: {self.fallback.encoder.name})"
+            interpretation.parse = {"raw": raw[:800], "goal": goal, "invalid_goal": True}
+            return interpretation
         if request not in REQUESTS:
             request = self.fallback.intents.speech_act(question).label
         interpretation = Interpretation(
@@ -167,6 +178,20 @@ class LLMSemanticParser:
         return [f for f in found if f.predicate in wanted and f.predicate not in known]
 
     # -- validation -----------------------------------------------------------------------
+    def _spelling(self, name: str) -> str:
+        """Repair a misspelt declared name ("cancelation_allowed"), and nothing else.
+
+        This is string repair, not interpretation: a name is replaced only when exactly one
+        declared goal is nearly identical in spelling. A name that is merely similar in
+        meaning is left invalid.
+        """
+        declared = list(self.program.goals) + list(self.program.lookups)
+        if name in declared or name.lower() == "none":
+            return name
+        close = difflib.get_close_matches(name.strip().strip('"').lower(), declared, n=2,
+                                          cutoff=0.9)
+        return close[0] if len(close) == 1 else name
+
     def _candidate(self, goal: str) -> list[IntentCandidate]:
         program = self.program
         if goal in program.goals:
