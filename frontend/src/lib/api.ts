@@ -440,4 +440,27 @@ export const copilot = {
     }>("/copilot/rules/test", { method: "POST", body: payload }),
   access: () => request<{ grants: { kind: string; scope: string; types: string[] }[]; roles: Record<string, string[]> }>("/copilot/access"),
   evaluation: () => request<{ runs: CopilotEvaluationRun[] }>("/copilot/evaluation"),
+  compareStatus: () => request<{ available: boolean; model: string; reason: string | null }>("/copilot/compare"),
+  compare: (question: string) =>
+    request<CompareResult>("/copilot/compare", { method: "POST", body: { question } }),
 };
+
+export interface CompareFlag { kind: "contradicts_rules" | "unsupported_answer" | "unsupported_number"; detail: string }
+export interface CompareSystem {
+  key: "llm_only" | "llm_rag" | "praxis";
+  label: string;
+  text: string;
+  outcome: string;
+  decision: boolean | null;
+  value: number | string | null;
+  sources: string[];
+  latency_ms: number;
+  flags: CompareFlag[];
+  decision_label?: string;
+  pipeline?: string;
+  verification?: { status: string; passed: boolean | null; checks: { check: string; passed: boolean; detail: string }[] };
+  claims?: import("./types").NsClaim[];
+  rules_applied?: { code: string; name: string }[];
+  policy_versions?: { name: string; basis: string }[];
+}
+export interface CompareResult { question: string; model: string; systems: CompareSystem[] }

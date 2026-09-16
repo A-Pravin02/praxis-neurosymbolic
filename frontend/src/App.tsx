@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import AdminView from "./components/AdminView";
+import LabView from "./components/LabView";
 import AuthView from "./components/AuthView";
 import ChatView from "./components/ChatView";
 import DocumentsView from "./components/DocumentsView";
@@ -31,7 +32,7 @@ export default function App() {
   const [pipelineMode, setPipelineMode] = useState<PipelineMode>("neurosymbolic");
   const [error, setError] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [view, setView] = useState<"chat" | "admin">("chat");
+  const [view, setView] = useState<"chat" | "admin" | "lab">("chat");
   const lastQuestion = useRef<string>("");
 
   useEffect(() => api.onSessionChange((session) => setUser(session?.user ?? null)), []);
@@ -243,6 +244,11 @@ export default function App() {
         </div>
 
         <div className="sidebar-footer">
+          {copilotWorkspace && (
+            <button className="link-button" onClick={() => { setView("lab"); setPanel(null); setSidebarOpen(false); }}>
+              Reliability lab
+            </button>
+          )}
           {canAdminister && (
             <button className="link-button" onClick={() => { setView("admin"); setPanel(null); setSidebarOpen(false); }}>
               Knowledge &amp; reliability
@@ -274,6 +280,10 @@ export default function App() {
       {view === "admin" ? (
         <main className="main">
           <AdminView onClose={() => setView("chat")} />
+        </main>
+      ) : view === "lab" ? (
+        <main className="main">
+          <LabView onClose={() => setView("chat")} />
         </main>
       ) : (
       <main className="main">

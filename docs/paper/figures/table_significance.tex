@@ -1,0 +1,10 @@
+\begin{tabular}{llrrrrr}
+\toprule
+Reference & System & $n_{10}$ & $n_{01}$ & $p$ (accuracy) & $n_{10}$ & $p$ (hallucination) \\
+\midrule
+Praxis (offline encoder) · dev-iter0 & Extractive RAG · dev-iter0 & 123 & 0 & 1.9e-37 & 9 & 0.8 \\
+Praxis (offline encoder) · dev-iter0 & Praxis (offline encoder) · dev-iter1 & 0 & 5 & 0.062 & 0 & 1 \\
+Praxis (offline encoder) · dev-iter1 & Praxis (offline encoder) · dev-iter0 & 5 & 0 & 0.062 & 0 & 1 \\
+Praxis (offline encoder) · dev-iter1 & Extractive RAG · dev-iter0 & 128 & 0 & 5.9e-39 & 9 & 0.8 \\
+\bottomrule
+\end{tabular}

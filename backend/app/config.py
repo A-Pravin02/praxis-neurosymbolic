@@ -55,6 +55,10 @@ class Settings(BaseSettings):
     llm_temperature: float = 0.2
     llm_max_tokens: int = 1024
     llm_timeout_seconds: float = 60.0
+    # How the neuro-symbolic assistant turns a question into structure: "encoder" (embedding
+    # similarity, offline), "llm" (the language model as a semantic parser into the pack's
+    # closed schema), or "auto" - the parser whenever a real model is configured.
+    understanding: Literal["auto", "encoder", "llm"] = "auto"
 
     # --- neuro-symbolic enterprise assistant ---
     # "semantic" loads a real sentence-embedding model (ONNX, runs offline once

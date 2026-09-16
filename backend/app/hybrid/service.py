@@ -108,6 +108,9 @@ def _controller():
     current = knowledge_store.revision(default_pack_dir())
     if _CACHE["controller"] is None or _CACHE["revision"] != current:
         load_pack.cache_clear()
-        _CACHE["controller"] = NeuroSymbolicController()
+        mode = settings.understanding
+        if mode == "auto":
+            mode = "encoder" if settings.llm_provider == "mock" else "llm"
+        _CACHE["controller"] = NeuroSymbolicController(understanding=mode)
         _CACHE["revision"] = current
     return _CACHE["controller"]

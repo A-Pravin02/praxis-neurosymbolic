@@ -26,7 +26,7 @@ from app.hybrid import knowledge_store as store
 from app.hybrid import service as ns_service
 from app.hybrid.knowledge_pack import default_pack_dir
 from app.tenancy.permissions import (
-    AUDIT_READ, FACT_READ, FACT_WRITE, POLICY_READ, ROLE_TEMPLATES, RULE_READ, RULE_WRITE,
+    AUDIT_READ, CHAT_USE, FACT_READ, FACT_WRITE, POLICY_READ, ROLE_TEMPLATES, RULE_READ, RULE_WRITE,
 )
 
 router = APIRouter(prefix="/copilot", tags=["copilot"])
@@ -65,6 +65,10 @@ class EntityChange(BaseModel):
     type: str = Field(max_length=40)
     name: str | None = Field(default=None, max_length=200)
     attributes: dict[str, Any] = Field(default_factory=dict)
+
+
+class CompareRequest(BaseModel):
+    question: str = Field(min_length=2, max_length=2000)
 
 
 class RuleTest(BaseModel):
@@ -415,3 +419,34 @@ def _shown(pack, predicate: str, value: Any) -> Any:
 
     value_type = pack.program.value_type(predicate)
     return format_value(value, value_type, graph=pack.graph) if value_type == "date" else value
+
+
+# ---------------------------------------------------------------------------
+# reliability lab: one question, three systems
+# ---------------------------------------------------------------------------
+
+@router.get("/compare", dependencies=[Depends(require_permissions(CHAT_USE)), pack_tenant])
+def compare_status() -> dict[str, Any]:
+    from app.config import settings
+    from app.hybrid import compare
+
+    return {"available": compare.available(), "model": settings.llm_model,
+            "reason": None if compare.available() else
+            "No language model is configured, so there is nothing to compare against."}
+
+
+@router.post("/compare", dependencies=[Depends(require_permissions(CHAT_USE)), pack_tenant])
+def compare_answers(body: CompareRequest, principal: CurrentPrincipal, db: DbSession,
+                    request: Request) -> dict[str, Any]:
+    from app.hybrid import compare
+
+    if not compare.available():
+        raise ValidationError("No language model is configured; the comparison is never "
+                              "simulated.")
+    result = compare.compare(body.question, email=principal.email,
+                             roles=tuple(sorted(principal.roles)),
+                             controller=ns_service._controller())
+    audit.record(db, "copilot.compare", tenant_id=principal.tenant_id,
+                 actor_user_id=principal.user_id, outcome="success", client_ip=client_ip(request),
+                 detail={"flags": {s["key"]: len(s["flags"]) for s in result["systems"]}})
+    return result

@@ -1739,3 +1739,31 @@ button.citation-chip:hover {
 .primary-button:disabled { opacity: 0.5; cursor: not-allowed; }
 .admin-trace { margin-top: 16px; }
 .admin-trace-head { display: flex; justify-content: space-between; align-items: center; }
+
+/* --- reliability lab ------------------------------------------------------------------ */
+.lab-note { background: var(--warn-soft); border: 1px solid var(--warn); color: var(--text);
+  border-radius: 10px; padding: 10px 14px; margin-top: 16px; }
+.lab-ask { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+.lab-ask textarea { flex: 1 1 320px; min-width: 0; resize: vertical; font: inherit; padding: 10px 12px;
+  border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text); }
+.lab-ask .primary-button { align-self: stretch; padding-inline: 20px; }
+.lab-suggestions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.lab-suggestions .lab-suggestion { text-align: left; white-space: normal; max-width: 100%; }
+.lab-error { color: var(--danger); margin-top: 12px; }
+.lab-summary { margin: 20px 0 10px; font-weight: 600; }
+.lab-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 14px; }
+.lab-card { border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 14px 16px; background: var(--bg-elevated);
+  display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.lab-card.flagged { border-color: var(--danger); }
+.lab-card.praxis { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
+.lab-card-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.lab-card-head h2 { margin: 0; font-size: 15px; }
+.lab-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip-static { font-size: 12px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); }
+.chip-static.strong { font-weight: 600; border-color: var(--accent); }
+.lab-answer { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.5; }
+.lab-flags { margin: 0; padding: 8px 10px 8px 26px; color: var(--text); background: var(--danger-soft); border-radius: var(--radius-sm); }
+.lab-flags li + li { margin-top: 4px; }
+.lab-clear { margin: 0; font-size: 13px; }
+.lab-evidence h3 { font-size: 13px; margin: 6px 0 4px; }
+.lab-evidence ul { margin: 0; padding-left: 18px; font-size: 13px; }
