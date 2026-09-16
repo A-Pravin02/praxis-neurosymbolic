@@ -12,7 +12,16 @@ So the router decides, and records why:
     C  Multi-hop reasoning   an explanation that follows relations to a failed condition
     D  Calculation           an amount computed by rule arithmetic
     E  Clarification         the question cannot be pinned to one goal or one record
-    F  Insufficient knowledge nothing in the company knowledge covers it
+    F  Insufficient knowledge the question is about the company, but nothing covers it
+    G  General conversation  the question is not about the company at all
+
+The last two are different failures and deserve different answers. "What is the
+escalation window for a damaged laptop?" is a company question the knowledge pack does
+not cover, and saying so is the honest answer - guessing would invent policy. "Who won
+the 2018 World Cup?" is not a company question at all, and answering it from the
+company knowledge base is a category error: there is no policy to invent, so the
+language model answers it as an ordinary assistant would, labelled as its own knowledge
+rather than as anything this company recorded.
 
 The decision uses two neural signals - which goal the question is closest to, and what
 kind of answer is wanted - and one symbolic one: the *structure of the rule base* for
@@ -68,6 +77,7 @@ class Pipeline(str, Enum):
     CALCULATION = "D"
     CLARIFICATION = "E"
     INSUFFICIENT = "F"
+    GENERAL = "G"
 
     @property
     def label(self) -> str:
@@ -78,6 +88,7 @@ class Pipeline(str, Enum):
             "D": "Calculation",
             "E": "Clarification",
             "F": "Insufficient knowledge",
+            "G": "General conversation",
         }[self.value]
 
 
@@ -114,6 +125,7 @@ class ReasoningRouter:
     def __init__(self, pack: "KnowledgePack") -> None:
         self.pack = pack
         self.program = pack.program
+        self._vocabulary: set[str] | None = None
 
     # -- public -------------------------------------------------------------
     def route(self, interpretation: "Interpretation") -> RouteDecision:
@@ -140,6 +152,8 @@ class ReasoningRouter:
             if top_clause >= RETRIEVAL_ACCEPT:
                 return self._retrieval(clauses, neural_reason)
             if goal is None:
+                if self._off_topic(interpretation):
+                    return self._general(interpretation, neural_reason)
                 return self._insufficient(interpretation, clauses, neural_reason)
 
         if goal is None:
@@ -148,6 +162,13 @@ class ReasoningRouter:
             # whether the person meant a refund.
             if top_clause >= RETRIEVAL_ACCEPT + 0.03:
                 return self._retrieval(clauses, neural_reason)
+            # Before offering company goals as "did you mean", check the question is
+            # about the company at all. Embedding similarity alone will happily rank
+            # order-tracking as the nearest neighbour of "write me a haiku", and
+            # answering an ordinary conversational question with a menu of refund
+            # goals is worse than useless - it is the assistant refusing to talk.
+            if self._off_topic(interpretation):
+                return self._general(interpretation, neural_reason)
             suggestions = [c for c in interpretation.candidates if c.score >= GOAL_SUGGEST]
             if suggestions:
                 return RouteDecision(
@@ -166,6 +187,54 @@ class ReasoningRouter:
 
         return self._reasoning(goal, score, support, act, interpretation, clauses,
                                neural_reason)
+
+    # -- topicality ---------------------------------------------------------
+    def _domain_vocabulary(self) -> set[str]:
+        """Every word the company's own knowledge uses.
+
+        Drawn from the knowledge pack itself, never from a hand-written list of
+        "support words": policy text, goal descriptions, and the schema's predicate
+        and entity names. A pack for a different company yields a different
+        vocabulary with no code change, which is the whole point of the pack.
+
+        Entity labels are deliberately excluded. Whether a customer name appears in
+        the graph is a fact about the records, and topicality is decided before
+        authorization has admitted anything - a test that consulted labels would
+        answer differently for people allowed to see different records.
+        """
+        if self._vocabulary is None:
+            words = set(self.pack.policies.vocabulary())
+            program = self.program
+            for name, goal in program.goals.items():
+                words |= _content(goal.description)
+                words |= _content(name)
+            for name, lookup in program.lookups.items():
+                words |= _content(lookup.description)
+                words |= _content(name)
+            for name in list(program.attributes) + list(program.entity_types):
+                words |= _content(name)
+            self._vocabulary = {w for w in words if len(w) > 2}
+        return self._vocabulary
+
+    def _off_topic(self, interpretation: "Interpretation") -> bool:
+        """True when nothing in the question connects it to this company's knowledge.
+
+        A strict test, and deliberately so: one shared content word is enough to keep
+        a question in the company pipeline, because a paraphrase the encoder should
+        handle ("can I send this back?") almost always shares one. It only fires when
+        the question's subject matter is absent from the pack entirely, which is when
+        a goal match can only be an artefact of embedding distance.
+        """
+        if interpretation.mentions.records or interpretation.mentions.products:
+            return False
+        if interpretation.inputs:
+            return False
+        words = _content(interpretation.question) - _FUNCTION_WORDS
+        if not words:
+            # No content word at all ("hello", "thanks"). There is nothing to
+            # reason about, and small talk is not a knowledge gap.
+            return True
+        return not (words & self._domain_vocabulary())
 
     # -- goal selection -----------------------------------------------------
     def _choose_goal(self, interpretation: "Interpretation"):
@@ -254,6 +323,22 @@ class ReasoningRouter:
                     ("NEURAL", "Semantic retrieval of policy clauses"),
                     ("HYBRID", "Check the retrieved clauses are relevant enough to answer"),
                     ("NEURAL", "Compose the answer from the clauses, with citations")],
+        )
+
+    def _general(self, interpretation, neural_reason) -> RouteDecision:
+        return RouteDecision(
+            Pipeline.GENERAL,
+            "The question is not about this company: none of its words appear anywhere in "
+            "the company's policies, rules or schema, so there is no policy to apply and "
+            "no record to consult. The language model answers it from its own knowledge, "
+            "and the answer is labelled as such - it carries no citation and no verification, "
+            "because there is nothing here to verify it against.",
+            symbolic_required=False,
+            symbolic_reason="No company policy, rule or record bears on the question.",
+            neural_reason=neural_reason,
+            stages=[("NEURAL", "Understand the question"),
+                    ("HYBRID", "Establish that the question is outside the company knowledge"),
+                    ("NEURAL", "Answer from the model's general knowledge, uncited")],
         )
 
     def _insufficient(self, interpretation, clauses, neural_reason) -> RouteDecision:
@@ -424,9 +509,18 @@ _FUNCTION_WORDS = {
 }
 
 
+def _content(text: str) -> set[str]:
+    """The distinct content words of a piece of text, function words included.
+
+    Splits on anything non-alphanumeric so `return_allowed` yields both halves and a
+    predicate name compares against ordinary prose.
+    """
+    words = "".join(ch.lower() if ch.isalnum() else " " for ch in text).split()
+    return {w for w in words if len(w) > 2}
+
+
 def _content_words(question: str) -> int:
-    words = [w for w in "".join(ch.lower() if ch.isalnum() else " " for ch in question).split()]
-    return sum(1 for w in words if w not in _FUNCTION_WORDS and len(w) > 2)
+    return len(_content(question) - _FUNCTION_WORDS)
 
 
 _ACT_PHRASE = {

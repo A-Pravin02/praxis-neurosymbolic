@@ -3,7 +3,7 @@
     question
       -> SECURITY  authorize: the person's view of the knowledge graph, before anything else
       -> NEURAL    understand: goal candidates, speech act, entities, stated inputs
-      -> HYBRID    route: choose pipeline A-F from the question and the rule base
+      -> HYBRID    route: choose pipeline A-G from the question and the rule base
       -> SYMBOLIC  ground: resolve the record, validate statements against records
       -> SYMBOLIC  reason: three-valued rule evaluation over the authorized graph, with the
                    policy version in force on the case's date
@@ -28,7 +28,7 @@ import time
 from dataclasses import dataclass, field
 from typing import Any
 
-from app.core.logging import get_logger
+from app.core.logging import get_logger, log_event
 from app.hybrid import gaps
 from app.hybrid.claims import check_policy_claims
 from app.hybrid.grounding import Actor, FactGrounding, Grounding
@@ -56,7 +56,8 @@ class AssistantAnswer:
     answer: str
     pipeline: str
     pipeline_label: str
-    outcome: str        # answered | conditional | clarification | insufficient | denied | needs_review
+    outcome: str        # answered | conditional | clarification | insufficient | denied |
+    #                    needs_review | general
     confidence: float
     sources: list[dict[str, Any]] = field(default_factory=list)
     explanation: list[str] = field(default_factory=list)
@@ -108,6 +109,7 @@ class NeuroSymbolicController:
         if llm is None:
             from app.neuro.registry import get_llm
             llm = get_llm()
+        self.llm = llm
         self.realizer = LanguageModelRealizer(llm)
 
     # =======================================================================
@@ -139,7 +141,9 @@ class NeuroSymbolicController:
         )
 
         goal = route.goal
-        if route.pipeline is Pipeline.INSUFFICIENT:
+        if route.pipeline is Pipeline.GENERAL:
+            result = self._general(question, route, trace, context)
+        elif route.pipeline is Pipeline.INSUFFICIENT:
             result = self._insufficient(interpretation, route, trace, req)
         elif route.pipeline is Pipeline.CLARIFICATION and goal is None:
             result = self._clarify_intent(interpretation, route, trace)
@@ -195,6 +199,77 @@ class NeuroSymbolicController:
                 f"Chose {route.pipeline.label} because no decision about a specific case was "
                 f"asked for.",
             ])
+
+    # =======================================================================
+    # Pipeline G: general conversation
+    # =======================================================================
+    def _general(self, question: str, route: RouteDecision, trace: ReasoningTrace,
+                 context: dict | None) -> AssistantAnswer:
+        """Answer an ordinary question from the model's own knowledge.
+
+        Nothing here is verified, and the answer says so rather than borrowing the
+        credibility of the verified path: no citation, no rule, no confidence meter
+        derived from evidence that does not exist. The reason for answering at all is
+        that refusing is not honest either - the assistant has no company knowledge to
+        protect on this question, only a conversation to hold.
+
+        The symbolic layer is untouched. A question that reaches here has already been
+        established to share no vocabulary with the company's policies, rules or
+        schema, so there is no conclusion for a model to contradict.
+        """
+        text, model_answered = self._general_text(question)
+        trace.reasoning_steps = [
+            "Compared the question's words with the company's policies, rules and schema: "
+            "none of them appear there.",
+            "Concluded the question is not about the company, so no policy applies and no "
+            "record is relevant.",
+            ("Answered from the language model's general knowledge." if model_answered
+             else "The configured provider had no general answer to give."),
+            "Did not cite or verify: there is no company evidence this answer could rest on.",
+        ]
+        # Deliberately no verification report. The checks compare an answer against
+        # company facts, and reporting "passed" for an answer with no facts behind it
+        # would make an unverified answer look verified in every consumer of the API.
+        trace.verification = {}
+        trace.confidence = 0.0
+        return AssistantAnswer(
+            answer=text, pipeline=route.pipeline.value, pipeline_label=route.pipeline.label,
+            outcome="general", confidence=0.0,
+            decision_label="General knowledge", decision_kind="information",
+            context=self._context(context, "", ""),
+            explanation=[
+                "Recognised the question as general conversation, not a question about "
+                f"{self.graph.display_name('meridian')}.",
+                "Used no policy, rule or record, because none applies.",
+                "Answered from the language model's own knowledge, which is not verified "
+                "and carries no citation.",
+            ])
+
+    def _general_text(self, question: str) -> tuple[str, bool]:
+        from app.neuro import prompts
+        from app.neuro.base import CompletionRequest, Message, Role, Task
+
+        unavailable = (
+            "That one isn't about "
+            f"{self.graph.display_name('meridian')}, so there's no policy or record for me "
+            "to answer it from — and this deployment is running the offline deterministic "
+            "provider, which has no general knowledge of its own. Configure a language "
+            "model (LLM_PROVIDER) and I can answer questions like this conversationally. "
+            "Questions about policies, orders and entitlements work either way."
+        )
+        request = CompletionRequest(
+            task=Task.DIRECT_ANSWER, system=prompts.DIRECT_SYSTEM,
+            messages=[Message(Role.USER, question)],
+        )
+        try:
+            completion = self.llm.complete(request)
+        except Exception as exc:  # noqa: BLE001 - any provider failure degrades to saying so
+            log_event(logger, 30, "general-conversation provider failed",
+                      error=type(exc).__name__)
+            return unavailable, False
+        if completion.finish_reason == "no_answer" or not completion.text.strip():
+            return unavailable, False
+        return completion.text.strip(), True
 
     # =======================================================================
     # Pipeline F / E without a goal

@@ -9,6 +9,9 @@ const OUTCOME: Record<string, { label: string; tone: string }> = {
   insufficient: { label: "Not covered by company knowledge", tone: "info" },
   denied: { label: "Access refused", tone: "danger" },
   needs_review: { label: "Withheld for review", tone: "danger" },
+  // Answered, but from the model's own knowledge. The kicker has to say so: this is the
+  // one card on which nothing was checked against a policy, a rule or a record.
+  general: { label: "General knowledge · not company-verified", tone: "info" },
 };
 
 const LAYER_HINT: Record<NsLayer, string> = {

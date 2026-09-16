@@ -145,8 +145,16 @@ def test_an_issue_the_playbook_does_not_route_is_a_logged_gap_not_a_guess():
 
 
 def test_an_uncovered_topic_names_what_is_missing():
-    answer = ask("What is the capital of France?", "priya@meridian.test")
+    answer = ask("What is the noise limit for a delivery van?", "priya@meridian.test")
     assert answer.knowledge_gap["type"] == "uncovered_topic"
+
+
+def test_general_conversation_is_not_logged_as_a_knowledge_gap():
+    # A gap is a prompt to an administrator to add knowledge. Filing "who won the
+    # world cup" as one would bury the real gaps under questions no policy can answer.
+    answer = ask("Who won the 2018 football world cup?", "priya@meridian.test")
+    assert answer.pipeline == "G"
+    assert answer.knowledge_gap is None
 
 
 # --- the verification gate -------------------------------------------------------------------

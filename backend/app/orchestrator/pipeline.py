@@ -838,12 +838,25 @@ class Orchestrator:
                                         context=context,
                                         system=prompts.DIRECT_SYSTEM, grounded=False)
             if self.last_finish_reason == "no_answer":
-                # Say why there is no answer. The provider's own wording blames
-                # the model ("configure a cloud provider"), which is misleading
-                # when the real reason is that the corpus does not cover the
-                # topic - the user goes looking for a settings problem instead of
-                # adding the document that would answer them.
-                if spans:
+                # Say why there is no answer, and say it accurately: two different
+                # things produce a decline here and they need opposite advice. A
+                # real model that will not answer from the corpus is a knowledge
+                # gap, and the fix is to add the document. The deterministic
+                # offline provider declines because it holds no general knowledge
+                # to answer from at all, and blaming the corpus for that sends the
+                # user hunting for a missing document that was never the problem.
+                if self.llm.name == "mock":
+                    turn.answer = (
+                        "I can't answer that one. Nothing in your workspace "
+                        "documents covers it, and this deployment is running the "
+                        "offline deterministic provider, which has no general "
+                        "knowledge of its own to fall back on. Configure a model "
+                        "(LLM_PROVIDER) and general questions like this get "
+                        "answered conversationally; questions about your policies "
+                        "and records are answered from the knowledge base either "
+                        "way."
+                    )
+                elif spans:
                     turn.answer = (
                         "I don't have anything in your workspace documents that "
                         "answers that. I searched and found the closest passages, "

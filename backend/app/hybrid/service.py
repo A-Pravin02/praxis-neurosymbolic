@@ -22,7 +22,10 @@ from app.tenancy.context import Principal
 
 _GATE = {"answered": "ANSWER", "conditional": "ANSWER_WITH_CAVEAT",
          "clarification": "ABSTAIN", "insufficient": "ABSTAIN", "denied": "DENY",
-         "needs_review": "ABSTAIN"}
+         "needs_review": "ABSTAIN",
+         # General conversation is answered, but never as an evidence-backed answer:
+         # the caveat is the point, and every consumer reads it from here.
+         "general": "ANSWER_WITH_CAVEAT"}
 _SLUGS: dict[uuid.UUID, str | None] = {}
 
 
@@ -53,7 +56,8 @@ def answer(principal: Principal, question: str, context: dict[str, Any]) -> Assi
     result = _controller().answer(question, actor_email=principal.email,
                                   actor_roles=tuple(sorted(principal.roles)), context=context)
     verification = result.trace.get("verification") or {}
-    status = ("INSUFFICIENT_EVIDENCE" if result.outcome == "insufficient"
+    status = ("UNVERIFIED" if result.outcome == "general"
+              else "INSUFFICIENT_EVIDENCE" if result.outcome == "insufficient"
               else "NOT_APPLICABLE" if result.outcome in ("clarification", "denied")
               else "NEEDS_REVIEW" if result.outcome == "needs_review"
               else "VERIFIED" if verification.get("passed") else "UNVERIFIED")

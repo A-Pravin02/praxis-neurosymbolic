@@ -146,7 +146,10 @@ export interface AssistantTurn {
 
 // --- neuro-symbolic assistant -------------------------------------------------------
 
-export type NsOutcome = "answered" | "conditional" | "clarification" | "insufficient" | "denied" | "needs_review";
+export type NsOutcome =
+  | "answered" | "conditional" | "clarification" | "insufficient" | "denied" | "needs_review"
+  // Answered from the model's general knowledge, outside the company knowledge base.
+  | "general";
 export type NsLayer = "NEURAL" | "SYMBOLIC" | "HYBRID";
 
 export interface NsSource {

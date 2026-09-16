@@ -37,7 +37,7 @@ flowchart TD
         direction LR
         RET["NEURAL<br/>A · Retrieval<br/>policy clauses, records"]:::neural
         SYM["SYMBOLIC<br/>B · C · D · Rule engine<br/>three-valued reasoner"]:::symbolic
-        CLR["HYBRID<br/>E · Clarification<br/>F · Insufficient knowledge"]:::hybrid
+        CLR["HYBRID<br/>E · Clarification<br/>F · Insufficient knowledge<br/>G · General conversation"]:::hybrid
     end
 
     KB[("Knowledge base<br/>policies/*.md")]:::symbolic
@@ -52,7 +52,7 @@ flowchart TD
     U --> NLU --> IE --> R
     R -->|information| RET
     R -->|decision · explanation · amount| G
-    R -->|ambiguous · not covered| CLR
+    R -->|ambiguous · not covered · off-topic| CLR
     RET --- KB
     G --> SYM
     SYM --- KG
@@ -164,7 +164,19 @@ router selects:
 | **C** Multi-hop | why an outcome happened | "Why was my refund rejected?" |
 | **D** Calculation | an amount | "How much will I be reimbursed for ₹8,750?" |
 | **E** Clarification | several goals or records fit | "Can I cancel it?" (two orders) |
-| **F** Insufficient | nothing in the knowledge covers it | "What is the capital of France?" |
+| **F** Insufficient | a company question nothing in the knowledge covers | "What is the noise limit for a delivery van?" |
+| **G** General conversation | not a company question at all | "Who won the 2018 World Cup?" |
+
+**F and G are different failures.** F is a knowledge gap: the question is about the
+company, the pack does not cover it, and the honest answer names what is missing and
+logs the gap for an administrator. G is not a gap at all — no policy anyone could write
+would answer it — so the language model answers it as an ordinary assistant would, with
+no citation, no verification and an explicit label saying the answer is its own
+knowledge rather than anything this company recorded. The test for G is lexical and
+drawn from the pack itself: if none of the question's content words appear in the
+company's policies, goal descriptions or schema, no goal match can be anything but an
+artefact of embedding distance. One shared word is enough to stay in the company
+pipeline, so paraphrases the encoder should handle are never diverted.
 
 It decides from the question **and the structure of the rule base**: a goal whose rules
 compute a value needs calculation; a goal concluded by rules needs symbolic evaluation;

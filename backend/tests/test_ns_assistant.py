@@ -146,10 +146,24 @@ def test_unknown_inputs_become_stated_requirements_not_assumed_facts():
     assert "you have receipts" in answer.answer
 
 
-def test_a_question_nothing_covers_is_not_answered():
-    answer = ask("What is the capital of France?", "priya@meridian.test")
+def test_a_company_question_nothing_covers_is_not_answered():
+    # In-domain wording, uncovered subject: the honest answer is that the knowledge
+    # is missing. Inventing a limit here would be inventing policy.
+    answer = ask("What is the noise limit for a delivery van?", "priya@meridian.test")
     assert answer.outcome == "insufficient"
     assert answer.pipeline == "F"
+
+
+def test_a_question_that_is_not_about_the_company_is_ordinary_conversation():
+    # Nothing here is a knowledge gap - there is no policy anyone could add that would
+    # answer it - so it is answered as an ordinary assistant would, and never presented
+    # as company knowledge.
+    answer = ask("Who won the 2018 football world cup?", "priya@meridian.test")
+    assert answer.pipeline == "G"
+    assert answer.outcome == "general"
+    assert answer.sources == []
+    assert answer.confidence == 0.0
+    assert answer.knowledge_gap is None
 
 
 def test_someone_elses_order_is_refused_before_any_reasoning():
