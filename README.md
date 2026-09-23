@@ -385,9 +385,16 @@ about itself.
 - **The default model is a deterministic offline responder.** It cannot fabricate,
   which makes the architecture's contribution measurable but understates what it
   protects against. Its prose is plain. Configure a real provider for fluency.
-- **The default embeddings are feature hashing**, not a sentence transformer.
-  They capture term overlap and some morphology, not paraphrase — which is why
-  retrieval is hybrid.
+- **Embeddings are a sentence encoder** — `bge-small-en-v1.5` through ONNX Runtime,
+  offline once cached, 384 dimensions. It was feature hashing until 23 September
+  2026, which could not connect "can I give this back?" to a passage about
+  returning an item: they share no term, and character n-grams do not bridge that
+  gap. Measured on that pair, 0.151 under hashing against 0.769 under the encoder.
+  Hashing remains available as `EMBEDDING_PROVIDER=hashing`, and retrieval stays
+  hybrid — the lexical half still earns its place on names and identifiers.
+  **Vectors from the two providers are not comparable**, so a corpus embedded
+  under one must be re-embedded before the other can query it
+  (`scripts/reindex.py`).
 - **Fact extraction is conservative by design.** It only mints known predicates
   and skips qualified sentences. It will miss things; a missing fact is
   recoverable, a wrong fact is treated as ground truth by the engine.
