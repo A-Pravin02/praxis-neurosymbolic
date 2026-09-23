@@ -59,6 +59,62 @@ changing its mind.
 
 ---
 
+## LIVE DEMO CHECKLIST
+
+Everything below is offline: no API key, no network. Run it once before presenting.
+
+**1. Start.** From the repository root:
+
+```bash
+docker compose up -d
+```
+
+**2. Wait for health.** It is ready when this prints `"status":"ok"`:
+
+```bash
+curl http://localhost:8000/api/health
+```
+
+Expect `"database":"ok"` and `"embedding_provider":"semantic"`. If the provider says
+`hashing`, retrieval is running on the old lexical embedder — see Troubleshooting.
+
+**3. Seed and ingest** — only needed the first time, or after wiping the volume:
+
+```bash
+docker compose exec backend python -c "from app.seed.demo import seed_all; seed_all()"
+```
+
+```bash
+docker compose cp scripts/ingest_demo_policies.py backend:/app/ing.py && docker compose exec backend python /app/ing.py --tenant meridian
+```
+
+**4. Open the app** → **http://localhost:8080** — sign in as `priya@meridian.test`,
+password `Praxis-Demo-2026!`
+
+**5. Ask these five, in this order.** Each shows a different pipeline; open
+*Why this answer?* under each one.
+
+| # | Ask | What the audience sees |
+|---|---|---|
+| 1 | *am I eligible for free delivery?* | **Policy reasoning**, confidence 100%, `Verified · 8 checks`. *Why this answer?* shows the rule firing: `membership = plus AND total = ₹62,999 > ₹500 → free delivery = yes`. **This is the neuro-symbolic layer made visible — lead with it.** |
+| 2 | *who do I contact if my laptop breaks* | **Knowledge retrieval**, answered and cited (CO-3). The question shares no word with the passage — semantic retrieval, not keyword matching |
+| 3 | *can I return order ORD-22003?* | **Access refused.** The record belongs to another customer. Authorization runs *before* reasoning, so the engine never sees it |
+| 4 | *can I give this back?* | **Clarification.** It lists her actual orders and asks which one — rather than guessing |
+| 5 | *who won the 2018 world cup* | **General conversation.** Answered plainly, marked unverified, no citation — the model's own knowledge, never dressed up as company policy |
+
+**Verified working on 23 September 2026:** all five above, 437 backend tests passing.
+
+**Troubleshooting**
+
+| Symptom | Fix |
+|---|---|
+| `docker` cannot connect; Docker Desktop shows "An unexpected error occurred" | `powershell -ExecutionPolicy Bypass -File scripts\fix-docker.ps1 -Start` — clears stale sockets. **Do not** click *Reset to factory defaults* |
+| Health shows `embedding_provider: hashing` | `EMBEDDING_PROVIDER=semantic` in `.env`, then `docker compose up -d --force-recreate backend` |
+| Answers abstain on everything | The corpus is empty — run step 3 |
+| Changed `EMBEDDING_PROVIDER` on an existing corpus | `docker compose exec backend python scripts/reindex.py --tenant meridian` — vectors from two providers are not comparable |
+
+---
+
 ## Run it
 
 ```bash
