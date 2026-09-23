@@ -214,6 +214,15 @@ class ReasoningRouter:
         if self._off_topic(interpretation):
             return self._general(interpretation, neural_reason)
         clauses = self.pack.policies.search(interpretation.question, k=3)
+        # The parser ruling out every goal settles that no rule decides this question. It
+        # does not settle whether the policies answer it: "what is the returns policy"
+        # asks what the text says, and the parser names no clause because the question is
+        # about the policy as a whole rather than one clause of it. Refusing there
+        # reported a knowledge gap over a corpus that covers the topic well - the clause
+        # the question is closest to scored 0.72 while the gap was being declared. The
+        # same acceptance threshold the unparsed path already uses applies here.
+        if clauses and clauses[0].score >= RETRIEVAL_ACCEPT:
+            return self._retrieval(clauses, neural_reason)
         return self._insufficient(interpretation, clauses, neural_reason)
 
     # -- topicality ---------------------------------------------------------
