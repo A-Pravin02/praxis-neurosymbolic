@@ -91,18 +91,37 @@ docker compose cp scripts/ingest_demo_policies.py backend:/app/ing.py && docker 
 **4. Open the app** → **http://localhost:8080** — sign in as `priya@meridian.test`,
 password `Praxis-Demo-2026!`
 
-**5. Ask these five, in this order.** Each shows a different pipeline; open
-*Why this answer?* under each one.
+**5. Ask these, in this order.** Each reaches a different pipeline; open *Why this
+answer?* under each one. Every row below was run against this stack and produced exactly
+what it says.
 
-| # | Ask | What the audience sees |
-|---|---|---|
-| 1 | *am I eligible for free delivery?* | **Policy reasoning**, confidence 100%, `Verified · 8 checks`. *Why this answer?* shows the rule firing: `membership = plus AND total = ₹62,999 > ₹500 → free delivery = yes`. **This is the neuro-symbolic layer made visible — lead with it.** |
-| 2 | *who do I contact if my laptop breaks* | **Knowledge retrieval**, answered and cited (CO-3). The question shares no word with the passage — semantic retrieval, not keyword matching |
-| 3 | *can I return order ORD-22003?* | **Access refused.** The record belongs to another customer. Authorization runs *before* reasoning, so the engine never sees it |
-| 4 | *can I give this back?* | **Clarification.** It lists her actual orders and asks which one — rather than guessing |
-| 5 | *who won the 2018 world cup* | **General conversation.** Answered plainly, marked unverified, no citation — the model's own knowledge, never dressed up as company policy |
+Signed in as **`priya@meridian.test`** — the identity matters, see the note after the table.
 
-**Verified working on 23 September 2026:** all five above, 437 backend tests passing.
+| # | Ask | Pipeline | Conf. | What the audience sees |
+|---|---|---|---|---|
+| 1 | *am I eligible for free delivery?* | **Policy reasoning** | 1.00 | `Verified · 8 checks`. *Why this answer?* shows the rule firing: `membership = plus AND total = ₹62,999 > ₹500 → free delivery = yes`. **The neuro-symbolic layer made visible — lead with this** |
+| 2 | *what happens if my item arrives damaged* | **Calculation** | 0.98 | Computes her actual entitlement for her own order, rather than quoting policy text at her |
+| 3 | *how long do I have to cancel an order* | **Policy reasoning** | 1.00 | Applies the rule to her real order and concludes it can no longer be cancelled — already shipped |
+| 4 | *who do I contact if my laptop breaks* | Knowledge retrieval | 0.56 | Cited (CO-3). The question shares **no content word** with the passage — semantic retrieval, not keyword matching |
+| 5 | *what does the refund policy say* | Knowledge retrieval | 0.82 | Answers from policy text with citations, because nothing here needs deciding |
+| 6 | *can I return order ORD-22003?* | **Access refused** | — | That order belongs to another customer. Authorization runs *before* reasoning, so the engine never receives the record |
+| 7 | *can I give this back?* | **Clarification** | — | Lists her actual orders and asks which one, rather than guessing |
+| 8 | *who won the 2018 world cup* | **General conversation** | — | Answered plainly, marked unverified, uncited — the model's own knowledge, never dressed up as company policy |
+
+**The support-agent scenario**, if you have time — sign out, sign in as
+`support@meridian.test`, and ask:
+
+> *a customer's laptop arrived damaged 12 days ago and they want a replacement, what can I offer?*
+
+**Policy reasoning, 0.98** — it applies the return window, the damage rules and the
+replacement conditions together, and states what the agent may offer.
+
+**A caution.** Question 1 works for `priya@meridian.test` because she has one open order.
+Asked by `sam@meridian.test`, who has two, the same question correctly returns a
+**Clarification** asking which order he means. That is the system behaving properly, but
+it is not the answer you want mid-demo — so stay signed in as Priya for questions 1–8.
+
+**Verified working on 23 September 2026:** every row above, plus 437 backend tests.
 
 **Troubleshooting**
 
