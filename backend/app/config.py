@@ -70,8 +70,8 @@ class Settings(BaseSettings):
     knowledge_pack_dir: str = ""
     knowledge_pack_tenant: str = "meridian"
 
-    embedding_provider: Literal["hashing", "openai", "ollama"] = "hashing"
-    embedding_model: str = "praxis-hash-384"
+    embedding_provider: Literal["hashing", "semantic", "openai", "ollama"] = "semantic"
+    embedding_model: str = "bge-small-en-v1.5"
     embedding_dimension: int = 384
 
     # --- rag ---

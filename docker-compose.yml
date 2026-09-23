@@ -38,7 +38,7 @@ services:
       LLM_BASE_URL: ${LLM_BASE_URL:-}
       LLM_TIMEOUT_SECONDS: ${LLM_TIMEOUT_SECONDS:-120}
       UNDERSTANDING: ${UNDERSTANDING:-auto}
-      EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-hashing}
+      EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-semantic}
       CORS_ORIGINS: http://localhost:8080,http://localhost:5173
       SEED_ON_START: "true"
     # Lets the backend reach a model server running on the host (scripts/local_llm_server.py).

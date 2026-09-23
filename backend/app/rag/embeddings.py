@@ -24,7 +24,10 @@ import httpx
 
 from app.config import settings
 from app.core.errors import ProviderError
+from app.core.logging import get_logger, log_event
 from app.neuro.heuristics import lower_words
+
+logger = get_logger("praxis.rag.embeddings")
 
 
 @runtime_checkable
@@ -144,6 +147,43 @@ class OllamaEmbeddingProvider:
         return self.embed([text])[0]
 
 
+class SemanticEmbeddingProvider:
+    """Sentence embeddings from the encoder the neural layer already uses.
+
+    Feature hashing cannot connect "can I give this back?" to a passage about returning
+    an item: they share no term, and character n-grams do not bridge the gap either. That
+    is a retrieval ceiling no amount of reranking lifts, because the passage never enters
+    the candidate set. The same bge-small-en-v1.5 encoder that decides which goal a
+    question resembles measures those two at 0.85 and an unrelated sentence at 0.45, so
+    document retrieval uses it too.
+
+    It runs through ONNX Runtime on the CPU, offline once cached, and produces the same
+    384 dimensions the schema already stores. If the model cannot be loaded, the encoder
+    falls back to lexical hashing and reports `semantic = False` rather than pretending -
+    the same contract the neural layer relies on.
+    """
+
+    name = "semantic"
+
+    def __init__(self) -> None:
+        from app.neural.encoder import get_encoder
+
+        self._encoder = get_encoder("semantic")
+        self.semantic = bool(getattr(self._encoder, "semantic", False))
+        if not self.semantic:
+            log_event(logger, 30, "semantic embeddings unavailable; retrieval is lexical",
+                      provider="semantic")
+
+    def embed(self, texts: Sequence[str]) -> list[list[float]]:
+        if not texts:
+            return []
+        vectors = self._encoder.encode(list(texts))
+        return [[float(x) for x in row] for row in vectors]
+
+    def embed_one(self, text: str) -> list[float]:
+        return self.embed([text])[0]
+
+
 _OVERRIDE: EmbeddingProvider | None = None
 
 
@@ -151,6 +191,8 @@ _OVERRIDE: EmbeddingProvider | None = None
 def _cached(name: str) -> EmbeddingProvider:
     if name == "hashing":
         return HashingEmbeddingProvider()
+    if name == "semantic":
+        return SemanticEmbeddingProvider()
     if name == "openai":
         return OpenAIEmbeddingProvider()
     if name == "ollama":
