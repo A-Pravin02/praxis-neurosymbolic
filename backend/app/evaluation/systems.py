@@ -72,6 +72,7 @@ def _neurosymbolic(*, ablations: frozenset[str] = frozenset(), realizer: str = "
                 pipeline=answer.pipeline, decision=answer.decision, value=answer.value,
                 subject=answer.subject, sources=[s["id"] for s in answer.sources],
                 verified=answer.trace.get("verification", {}).get("passed"),
+                confidence=answer.confidence,
                 latency_ms=(time.perf_counter() - started) * 1000)
         return run
     return build

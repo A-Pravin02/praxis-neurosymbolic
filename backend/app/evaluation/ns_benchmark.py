@@ -15,6 +15,8 @@ knowledge and the same users:
                          false), newest policy version always, statements accepted as
                          given, no grounding, claim checks or verification - and the model
                          phrases the result
+  llm_rag_selfcheck      the model drafts an answer with retrieval, then checks its own
+                         draft against the same context and revises it
   neurosymbolic          the full system
   neurosymbolic_lexical  ablation: the semantic encoder replaced by lexical hashing
   rag_extractive         retrieval answered by quoting what was retrieved (no generator)
@@ -58,7 +60,7 @@ METRICS = [
     ("unsupported_answer_rate", "Unsupported-answer rate", "lower"),
     ("mean_latency_ms", "Mean latency (ms)", "lower"),
 ]
-LLM_SYSTEMS = ("llm_only", "llm_rag", "llm_rag_rules")
+LLM_SYSTEMS = ("llm_only", "llm_rag", "llm_rag_rules", "llm_rag_selfcheck")
 OUTCOMES = {"answered": "answered", "needs_more_information": "conditional",
             "ask_which_record": "clarification", "not_covered": "insufficient",
             "not_permitted": "denied"}
@@ -80,6 +82,9 @@ class SystemAnswer:
     sources: list[str] = field(default_factory=list)
     explanation: str = ""
     verified: bool | None = None
+    # Recorded for calibration analysis only. No metric below reads it: a system is
+    # never scored on how sure it says it is.
+    confidence: float | None = None
     latency_ms: float = 0.0
     raw: str = ""
 
@@ -103,6 +108,7 @@ def neurosymbolic_system(pack: KnowledgePack) -> Callable[[dict], SystemAnswer]:
             sources=[s["id"] for s in answer.sources],
             explanation=" ".join(answer.explanation + trace.get("reasoning_steps", [])),
             verified=trace.get("verification", {}).get("passed"),
+            confidence=answer.confidence,
             latency_ms=latency,
         )
     return run
@@ -480,6 +486,13 @@ def load_cases(pack_dir: Path, split: str = "test") -> list[dict]:
         encoding="utf-8"))["cases"]
 
 
+def _selfcheck_system():
+    """The draft-then-verify baseline. Lives in systems.py, which imports this
+    module, so it is resolved on use rather than at import time."""
+    from app.evaluation.systems import _selfcheck
+    return _selfcheck
+
+
 def run_benchmark(*, pack_dir: str | None = None, systems: list[str] | None = None,
                   limit: int | None = None, split: str = "test") -> dict[str, Any]:
     wanted = systems or ["neurosymbolic", "neurosymbolic_lexical", "rag_extractive",
@@ -494,6 +507,8 @@ def run_benchmark(*, pack_dir: str | None = None, systems: list[str] | None = No
         "llm_only": lambda: llm_only_system(semantic_pack),
         "llm_rag": lambda: llm_rag_system(semantic_pack),
         "llm_rag_rules": lambda: llm_rag_rules_system(semantic_pack),
+        # Imported here, not at module scope: systems.py imports this module.
+        "llm_rag_selfcheck": lambda: _selfcheck_system()(semantic_pack),
     }
     model = ""
     if settings.llm_provider != "mock" and any(s in LLM_SYSTEMS for s in wanted):
@@ -505,6 +520,13 @@ def run_benchmark(*, pack_dir: str | None = None, systems: list[str] | None = No
         "llm_provider": settings.llm_provider, "llm_model": model,
         "systems": {}, "not_run": {},
     }
+    # Checked before any system runs. An unknown name used to surface only when the loop
+    # reached it, discarding every result computed before that point.
+    unknown = [n for n in wanted if n not in builders]
+    if unknown:
+        raise KeyError(f"unknown system(s): {', '.join(unknown)}. "
+                       f"Available: {', '.join(builders)}")
+
     for name in wanted:
         system = builders[name]()
         if system is None:
@@ -526,6 +548,7 @@ def run_benchmark(*, pack_dir: str | None = None, systems: list[str] | None = No
                 "decision": s.answer.decision if not isinstance(s.answer.decision, list)
                 else len(s.answer.decision),
                 "value": s.answer.value if not isinstance(s.answer.value, list) else None,
+                "confidence": s.answer.confidence,
                 "answer": s.answer.text[:600],
             } for s in scores],
         }
