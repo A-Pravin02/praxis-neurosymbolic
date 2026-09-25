@@ -141,11 +141,13 @@ class LLMSemanticParser:
             return interpretation
         if request not in REQUESTS:
             request = self.fallback.intents.speech_act(question).label
+        mentions = extract_mentions(question, self.graph, self.encoder)
+        request = self._personal_request(question, request, goal, candidates, mentions)
         interpretation = Interpretation(
             question=question, clauses=split_clauses(question),
             speech_act=SpeechAct(request, PARSED_CONFIDENCE, {request: PARSED_CONFIDENCE}),
             candidates=candidates,
-            mentions=extract_mentions(question, self.graph, self.encoder),
+            mentions=mentions,
             encoder=self.name, semantic=True)
         interpretation.inputs = self._inputs(parsed.get("stated"), question,
                                              interpretation.mentions.quantities)
@@ -157,6 +159,35 @@ class LLMSemanticParser:
             clause in {c.id for c in self.policies.clauses} else None
         interpretation.parsed = True
         return interpretation
+
+    def _personal_request(self, question: str, request: str, goal: str,
+                          candidates: list, mentions) -> str:
+        """Symbolic validation of the neural interpretation.
+
+        "inform" means the answer is the same for everyone, so a question about the
+        asker's own position cannot be one. The model reads "What is my yearly holiday
+        allowance in days?" as a policy question and answers it by reciting the clause,
+        which is not what that person is owed; asked as "How many days of annual leave do
+        I get?" it reads the same question correctly. Telling the two apart is a
+        judgement code makes more reliably than a 7B does, so the pronoun decides here
+        and the goal's own value type says what the request becomes.
+
+        Only a named goal is corrected. When the parser says the question is out of
+        scope, it stays out of scope: that judgement is the parser's to make.
+        """
+        if request != "inform" or not candidates or goal.lower() == "none":
+            return request
+        if not mentions.personal:
+            return request
+        # A numeric goal is being asked for a number; anything else is a yes or no.
+        # Keyed on the numeric types rather than the boolean ones because a yes/no goal
+        # in this pack carries the value type "text", not "bool".
+        numeric = {"days", "money", "number", "percent", "distance", "years"}
+        corrected = "calculate" if self.program.value_type(candidates[0].name) in numeric \
+            else "decide"
+        log_event(logger, 20, "personal question re-read as a case, not a policy lookup",
+                  goal=candidates[0].name, was=request, now=corrected)
+        return corrected
 
     def detect_inputs(self, interpretation: Interpretation, predicates: set[str],
                       threshold: float) -> list[StatedInput]:

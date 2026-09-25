@@ -224,7 +224,7 @@ end
 rule R-DEL-C1 "Delay compensation: delivery fee refunded" [DEL-3]
   if   days_late(?o) = ?d
   and  delay_threshold_days(meridian) = ?th
-  and  ?d > ?th                                       otherwise "the order is {d} days past its promised date, and compensation starts after {th} days"
+  and  ?d > ?th                                       otherwise "the order is not more than {th} days past its promised date, which is when compensation starts"
   and  delivery_fee_paid(?o) = ?fee
   then delay_compensation(?o) = ?fee
   because "the delivery is {d} days late, more than {th} days, so the {fee} delivery fee is refunded"
@@ -233,7 +233,7 @@ end
 rule R-DEL-C2 "Delay compensation for Meridian Plus" [DEL-3] priority 200
   if   days_late(?o) = ?d
   and  delay_threshold_days(meridian) = ?th
-  and  ?d > ?th                                       otherwise "the order is {d} days past its promised date, and compensation starts after {th} days"
+  and  ?d > ?th                                       otherwise "the order is not more than {th} days past its promised date, which is when compensation starts"
   and  order_membership(?o) = "plus"
   and  delivery_fee_paid(?o) = ?fee
   and  plus_delay_credit(meridian) = ?cr
