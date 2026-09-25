@@ -45,6 +45,9 @@ PROVED, REFUTED, CONDITIONAL = "proved", "refuted", "conditional"
 _SYMBOL = {"eq": "=", "ne": "≠", "lt": "<", "lte": "≤", "gt": ">", "gte": "≥",
            "in": "in", "not_in": "not in", "contains": "contains"}
 _ARITH_SYMBOL = {"add": "+", "sub": "−", "mul": "×", "div": "÷"}
+# Ordinal 100,000 is in the year 274. No policy counts a duration that large, so an
+# operand at or above it in a duration subtraction is a stored date, not a quantity.
+_DATE_ORDINAL_FLOOR = 100_000
 
 
 # ---------------------------------------------------------------------------
@@ -82,6 +85,15 @@ class Symbolic:
     def render(self, value_type: str, *, graph=None, program=None) -> str:
         def part(arg: Any) -> str:
             if isinstance(arg, (int, float)) and not isinstance(arg, bool):
+                # A date is stored as its ordinal, so "days since delivery" is
+                # today's ordinal minus the delivery's. The result is a number of
+                # days, but the operands are dates, and formatting them with the
+                # result's type printed the ordinal itself: "739,873 − the
+                # delivered on". Only a duration-typed subtraction is reinterpreted,
+                # and only for a value too large to be a duration in any policy.
+                if (self.op == "sub" and value_type in ("days", "number")
+                        and float(arg) >= _DATE_ORDINAL_FLOOR):
+                    return format_value(arg, "date", graph=graph, program=program)
                 return format_value(arg, value_type, graph=graph, program=program)
             if isinstance(arg, Unknown):
                 return f"the {humanize(arg.predicate)}"

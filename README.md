@@ -99,29 +99,37 @@ Signed in as **`priya@meridian.test`** — the identity matters, see the note af
 
 | # | Ask | Pipeline | Conf. | What the audience sees |
 |---|---|---|---|---|
-| 1 | *am I eligible for free delivery?* | **Policy reasoning** | 1.00 | `Verified · 8 checks`. *Why this answer?* shows the rule firing: `membership = plus AND total = ₹62,999 > ₹500 → free delivery = yes`. **The neuro-symbolic layer made visible — lead with this** |
-| 2 | *what happens if my item arrives damaged* | **Calculation** | 0.98 | Computes her actual entitlement for her own order, rather than quoting policy text at her |
-| 3 | *how long do I have to cancel an order* | **Policy reasoning** | 1.00 | Applies the rule to her real order and concludes it can no longer be cancelled — already shipped |
-| 4 | *who do I contact if my laptop breaks* | Knowledge retrieval | 0.56 | Cited (CO-3). The question shares **no content word** with the passage — semantic retrieval, not keyword matching |
-| 5 | *what does the refund policy say* | Knowledge retrieval | 0.82 | Answers from policy text with citations, because nothing here needs deciding |
-| 6 | *can I return order ORD-22003?* | **Access refused** | — | That order belongs to another customer. Authorization runs *before* reasoning, so the engine never receives the record |
-| 7 | *can I give this back?* | **Clarification** | — | Lists her actual orders and asks which one, rather than guessing |
-| 8 | *who won the 2018 world cup* | **General conversation** | — | Answered plainly, marked unverified, uncited — the model's own knowledge, never dressed up as company policy |
+| 1 | *am I eligible for free delivery?* | **B — Policy reasoning** | 0.98 | `Verified`. *Why this answer?* shows rule `R-DEL-F1` firing: `membership = plus AND total = ₹62,999 > ₹500 → free delivery = yes`. **The neuro-symbolic layer made visible — lead with this** |
+| 2 | *the Copper Kettle arrived damaged, can I return it?* | **B — Policy reasoning** | 0.85 | Two rules chain: the item qualifies, *but* the same product is out of stock, so the answer is a full refund rather than a replacement. Nobody wrote that sentence — the engine composed it |
+| 3 | *how long do I have to cancel an order* | **B — Policy reasoning** | 1.00 | Applies the rule to her real order and concludes it can no longer be cancelled — already shipped |
+| 4 | *who do I contact if my laptop breaks* | **A — Knowledge retrieval** | 0.56 | Cited (CO-3). The question shares **no content word** with the passage — semantic retrieval, not keyword matching |
+| 5 | *what does the refund policy say* | **A — Knowledge retrieval** | 0.82 | Answers from policy text with citations, because nothing here needs deciding |
+| 6 | *can I return order ORD-22003?* | **F — Access refused** | — | That order belongs to another customer. Authorization runs *before* reasoning, so the engine never receives the record |
+| 7 | *can I give this back?* | **E — Clarification** | — | Lists her actual orders and asks which one, rather than guessing |
+| 8 | *who won the 2018 world cup* | **G — General conversation** | — | Marked unverified and uncited, and it says so plainly rather than dressing a guess up as company policy |
+| 9 | *what refund do I get for a late delivery?* | **D — Calculation** | 0.97 | Computes her actual entitlement — ₹0 — and says why: the order is not yet past the 3-day threshold. A system that guessed would have quoted the policy's compensation figure instead |
+
 
 **The support-agent scenario**, if you have time — sign out, sign in as
 `support@meridian.test`, and ask:
 
 > *a customer's laptop arrived damaged 12 days ago and they want a replacement, what can I offer?*
 
-**Policy reasoning, 0.98** — it applies the return window, the damage rules and the
-replacement conditions together, and states what the agent may offer.
+**C — Recommendation, 0.88** — it applies the return window, the damage rules and the
+replacement conditions together, and states what the agent may offer. It is the seventh
+distinct pipeline, so the ten questions here exercise every route the router has: A, B,
+C, D, E, F and G.
 
 **A caution.** Question 1 works for `priya@meridian.test` because she has one open order.
 Asked by `sam@meridian.test`, who has two, the same question correctly returns a
 **Clarification** asking which order he means. That is the system behaving properly, but
-it is not the answer you want mid-demo — so stay signed in as Priya for questions 1–8.
+it is not the answer you want mid-demo — so stay signed in as Priya for questions 1–9.
 
-**Verified working on 23 September 2026:** every row above, plus 437 backend tests.
+**Verified working on 25 September 2026:** every row above was run against this stack
+on that date and returned exactly what it says, alongside 437 passing backend tests.
+Question 2 was replaced on that date: the previous wording (*what happens if my item
+arrives damaged*) named no order, and correctly returned a clarification rather than
+the answer the row claimed.
 
 **Troubleshooting**
 
