@@ -229,6 +229,55 @@ architecture. From an actual run (`python scripts/run_eval.py`):
 | Mean latency (ms) | 0 | 10.7 | 11.8 | 21.5 |
 
 
+### Against language-model baselines
+
+The table above uses a small deterministic harness. The frozen test split is the one to
+quote: 86 questions, one knowledge pack, and the **same Qwen2.5-7B serving every system**,
+so the only thing that differs is the architecture
+(`docs/benchmark/run8-test-llm-baselines.md`).
+
+| | Accuracy | Hallucination | Unsupported | Latency |
+|---|---|---|---|---|
+| `llm_only` — the model alone | 0.058 | 0.221 | 1.000 | 622 ms |
+| `llm_rag` — retrieval over the same corpus | 0.209 | 0.198 | 0.000 | 592 ms |
+| `llm_rag_rules` — a basic rule engine | 0.372 | 0.151 | 0.000 | 12,656 ms |
+| **Praxis** | **0.733** | **0.081** | 0.000 | **114 ms** |
+
+Against standard RAG on the same encoder, corpus and model: accuracy 0.209 to 0.733 and
+hallucination 0.198 to 0.081, a 59% relative reduction.
+
+One number runs the other way and is reported rather than buried. On the 33 cases that
+turn on a yes/no decision, the basic rule engine is right 28 times and Praxis 24. All
+four systems answer the same 33, so this is not an abstention artefact. An exact McNemar
+test on the paired outcomes gives **p = 0.219** — a four-case difference, which is no
+measured difference. What separates the two systems is everything around the decision:
+final-answer accuracy is double and hallucination roughly half, because a two-valued
+engine that always applies the newest policy version is confidently wrong exactly where
+those shortcuts bite (`ambiguous` hallucination 0.43 against 0.14).
+
+### Which part earns the result
+
+Each component removed in turn, 255 generated test cases, each ablation paired against
+the full system by an exact McNemar test (`docs/benchmark/run9-ablations-test.md`).
+
+| Removed | What breaks | p |
+|---|---|---|
+| Authorization before reasoning | disclosure of records the asker may not see, 0.000 → **0.867** | 6.1e-05 |
+| Statement checking | `false_premise` accuracy 0.90 → **0.00** | 1.5e-08 |
+| Three-valued logic | `missing_info` accuracy 1.00 → **0.00**, hallucination 0.00 → 0.67 | 0.002 |
+| Version ordering | `policy_version` accuracy 0.88 → 0.64 | 0.0039 |
+| **The evidence gate** | **nothing: 0 of 255 answers change** | 1 |
+
+The last row is a null result and is kept as one. The flag is honoured — the controller
+does release a failed report when it is set — but verification never fails on this split,
+so there is nothing for the gate to withhold. It is a guarantee that costs nothing here,
+not a mechanism this data shows working.
+
+Two further honest readings of that run. The hashing-encoder ablation records 0.000
+hallucination on **0.000 coverage**: it answers nothing, so the zero is not a virtue.
+And every variant scores 0.00 on `not_covered` with 0.87 hallucination — questions no
+policy covers are answered anyway. See Limitations.
+
 ### On a real dataset
 
 The same comparison over the supplied dataset — 70 tables, 1.24 M rows — using
@@ -403,6 +452,28 @@ about itself.
   **Vectors from the two providers are not comparable**, so a corpus embedded
   under one must be re-embedded before the other can query it
   (`scripts/reindex.py`).
+- **Questions no policy covers are answered anyway.** On the 15 `not_covered`
+  cases of the generated test split the system scores 0.00 accuracy and 0.87
+  hallucination: "can you gift-wrap order 12345" comes back as a free-delivery
+  ruling. Three signals were measured for whether they separate these questions
+  and none does — out-of-vocabulary words (paraphrases have more of them),
+  top-to-second goal margin, and policy-clause relevance are each at or below
+  what legitimate categories score. In the encoder's space these questions are
+  genuinely close to covered ones. Swapping the understanding stage for the LLM
+  parser moves it to 0.40 (p=0.031), which is an improvement on the worst result
+  in the system and still the worst result in it.
+- **Confidence is computed, not calibrated.** It is derived in code from
+  retrieval relevance, rule coverage and verification, never asked of the model,
+  and it is reproducible and inspectable for that reason. It is also
+  overconfident: ECE 0.192 on the frozen test split, and the 0.9-1.0 bin holds 42
+  of 86 cases while claiming 0.959 and scoring 0.786. The scale is close to
+  three-valued in practice — nothing at all falls between 0.1 and 0.5
+  (`docs/benchmark/calibration-test.md`).
+- **One domain, and the thresholds are fitted to it.** Everything above is
+  Meridian. `GOAL_ACCEPT` is now swept on the dev split rather than hand-set
+  (`docs/benchmark/threshold-sweep-dev.md`), but that split holds 21 questions,
+  so one question moves the number by 4.8 points, and `RETRIEVAL_ACCEPT` does not
+  move the objective at all and remains hand-set.
 - **Fact extraction is conservative by design.** It only mints known predicates
   and skips qualified sentences. It will miss things; a missing fact is
   recoverable, a wrong fact is treated as ground truth by the engine.
