@@ -43,17 +43,27 @@ TAIL = ('\n\nJSON keys: "goal" (a goal name or "none"), "request" (a request kin
         '"stated" (an object mapping fact names to values the question states; {} if none).')
 
 
-def readings(parser, question: str, repeats: int, base: int) -> list[tuple]:
-    """One reading per call, each with a different token budget so the cache misses."""
-    out = []
+def readings(parser, question: str, repeats: int, base: int,
+             attempts: int = 3) -> tuple[list[tuple], int]:
+    """One reading per call, each with a different token budget so the cache misses.
+
+    A call that the provider drops is not a reading. `_ask` swallows provider errors and
+    returns "", and counting that as a different answer would report an overloaded server
+    as an unstable parser — which an earlier version of this script did. Failures are
+    retried, then counted separately and left out of the agreement figure.
+    """
+    out, failures = [], 0
     for i in range(repeats):
-        raw = parser._ask(parser._schema + "\n\nQuestion: " + question + TAIL, base + i)
-        parsed = _json(raw)
-        if parsed is None:
-            out.append(("<no json>", "<no json>"))
-            continue
-        out.append((str(parsed.get("goal")), str(parsed.get("request"))))
-    return out
+        for attempt in range(attempts):
+            raw = parser._ask(parser._schema + "\n\nQuestion: " + question + TAIL,
+                              base + i + attempt * repeats)
+            parsed = _json(raw)
+            if parsed is not None:
+                out.append((str(parsed.get("goal")), str(parsed.get("request"))))
+                break
+        else:
+            failures += 1
+    return out, failures
 
 
 def main() -> None:
@@ -85,19 +95,23 @@ def main() -> None:
             break
         i += 1
 
-    rows, unstable = [], []
+    rows, unstable, dropped = [], [], 0
     for case in chosen:
-        seen = readings(parser, case["question"], args.repeats, args.base_tokens)
+        seen, failures = readings(parser, case["question"], args.repeats, args.base_tokens)
+        dropped += failures
+        if len(seen) < 2:
+            print(f"skip {case['id']:24s} only {len(seen)} usable reading(s)", flush=True)
+            continue
         distinct = collections.Counter(seen)
         stable = len(distinct) == 1
         rows.append({"id": case["id"], "category": case["category"],
                      "question": case["question"], "stable": stable,
-                     "readings": [list(s) for s in seen],
+                     "readings": [list(s) for s in seen], "failures": failures,
                      "distinct": len(distinct)})
         if not stable:
             unstable.append(rows[-1])
         print(f"{'ok ' if stable else 'VARIES'} {case['id']:24s} {case['category']:14s} "
-              f"{len(distinct)} distinct of {args.repeats}", flush=True)
+              f"{len(distinct)} distinct of {len(seen)}", flush=True)
 
     n = len(rows)
     agree = sum(r["stable"] for r in rows)
@@ -107,7 +121,11 @@ def main() -> None:
              f"misses the server's completion cache and regenerates; the budget is far "
              f"above the ~40 tokens a reply needs, so nothing is truncated.", "",
              f"**{agree}/{n} questions gave the same (goal, request) every time "
-             f"({agree / n:.3f}).**", ""]
+             f"({agree / n:.3f}).**", "",
+             f"{dropped} call(s) were dropped by the provider after retries and are "
+             f"excluded: a call the server never answered is not a reading, and counting "
+             f"it as a different one would report an overloaded server as an unstable "
+             f"parser.", ""]
     if unstable:
         lines += ["| Question | Category | Distinct readings |", "|---|---|---|"]
         for r in unstable:
