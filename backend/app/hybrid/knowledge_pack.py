@@ -48,6 +48,13 @@ def load_pack(directory: str | None = None, encoder_kind: str | None = None) -> 
     root = Path(directory) if directory else default_pack_dir()
     program = load_program(root / "rules")
     graph = load_graph_dir(root / "knowledge")
+    # Ownership is pack data: an order belongs to the customer who placed it, a claim to
+    # the member who made it. The graph ships the retail defaults so the original pack
+    # needs no change, and a pack that declares its own replaces them.
+    if program.principal_types:
+        graph.principal_types = program.principal_types
+    if program.owner_predicates:
+        graph.owner_predicates = program.owner_predicates
     encoder = get_encoder(encoder_kind)
     return KnowledgePack(
         name=root.name,

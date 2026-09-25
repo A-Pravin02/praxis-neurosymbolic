@@ -152,7 +152,7 @@ def _who(pack: KnowledgePack, case: dict) -> str:
     roles = ", ".join(case.get("roles", [])) or (person.type if person else "user")
     name = person.name if person else case["user"]
     return (f"The person asking is {name} ({case['user']}, role: {roles}) at "
-            f"{pack.graph.display_name('meridian')}. Today is {pack.graph.as_of.isoformat()}.")
+            f"{pack.graph.display_name(pack.graph.company_id)}. Today is {pack.graph.as_of.isoformat()}.")
 
 
 def _ask(llm, system: str, prompt: str, max_tokens: int = 350) -> str:

@@ -263,7 +263,7 @@ class NeuroSymbolicController:
             context=self._context(context, "", ""),
             explanation=[
                 "Recognised the question as general conversation, not a question about "
-                f"{self.graph.display_name('meridian')}.",
+                f"{self.graph.display_name(self.graph.company_id)}.",
                 "Used no policy, rule or record, because none applies.",
                 "Answered from the language model's own knowledge, which is not verified "
                 "and carries no citation.",
@@ -275,7 +275,7 @@ class NeuroSymbolicController:
 
         unavailable = (
             "That one isn't about "
-            f"{self.graph.display_name('meridian')}, so there's no policy or record for me "
+            f"{self.graph.display_name(self.graph.company_id)}, so there's no policy or record for me "
             "to answer it from — and this deployment is running the offline deterministic "
             "provider, which has no general knowledge of its own. Configure a language "
             "model (LLM_PROVIDER) and I can answer questions like this conversationally. "
@@ -311,7 +311,7 @@ class NeuroSymbolicController:
                            f"({nearest.clause.id}), and it doesn't answer this")
         conclusion = Conclusion(kind="insufficient", reasons=reasons,
                                 headline=f"I can't answer that from "
-                                         f"{self.graph.display_name('meridian')}'s company "
+                                         f"{self.graph.display_name(self.graph.company_id)}'s company "
                                          f"knowledge")
         text = realize(conclusion)
         trace.reasoning_steps = [

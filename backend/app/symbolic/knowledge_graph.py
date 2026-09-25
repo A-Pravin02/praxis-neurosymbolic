@@ -21,6 +21,14 @@ import yaml
 
 COMPANY = "meridian"
 
+# Which records belong to a person, and how to walk from a record to that person.
+# These were written as literals when there was one knowledge pack, and a second pack
+# is what showed them to be pack data rather than facts about the world: an insurer's
+# records belong to a `member` through `claimed_by`, and no amount of retail vocabulary
+# reaches them. `load_pack` overrides both from the pack's own schema.
+DEFAULT_PRINCIPAL_TYPES = ("customer", "employee")
+DEFAULT_OWNER_PREDICATES = ("placed_by", "claimant")
+
 
 @dataclass
 class Entity:
@@ -62,11 +70,19 @@ class KnowledgeGraph:
         self._by_type: dict[str, list[str]] = {}
         self._edges: dict[str, list[tuple[str, str]]] = {}
         self._reverse: dict[str, list[tuple[str, str]]] = {}
+        self.principal_types: tuple[str, ...] = DEFAULT_PRINCIPAL_TYPES
+        self.owner_predicates: tuple[str, ...] = DEFAULT_OWNER_PREDICATES
         for entity in entities:
             self.add(entity)
-        company = self.entities.get(COMPANY)
-        if company is not None:
-            self._set(COMPANY, "today", as_of.toordinal())
+        # The company node carries the policy constants and "today". Its id was the
+        # literal "meridian" until a second pack arrived, at which point every rule
+        # reading today(<company>) silently found nothing. The pack names its own
+        # company node, and the type is what identifies it.
+        companies = self._by_type.get("company", [])
+        self.company_id = COMPANY if COMPANY in self.entities else \
+            (companies[0] if companies else COMPANY)
+        if self.company_id in self.entities:
+            self._set(self.company_id, "today", as_of.toordinal())
 
     # -- construction -------------------------------------------------------
     def add(self, entity: Entity) -> None:
@@ -167,9 +183,9 @@ class KnowledgeGraph:
         entity = self.entities.get(entity_id)
         if entity is None:
             return None
-        if entity.type in ("customer", "employee"):
+        if entity.type in self.principal_types:
             return entity_id
-        for predicate in ("placed_by", "claimant"):
+        for predicate in self.owner_predicates:
             values = self.values(entity_id, predicate)
             if values:
                 return values[0]

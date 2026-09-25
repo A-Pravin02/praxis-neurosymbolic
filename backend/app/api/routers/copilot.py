@@ -88,7 +88,7 @@ def overview(db: DbSession, principal: CurrentPrincipal) -> dict[str, Any]:
     graph, program = pack.graph, pack.program
     types = Counter(e.type for e in graph.entities.values())
     return {
-        "company": graph.display_name("meridian"), "as_of": graph.as_of.isoformat(),
+        "company": graph.display_name(graph.company_id), "as_of": graph.as_of.isoformat(),
         "revision": store.revision(_pack_dir()),
         "counts": {"policies": len(pack.policies.documents()), "rules": len(program.rules),
                    "goals": len(program.goals), "entities": len(graph.entities),

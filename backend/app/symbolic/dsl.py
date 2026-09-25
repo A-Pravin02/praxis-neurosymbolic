@@ -185,6 +185,11 @@ class RuleSpec:
 @dataclass
 class KnowledgeProgram:
     entity_types: set[str] = field(default_factory=set)
+    # Which entity types are people a question can be asked on behalf of, and the
+    # predicates that walk from a record to its owner. Declared by the pack because
+    # they are facts about a company's records, not about this codebase.
+    principal_types: tuple[str, ...] = ()
+    owner_predicates: tuple[str, ...] = ()
     attributes: dict[str, PredicateType] = field(default_factory=dict)
     inputs: dict[str, list[InputValue]] = field(default_factory=dict)
     goals: dict[str, Goal] = field(default_factory=dict)
@@ -480,6 +485,13 @@ def parse_program(text: str, *, source: str = "") -> KnowledgeProgram:
         try:
             if keyword == "entity":
                 program.entity_types.update(rest.split())
+            elif keyword == "principal":
+                unknown = [t for t in rest.split() if t not in program.entity_types]
+                if unknown:
+                    raise fail(f"principal names undeclared entity type(s): {unknown}")
+                program.principal_types = tuple(rest.split())
+            elif keyword == "owns":
+                program.owner_predicates = tuple(rest.split())
             elif keyword == "attribute":
                 sig, _, vtype = rest.partition("->")
                 predicate, stype = _signature(sig)
