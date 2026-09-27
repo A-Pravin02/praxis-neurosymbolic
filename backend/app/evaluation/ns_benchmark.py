@@ -7,6 +7,7 @@ knowledge and the same users:
 
   llm_only               a language model with the person's identity and today's date, and
                          no company knowledge at all
+  llm_cot                the same, asked to reason step by step before answering
   llm_rag                the model with retrieval over every policy document (including
                          superseded versions, as a document index holds them) and over the
                          records the person may see
@@ -60,7 +61,8 @@ METRICS = [
     ("unsupported_answer_rate", "Unsupported-answer rate", "lower"),
     ("mean_latency_ms", "Mean latency (ms)", "lower"),
 ]
-LLM_SYSTEMS = ("llm_only", "llm_rag", "llm_rag_rules", "llm_rag_selfcheck")
+LLM_SYSTEMS = ("llm_only", "llm_cot", "llm_rag", "llm_rag_rules",
+               "llm_rag_selfcheck")
 OUTCOMES = {"answered": "answered", "needs_more_information": "conditional",
             "ask_which_record": "clarification", "not_covered": "insufficient",
             "not_permitted": "denied"}
@@ -187,6 +189,34 @@ def llm_only_system(pack: KnowledgePack) -> Callable[[dict], SystemAnswer] | Non
                         "marketplace. " + _ANSWER_FORMAT,
                    f"{_who(pack, case)}\n\nQuestion: {case['question']}")
         return _from_json(raw, started, [])
+    return run
+
+
+def llm_cot_system(pack: KnowledgePack) -> Callable[[dict], SystemAnswer] | None:
+    """The same model and the same knowledge as `llm_only` - which is none - asked to
+    reason step by step before it answers.
+
+    This isolates reasoning from retrieval. It sees no company document, so whatever it
+    concludes about a return window or a leave entitlement comes from training memory,
+    and the question is whether thinking harder about a fact it does not have helps.
+    The token budget is doubled because the reasoning has to fit alongside the answer;
+    a truncated reply would be scored as a parse failure rather than as an answer.
+    """
+    llm = _llm()
+    if llm is None:
+        return None
+
+    def run(case: dict) -> SystemAnswer:
+        started = time.perf_counter()
+        raw = _ask(llm, "You are a customer service and employee assistant for an online "
+                        "marketplace. Work through the question step by step: identify "
+                        "what is being asked, which policy or record would settle it, and "
+                        "what follows. Then give your final answer. " + _ANSWER_FORMAT,
+                   f"{_who(pack, case)}\n\nQuestion: {case['question']}",
+                   max_tokens=700)
+        answer = _from_json(raw, started, [])
+        answer.raw = raw
+        return answer
     return run
 
 
@@ -505,6 +535,7 @@ def run_benchmark(*, pack_dir: str | None = None, systems: list[str] | None = No
         "neurosymbolic_lexical": lambda: neurosymbolic_system(load_pack(pack_dir, "hashing")),
         "rag_extractive": lambda: rag_extractive_system(semantic_pack),
         "llm_only": lambda: llm_only_system(semantic_pack),
+        "llm_cot": lambda: llm_cot_system(semantic_pack),
         "llm_rag": lambda: llm_rag_system(semantic_pack),
         "llm_rag_rules": lambda: llm_rag_rules_system(semantic_pack),
         # Imported here, not at module scope: systems.py imports this module.
