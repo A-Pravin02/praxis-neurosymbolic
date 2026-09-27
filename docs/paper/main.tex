@@ -219,6 +219,28 @@ asserts that regenerating it reproduces the committed questions and gold answers
 Development questions were used to find and fix system faults; test questions were not
 inspected for that purpose.
 
+\subsection{A second knowledge pack}\label{sec:second-domain}
+The architecture is schema-driven, and a claim of generality is worth what it can be
+tested on. We therefore wrote a second pack for an unrelated domain---health
+insurance---and asked it forty questions in the same ten categories, with gold answers
+computed from the records by arithmetic performed outside the system.
+
+The domain was chosen to exercise what retail does not: waiting periods that refuse a
+claim for elapsed time rather than for the treatment; a deductible and a co-payment that
+make a settlement a chain of arithmetic rather than one rule; exclusions no plan reaches;
+a network status that changes the member's share; and a dependant who may see exactly one
+other member's records.
+
+Writing it located three assumptions in the implementation that the first pack could not
+have revealed, each of which we report because their absence from the first domain is
+precisely what a single-domain evaluation hides. The company node was identified by a
+literal name, so every rule reading the current date silently found nothing and all date
+arithmetic failed. Record ownership was resolved through hard-coded entity types and
+predicates drawn from retail, so no insurance record reached its owner and every question
+was refused as another person's. Three answer templates named the retail company outright.
+All three are now declared by the pack; the original pack declares what the code had
+assumed, and its results are unchanged.
+
 \section{Experimental protocol}\label{sec:protocol}
 
 \paragraph{Systems.} All model-based systems use the same open-weights instruction-tuned
@@ -278,10 +300,86 @@ recorded); authorization before reasoning (every record visible).
 \label{tab:main}
 \end{table}
 
+\section{Calibration of the computed confidence}\label{sec:calibration}
+The system never asks the model how sure it is. Confidence is computed in code from
+retrieval relevance, rule coverage and the verification outcome, and no metric in this
+paper reads it: it is recorded alongside correctness and analysed afterwards. That is a
+claim about the design, and this section is what turns it into a measurement.
+
+On the eighty-six question curated split, over ten equal-width bins, the expected
+calibration error is $0.192$, the worst bin's gap $0.650$, and the Brier score $0.203$,
+against an accuracy of $0.733$ and a mean confidence of $0.779$. Restricted to the
+sixty-two questions the system answered rather than declined, the expected calibration
+error is $0.179$ and the gap between mean confidence and accuracy widens to $0.156$: when
+it answers, it says $0.914$ and is right $0.758$ of the time.
+
+Two features of that distribution matter more than the summary statistic. Forty-two of
+the eighty-six questions fall in the top bin, where the system claims $0.959$ and scores
+$0.786$. And the scale is barely used: no question receives a confidence between $0.1$ and
+$0.5$, so in practice the score takes about three values.
+
+We therefore make the weaker claim the evidence supports. Computing confidence in code
+rather than eliciting it from the model is defensible on its own terms---it is
+reproducible, inspectable, and cannot be inflated by a fluent generator---but
+\emph{computed} is not \emph{calibrated}, and nothing here licenses reading the number as
+a probability of correctness. Fitting the weights on a development split and reporting on
+a held-out one is the obvious remedy and is not done here.
+
+\section{Error analysis}\label{sec:errors}
+We read every failure on the second domain by hand: forty questions, thirty-four correct,
+six wrong, and---the shape that matters before the detail---none of the six asserting
+anything false. The hallucination rate on that split is $0.000$.
+
+\emph{A stated fact was not recognised} (three of six). Each of these questions states, in
+ordinary words, the one fact the records cannot hold, and the input detector scored the
+paraphrase below threshold, so the reasoner declined to commit and answered conditionally.
+This is a single defect seen three times: the input threshold is calibrated on the first
+pack, and nothing has been tuned for the second. It is not a wrong answer. In each case
+the system named the missing fact and made the answer contingent on it, which is what
+three-valued logic is for; a system that had guessed would have been right and would have
+been guessing.
+
+\emph{The wrong goal was selected} (two of six). One question reached policy retrieval
+instead of the settlement calculation. The other asserts a false premise---that an
+excluded treatment is covered---and the system rejected the premise and stated that no
+amount was due, by way of the wrong goal. The content is right; only the route is wrong,
+and it is scored as a failure because a system that reaches the right words by the wrong
+route will not keep doing so.
+
+\emph{A question with no goal behind it} (one of six). The schema declares no goal for
+whether a hospital is in the insurer's network, so the nearest declared goal won. This is
+the same failure the first domain records as \emph{not covered}, and it is fixable in the
+pack rather than in the architecture.
+
+We leave one expectation deliberately unmet. A question using wording that sits between
+two goals drew a clarification rather than a choice, which is defensible and possibly
+better than guessing; the gold says otherwise, and was written before the run. Changing it
+afterwards is how a benchmark stops meaning anything.
+
+Across both domains the pattern is consistent: where this architecture fails, it fails
+towards silence rather than towards invention.
+
 \section{Threats to validity}
-\paragraph{Synthetic companies.} The worlds share one schema and one domain (retail support
-and employee policy). Generalisation to other schemas is argued by construction---the
-architecture is schema-driven---but is not measured here.
+\paragraph{Synthetic companies.} The generated worlds share one schema and one domain
+(retail support and employee policy). A second pack in an unrelated domain
+(Section~\ref{sec:second-domain}) shows the architecture carries, and located three
+implementation assumptions that one domain had hidden; but that pack is forty questions
+against the first domain's several hundred, its questions were written by the same author
+in the same sitting as its schema, and it has no policy-version category. Its higher
+score should not be read as evidence that the architecture generalises \emph{better}: the
+two evaluations are not matched in size or difficulty, and only the first is generated
+rather than written.
+\paragraph{Confidence is not calibrated.} Confidence is computed rather than elicited, which
+is a property of the design; Section~\ref{sec:calibration} measures it and finds it
+overconfident and close to three-valued in practice. No result in this paper depends on
+the number---no metric reads it---but a deployment that gated on it would be relying on a
+quantity this evaluation shows to be poorly calibrated.
+\paragraph{A mechanism with no measured effect.} The verification gate is part of the
+architecture and, on this data, removing it changes no answer
+(Section~\ref{sec:results}). We report it as a null result rather than omitting the
+ablation. It means the gate is a guarantee that costs nothing here, not a mechanism this
+evaluation shows doing work; a dataset on which verification fails would be needed to
+show otherwise.
 \paragraph{Template questions.} Questions are templated, and paraphrase diversity is bounded
 by the templates. Disjoint development and test phrasings mitigate but do not remove this;
 a study with questions written by practitioners is described in the pilot protocol

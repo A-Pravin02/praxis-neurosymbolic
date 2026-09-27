@@ -10,6 +10,11 @@
 
 entity customer order product category return refund payment employee claim grade company policy_version ticket
 
+# Who a question can be asked on behalf of, and how a record reaches its owner.
+# These were literals in the code until a second pack showed they are pack data.
+principal customer employee
+owns placed_by claimant
+
 # --- structural attributes: the company records, authoritative --------------
 attribute membership_tier(customer) -> text
 attribute city(customer) -> text
