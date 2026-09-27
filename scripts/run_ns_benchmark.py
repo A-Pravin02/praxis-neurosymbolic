@@ -26,14 +26,16 @@ def main() -> None:
     parser.add_argument("--split", default="test")
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--out", default=str(ROOT / "eval_reports"))
+    parser.add_argument("--pack", default=None,
+                        help="knowledge pack directory; defaults to the shipped one")
     args = parser.parse_args()
 
     report = run_benchmark(systems=[s for s in args.systems.split(",") if s] or None,
-                           limit=args.limit, split=args.split)
+                           limit=args.limit, split=args.split, pack_dir=args.pack)
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
-    base = out / f"ns-benchmark-{args.split}-{stamp}"
+    base = out / f"ns-benchmark-{report['pack']}-{args.split}-{stamp}"
     base.with_suffix(".json").write_text(json.dumps(report, indent=1, default=str),
                                          encoding="utf-8")
     markdown = render_markdown(report)
