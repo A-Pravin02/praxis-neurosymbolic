@@ -17,6 +17,12 @@ deployed service - every mechanism is on.
                        claimed approval counts as a recorded one
     no_authorization   reasoning runs over every record, whoever is asking
     no_verification    an answer that fails verification is released anyway
+    no_number_check    a claim carrying a number is scored on wording alone, so a
+                       sentence that reads like the evidence supports it even when
+                       the figure in it does not appear there
+    no_kind_agreement  the goal nearest the question wins even when it answers a
+                       different kind of question than the one asked - an amount
+                       where a yes or no was wanted, or the reverse
 """
 from __future__ import annotations
 
@@ -25,7 +31,7 @@ from contextvars import ContextVar
 from typing import Iterator
 
 KNOWN = frozenset({"latest_version", "two_valued", "trust_statements", "no_authorization",
-                   "no_verification"})
+                   "no_verification", "no_number_check", "no_kind_agreement"})
 
 _ACTIVE: ContextVar[frozenset[str]] = ContextVar("praxis_ablations", default=frozenset())
 

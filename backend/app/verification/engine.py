@@ -14,6 +14,8 @@ computed from measurable agreement between text, evidence and derivations.
 """
 from __future__ import annotations
 
+from app.hybrid import ablations
+
 import re
 from dataclasses import dataclass, field
 from enum import Enum
@@ -172,7 +174,7 @@ def support_for(claim_text: str, spans: list[EvidenceSpan]) -> tuple[float, list
     for index, span in enumerate(spans, start=1):
         lexical = coverage(claim_text, span.text)
         numeric = _numeric_agreement(claim_text, span.text)
-        if numeric is not None:
+        if numeric is not None and not ablations.active("no_number_check"):
             # A numeric claim is only supported if the number is present.
             score = 0.35 * lexical + 0.65 * numeric
         else:

@@ -374,12 +374,27 @@ is a property of the design; Section~\ref{sec:calibration} measures it and finds
 overconfident and close to three-valued in practice. No result in this paper depends on
 the number---no metric reads it---but a deployment that gated on it would be relying on a
 quantity this evaluation shows to be poorly calibrated.
-\paragraph{A mechanism with no measured effect.} The verification gate is part of the
-architecture and, on this data, removing it changes no answer
-(Section~\ref{sec:results}). We report it as a null result rather than omitting the
-ablation. It means the gate is a guarantee that costs nothing here, not a mechanism this
-evaluation shows doing work; a dataset on which verification fails would be needed to
-show otherwise.
+\paragraph{Mechanisms with no measured effect, and why.} Three of the six ablations change
+nothing measurable, and the reason is not the same in each case, so we separate them
+rather than reporting one null three times.
+
+Removing the verification gate changes no answer. Removing the number check---which
+refuses support to a claim whose figure does not appear in the evidence---changes no
+answer either, and instrumenting the run shows why: in this configuration the claim
+scorer is never called at all. Both belong to the same subsystem, and that subsystem
+exists to police prose the model wrote. In the configuration evaluated here the model
+writes no prose: answers are composed from the reasoning's conclusion, and the
+claim check returns early on exactly that ground. The verification layer is therefore
+insurance against a failure this configuration cannot have, and its null result is a
+consequence of the architecture holding earlier rather than evidence that verification is
+idle. Whether it does work where the model phrases the answer is a question this
+evaluation does not answer, and the configuration needed to ask it exists.
+
+Removing kind agreement is exercised and simply does not reach significance: three
+questions are answered correctly without it against one with it, and three are
+hallucinated without it against none with it, at $p=0.62$ and $p=0.25$. We report it as
+no measured difference. A mechanism argued for on the grounds that it prevents a fluent
+answer to a different question is not shown, on this data, to prevent one.
 \paragraph{Template questions.} Questions are templated, and paraphrase diversity is bounded
 by the templates. Disjoint development and test phrasings mitigate but do not remove this;
 a study with questions written by practitioners is described in the pilot protocol

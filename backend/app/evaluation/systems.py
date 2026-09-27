@@ -37,6 +37,8 @@ ABLATIONS = {
     "ns_two_valued": {"two_valued"},
     "ns_trust_statements": {"trust_statements"},
     "ns_no_authorization": {"no_authorization"},
+    "ns_no_number_check": {"no_number_check"},
+    "ns_no_kind_agreement": {"no_kind_agreement"},
 }
 
 

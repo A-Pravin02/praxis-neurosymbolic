@@ -35,6 +35,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import TYPE_CHECKING
 
+from app.hybrid import ablations
 from app.neural.retrieval import RetrievedClause
 from app.symbolic.schema import Expr
 
@@ -305,12 +306,14 @@ class ReasoningRouter:
         # speech act calls for is close to the top, it wins.
         act = interpretation.speech_act.label
         wanted = COMPATIBLE_KINDS.get(act)
+        if ablations.active("no_kind_agreement"):
+            wanted = None
         if wanted and top.goal_kind not in wanted:
             compatible = [c for c in candidates
                           if c.goal_kind in wanted and top.score - c.score <= KIND_WINDOW]
             if compatible:
                 top = compatible[0]
-        preferred = PREFERRED_KIND.get(act)
+        preferred = None if ablations.active("no_kind_agreement") else PREFERRED_KIND.get(act)
         if preferred and top.goal_kind != preferred:
             better = [c for c in candidates
                       if c.goal_kind == preferred and top.score - c.score <= KIND_WINDOW]
