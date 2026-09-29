@@ -87,7 +87,7 @@ def render(report: dict, tag: str) -> str:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--split", default="dev", choices=["dev", "test"])
+    parser.add_argument("--split", default="dev", choices=["dev", "test", "confirm"])
     parser.add_argument("--systems", nargs="+", default=["neurosymbolic", "rag_extractive"])
     parser.add_argument("--tag", default="deterministic")
     parser.add_argument("--limit", type=int)

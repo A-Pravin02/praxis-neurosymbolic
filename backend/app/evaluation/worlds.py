@@ -43,6 +43,14 @@ WORLDS_DIR = BACKEND_ROOT / "data" / "benchmark_worlds"
 # system; test worlds are generated, frozen and scored, never examined for tuning.
 DEV_SEEDS = (11, 12, 13)
 TEST_SEEDS = (101, 102, 103, 104, 105)
+# A confirmatory split over five further companies, generated and frozen after the test
+# split had been scored and the system was final, and scored once. It answers the
+# objection that 255 questions is a small evaluation without the move that would make
+# that objection fair: the test split is not touched, extended or rescored. What it adds
+# is companies, not phrasings -- the questions use the test split's wordings over
+# different records, policy parameters and boundary placements -- so it measures
+# generalisation to an unseen company and not to unseen language.
+CONFIRM_SEEDS = (201, 202, 203, 204, 205)
 
 COMPANY = "meridian"   # the rule files name the company node; its display name is data
 

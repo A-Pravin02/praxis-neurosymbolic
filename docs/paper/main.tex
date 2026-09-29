@@ -28,8 +28,10 @@ language model never decides. In \textsc{Praxis}, the model is a semantic parser
 maps a question into a knowledge pack's closed schema; authorization restricts which
 records exist for the asker \emph{before} any reasoning; a three-valued rule engine
 evaluates the policy in force on the case's own date over company records; and a
-verification gate withholds any answer whose facts, provenance, calculation, policy
-version or wording do not check. We introduce a benchmark of procedurally generated
+verification gate stands between the conclusion and the reply, withholding any answer
+whose facts, provenance, calculation, policy version or wording do not check---a
+guarantee which, we report, this evaluation never exercises. We introduce a benchmark of
+procedurally generated
 companies with counterfactual policy parameters, records placed on decision
 boundaries, and gold answers from an independent reference implementation of the policy
 text, validated by agreement with the rule engine and by mutation analysis. Across ten
@@ -83,6 +85,13 @@ fixed while varying only the architecture, with coverage reported alongside
 hallucination, paired significance tests, and component ablations
 (Sections~\ref{sec:protocol}--\ref{sec:results}).
 \end{enumerate}
+
+Of the symbolic mechanisms the architecture contains, the ablations support two as doing
+measurable work---authorization before reasoning, and three-valued logic together with
+version ordering---and do not support two others. We claim the first pair and describe the
+second as guarantees whose value this evaluation does not demonstrate, because a mechanism
+that cannot be shown to matter should not be listed among a paper's contributions
+(Sections~\ref{sec:results} and~\ref{sec:threats}).
 
 We do not claim that the architecture eliminates hallucination. It moves the failure
 surface: a decision can no longer be invented, but a question can still be misunderstood,

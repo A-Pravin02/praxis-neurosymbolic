@@ -48,9 +48,15 @@ import yaml
 
 from app.evaluation import oracle
 from app.evaluation.casegen import generate_cases
-from app.evaluation.worlds import DEV_SEEDS, TEST_SEEDS, WORLDS_DIR, World, generate_world, write_pack
+from app.evaluation.worlds import (
+    CONFIRM_SEEDS, DEV_SEEDS, TEST_SEEDS, WORLDS_DIR, World, generate_world, write_pack,
+)
 
-SPLIT_SEEDS = {"dev": DEV_SEEDS, "test": TEST_SEEDS}
+SPLIT_SEEDS = {"dev": DEV_SEEDS, "test": TEST_SEEDS, "confirm": CONFIRM_SEEDS}
+# Which question wordings a split draws on. The confirmatory split reuses the test
+# phrasings deliberately: its companies are new, its questions are not, and saying so is
+# what keeps it from being read as a second test of paraphrase robustness.
+SPLIT_TEMPLATES = {"dev": "dev", "test": "test", "confirm": "test"}
 ANSWERABLE = ("decision", "value", "result")
 BOOTSTRAP_SAMPLES = 2000
 
@@ -69,7 +75,7 @@ def freeze(split: str) -> Path:
     for seed in SPLIT_SEEDS[split]:
         world = generate_world(seed)
         write_pack(world)
-        cases.extend(generate_cases(world, split))
+        cases.extend(generate_cases(world, SPLIT_TEMPLATES[split]))
     path = WORLDS_DIR / f"{split}.yaml"
     path.write_text(
         f"# Frozen {split} split: {len(cases)} cases over worlds {list(SPLIT_SEEDS[split])}.\n"
