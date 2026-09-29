@@ -2,56 +2,33 @@
 \toprule
 Reference & System & $n_{10}$ & $n_{01}$ & $p$ (accuracy) & $n_{10}$ & $p$ (hallucination) \\
 \midrule
-Praxis (offline encoder) · ablations-test & Praxis (lexical encoder) · ablations-test & 203 & 15 & 2.9e-43 & 0 & 7.3e-12 \\
-Praxis (offline encoder) · ablations-test & ns_latest_version · ablations-test & 9 & 0 & 0.0039 & 9 & 0.0039 \\
-Praxis (offline encoder) · ablations-test & ns_no_authorization · ablations-test & 15 & 0 & 6.1e-05 & 15 & 6.1e-05 \\
-Praxis (offline encoder) · ablations-test & ns_no_verification · ablations-test & 0 & 0 & 1 & 0 & 1 \\
-Praxis (offline encoder) · ablations-test & ns_trust_statements · ablations-test & 27 & 0 & 1.5e-08 & 0 & 0.00012 \\
-Praxis (offline encoder) · ablations-test & ns_two_valued · ablations-test & 15 & 2 & 0.0023 & 10 & 0.002 \\
-Praxis (offline encoder) · ablations-test & Praxis (offline encoder) · ablations2 & 0 & 0 & 1 & 0 & 1 \\
-Praxis (offline encoder) · ablations-test & ns_no_kind_agreement · ablations2 & 1 & 3 & 0.62 & 3 & 0.25 \\
-Praxis (offline encoder) · ablations-test & ns_no_number_check · ablations2 & 0 & 0 & 1 & 0 & 1 \\
-Praxis (offline encoder) · ablations-test & LLM only · paper & 152 & 9 & 1.2e-34 & 97 & 8e-11 \\
-Praxis (offline encoder) · ablations-test & LLM + RAG · paper & 168 & 16 & 3.8e-33 & 68 & 9.3e-05 \\
-Praxis (offline encoder) · ablations-test & LLM + RAG + self-check · paper & 162 & 22 & 1.5e-27 & 62 & 0.00044 \\
-Praxis (offline encoder) · ablations-test & Praxis (offline encoder) · paper & 0 & 0 & 1 & 0 & 1 \\
-Praxis (offline encoder) · ablations-test & Extractive RAG · paper & 203 & 0 & 1.6e-61 & 17 & 0.28 \\
-Praxis (offline encoder) · ablations-test & Praxis (LLM parser) · parser-codefix & 2 & 40 & 4.1e-10 & 0 & 3.7e-09 \\
-Praxis (offline encoder) · ablations-test & Praxis (LLM parser) · parser-fixed & 9 & 34 & 0.00017 & 9 & 0.014 \\
-Praxis (offline encoder) · ablations-test & Praxis (LLM parser) · parser-test & 12 & 40 & 0.00013 & 0 & 3.7e-09 \\
-Praxis (offline encoder) · ablations2 & Praxis (offline encoder) · ablations-test & 0 & 0 & 1 & 0 & 1 \\
-Praxis (offline encoder) · ablations2 & Praxis (lexical encoder) · ablations-test & 203 & 15 & 2.9e-43 & 0 & 7.3e-12 \\
-Praxis (offline encoder) · ablations2 & ns_latest_version · ablations-test & 9 & 0 & 0.0039 & 9 & 0.0039 \\
-Praxis (offline encoder) · ablations2 & ns_no_authorization · ablations-test & 15 & 0 & 6.1e-05 & 15 & 6.1e-05 \\
-Praxis (offline encoder) · ablations2 & ns_no_verification · ablations-test & 0 & 0 & 1 & 0 & 1 \\
-Praxis (offline encoder) · ablations2 & ns_trust_statements · ablations-test & 27 & 0 & 1.5e-08 & 0 & 0.00012 \\
-Praxis (offline encoder) · ablations2 & ns_two_valued · ablations-test & 15 & 2 & 0.0023 & 10 & 0.002 \\
-Praxis (offline encoder) · ablations2 & ns_no_kind_agreement · ablations2 & 1 & 3 & 0.62 & 3 & 0.25 \\
-Praxis (offline encoder) · ablations2 & ns_no_number_check · ablations2 & 0 & 0 & 1 & 0 & 1 \\
-Praxis (offline encoder) · ablations2 & LLM only · paper & 152 & 9 & 1.2e-34 & 97 & 8e-11 \\
-Praxis (offline encoder) · ablations2 & LLM + RAG · paper & 168 & 16 & 3.8e-33 & 68 & 9.3e-05 \\
-Praxis (offline encoder) · ablations2 & LLM + RAG + self-check · paper & 162 & 22 & 1.5e-27 & 62 & 0.00044 \\
-Praxis (offline encoder) · ablations2 & Praxis (offline encoder) · paper & 0 & 0 & 1 & 0 & 1 \\
-Praxis (offline encoder) · ablations2 & Extractive RAG · paper & 203 & 0 & 1.6e-61 & 17 & 0.28 \\
-Praxis (offline encoder) · ablations2 & Praxis (LLM parser) · parser-codefix & 2 & 40 & 4.1e-10 & 0 & 3.7e-09 \\
-Praxis (offline encoder) · ablations2 & Praxis (LLM parser) · parser-fixed & 9 & 34 & 0.00017 & 9 & 0.014 \\
-Praxis (offline encoder) · ablations2 & Praxis (LLM parser) · parser-test & 12 & 40 & 0.00013 & 0 & 3.7e-09 \\
-Praxis (offline encoder) · paper & Praxis (offline encoder) · ablations-test & 0 & 0 & 1 & 0 & 1 \\
-Praxis (offline encoder) · paper & Praxis (lexical encoder) · ablations-test & 203 & 15 & 2.9e-43 & 0 & 7.3e-12 \\
-Praxis (offline encoder) · paper & ns_latest_version · ablations-test & 9 & 0 & 0.0039 & 9 & 0.0039 \\
-Praxis (offline encoder) · paper & ns_no_authorization · ablations-test & 15 & 0 & 6.1e-05 & 15 & 6.1e-05 \\
-Praxis (offline encoder) · paper & ns_no_verification · ablations-test & 0 & 0 & 1 & 0 & 1 \\
-Praxis (offline encoder) · paper & ns_trust_statements · ablations-test & 27 & 0 & 1.5e-08 & 0 & 0.00012 \\
-Praxis (offline encoder) · paper & ns_two_valued · ablations-test & 15 & 2 & 0.0023 & 10 & 0.002 \\
-Praxis (offline encoder) · paper & Praxis (offline encoder) · ablations2 & 0 & 0 & 1 & 0 & 1 \\
-Praxis (offline encoder) · paper & ns_no_kind_agreement · ablations2 & 1 & 3 & 0.62 & 3 & 0.25 \\
-Praxis (offline encoder) · paper & ns_no_number_check · ablations2 & 0 & 0 & 1 & 0 & 1 \\
+Praxis (LLM parser) · paper & LLM only · paper & 188 & 7 & 7.9e-47 & 107 & 4.2e-24 \\
+Praxis (LLM parser) · paper & LLM + RAG · paper & 200 & 10 & 4.7e-47 & 76 & 5e-15 \\
+Praxis (LLM parser) · paper & LLM + RAG + basic rules · paper & 114 & 10 & 1.7e-23 & 60 & 2.7e-12 \\
+Praxis (LLM parser) · paper & LLM + RAG + self-check · paper & 190 & 12 & 2.3e-42 & 72 & 2.5e-13 \\
+Praxis (LLM parser) · paper & Praxis (offline encoder) · paper & 40 & 2 & 4.1e-10 & 29 & 3.7e-09 \\
+Praxis (LLM parser) · paper & ns_latest_version · paper & 49 & 2 & 1.2e-12 & 38 & 7.3e-12 \\
+Praxis (LLM parser) · paper & ns_no_authorization · paper & 55 & 2 & 2.3e-14 & 44 & 1.1e-13 \\
+Praxis (LLM parser) · paper & ns_no_kind_agreement · paper & 38 & 2 & 1.5e-09 & 32 & 4.7e-10 \\
+Praxis (LLM parser) · paper & ns_no_number_check · paper & 40 & 2 & 4.1e-10 & 29 & 3.7e-09 \\
+Praxis (LLM parser) · paper & ns_no_verification · paper & 40 & 2 & 4.1e-10 & 29 & 3.7e-09 \\
+Praxis (LLM parser) · paper & ns_trust_statements · paper & 67 & 2 & 8.2e-18 & 15 & 6.1e-05 \\
+Praxis (LLM parser) · paper & ns_two_valued · paper & 53 & 2 & 8.6e-14 & 39 & 3.6e-12 \\
+Praxis (LLM parser) · paper & Extractive RAG · paper & 241 & 0 & 5.7e-73 & 21 & 9.5e-07 \\
 Praxis (offline encoder) · paper & LLM only · paper & 152 & 9 & 1.2e-34 & 97 & 8e-11 \\
 Praxis (offline encoder) · paper & LLM + RAG · paper & 168 & 16 & 3.8e-33 & 68 & 9.3e-05 \\
+Praxis (offline encoder) · paper & LLM + RAG + basic rules · paper & 99 & 33 & 7.5e-09 & 53 & 0.0073 \\
 Praxis (offline encoder) · paper & LLM + RAG + self-check · paper & 162 & 22 & 1.5e-27 & 62 & 0.00044 \\
+Praxis (offline encoder) · paper & ns_latest_version · paper & 9 & 0 & 0.0039 & 9 & 0.0039 \\
+Praxis (offline encoder) · paper & ns_no_authorization · paper & 15 & 0 & 6.1e-05 & 15 & 6.1e-05 \\
+Praxis (offline encoder) · paper & ns_no_kind_agreement · paper & 1 & 3 & 0.62 & 3 & 0.25 \\
+Praxis (offline encoder) · paper & ns_no_number_check · paper & 0 & 0 & 1 & 0 & 1 \\
+Praxis (offline encoder) · paper & ns_no_verification · paper & 0 & 0 & 1 & 0 & 1 \\
+Praxis (offline encoder) · paper & Praxis (LLM parser) · paper & 2 & 40 & 4.1e-10 & 0 & 3.7e-09 \\
+Praxis (offline encoder) · paper & ns_trust_statements · paper & 27 & 0 & 1.5e-08 & 0 & 0.00012 \\
+Praxis (offline encoder) · paper & ns_two_valued · paper & 15 & 2 & 0.0023 & 10 & 0.002 \\
 Praxis (offline encoder) · paper & Extractive RAG · paper & 203 & 0 & 1.6e-61 & 17 & 0.28 \\
 Praxis (offline encoder) · paper & Praxis (LLM parser) · parser-codefix & 2 & 40 & 4.1e-10 & 0 & 3.7e-09 \\
-Praxis (offline encoder) · paper & Praxis (LLM parser) · parser-fixed & 9 & 34 & 0.00017 & 9 & 0.014 \\
 Praxis (offline encoder) · paper & Praxis (LLM parser) · parser-test & 12 & 40 & 0.00013 & 0 & 3.7e-09 \\
 \bottomrule
 \end{tabular}

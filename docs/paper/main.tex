@@ -38,7 +38,12 @@ with retrieval and self-verification, and with retrieval and a classical rule en
 against \textsc{Praxis} using that model only as a parser, and we ablate each symbolic
 mechanism. We report hallucination together with coverage, so that abstention is never
 mistaken for reliability.
-%% RESULTS-PENDING: one sentence with the headline effect sizes and intervals.
+On 255 test questions, with the same open-weights model serving every system that uses
+one, the architecture answers $0.945$ correctly at an unsupported-answer rate of
+$0.035$, against $0.200$ and $0.302$ for that model with retrieval over the same
+corpus and $0.537$ and $0.247$ for it driving a classical rule engine; it discloses
+none of fifteen restricted records, where moving authorization after reasoning
+discloses thirteen. Hallucination is reduced, not eliminated.
 \end{abstract}
 
 \section{Introduction}
@@ -285,13 +290,58 @@ as false); statement grounding (stated facts override records, claimed approvals
 recorded); authorization before reasoning (every record visible).
 
 \section{Results}\label{sec:results}
-%% RESULTS-PENDING. Written from docs/paper/results/test.json only:
-%%  - Table 1 (figures/table_main.tex), Figure 1 (figures/fig_main.pdf)
-%%  - coverage/hallucination trade-off, Figure 2 (figures/fig_tradeoff.pdf)
-%%  - per-category hallucination, Figure 3 (figures/fig_categories.pdf)
-%%  - ablations, Figure 4 (figures/fig_ablation_*.pdf)
-%%  - paired tests, Table 2 (figures/table_significance.tex)
-%%  - model scale, if more than one model size completed
+All numbers are the 255 test questions, one open-weights model serving every system that
+uses one, and rates carry 95\% bootstrap intervals in Table~\ref{tab:main}. Paired
+comparisons are exact McNemar tests on per-question outcomes.
+
+\paragraph{The architecture, against language models.} \textsc{Praxis} with the model as
+parser answers $0.945$ of the questions correctly and is unsupported on $0.035$. The same
+model given retrieval over the same corpus reaches $0.200$ accuracy at $0.302$
+hallucination; asked to check its own draft, $0.247$ and $0.282$; alone, $0.235$ and
+$0.427$. Against retrieval the paired test is 200 questions to 10 on correctness
+($p=5\times10^{-47}$) and 76 to 8 on hallucination ($p=5\times10^{-15}$). Against the same
+model driving a classical two-valued rule engine---the strongest baseline, at $0.537$ and
+$0.247$---it is 114 to 10 ($p=2\times10^{-23}$) and 60 to 6 ($p=3\times10^{-12}$).
+
+These gaps are not bought with silence. \textsc{Praxis} answers $0.976$ of the questions
+that have a definite answer, against $0.462$ for retrieval and $0.505$ for self-check, and
+its selective accuracy is $1.000$: on this split, when it commits, it is right. The
+baselines abstain roughly twice as often and are wrong more often when they do answer.
+
+\paragraph{Understanding is where the remaining error lives.} The same architecture with
+embedding understanding instead of a parser scores $0.796$ and $0.149$. Nothing else
+differs: the same rules, the same authorization, the same gate. Replacing one component
+moves hallucination by a factor of four ($p=4\times10^{-9}$, 29 questions to none), which
+places the residual failure in mapping language onto the schema rather than in the
+reasoning over it. The lexical-encoder configuration answers almost nothing and is
+reported at $0.000$ coverage so that its $0.000$ hallucination is not mistaken for a
+result.
+
+\paragraph{Authorization.} Fifteen questions ask about a record the asker may not see. No
+configuration that authorizes before reasoning discloses one. Moving authorization after
+reasoning---every other mechanism intact---discloses $0.867$ of them, thirteen of fifteen,
+and costs accuracy as well ($0.737$; $p=6\times10^{-5}$ on both). The two language-model
+baselines that retrieve only what the asker may see leak nothing, as expected; extractive
+retrieval, self-check and the rule-engine baseline each disclose $0.067$.
+
+\paragraph{Ablations.} Removing statement grounding costs the most accuracy, $0.796$ to
+$0.690$ ($p=1\times10^{-8}$), by accepting what a question asserts over what the records
+say; it also lowers hallucination, to $0.094$, by refusing a quarter of the answerable
+questions, which is why coverage is reported beside it. Two-valued logic costs $0.745$ and
+raises hallucination to $0.188$ ($p=0.004$ both ways). Always applying the newest policy
+version costs $0.761$ at $0.184$ ($p=0.004$).
+
+Three ablations change nothing measurable. Kind agreement is exercised and does not reach
+significance ($p=0.62$ on correctness, $p=0.25$ on hallucination; it is nominally
+\emph{better} without, at $0.804$). The verification gate and the number check change no
+answer at all, for the structural reason given in Section~\ref{sec:threats}: both police
+prose the model wrote, and in this configuration the model writes none.
+
+\paragraph{Cost.} The symbolic path answers in 78\,ms with embedding understanding and
+380\,ms with the parser. The language-model baselines take 5.8 to 12.5 seconds, and the
+most expensive of them---the model applying rules---is also the one that leaks. Unsupported
+numbers appear in $0.012$ of \textsc{Praxis} answers against $0.153$ for the model alone
+and $0.372$ for extractive retrieval.
 
 \begin{table}[t]
 \centering\small
@@ -359,7 +409,7 @@ afterwards is how a benchmark stops meaning anything.
 Across both domains the pattern is consistent: where this architecture fails, it fails
 towards silence rather than towards invention.
 
-\section{Threats to validity}
+\section{Threats to validity}\label{sec:threats}
 \paragraph{Synthetic companies.} The generated worlds share one schema and one domain
 (retail support and employee policy). A second pack in an unrelated domain
 (Section~\ref{sec:second-domain}) shows the architecture carries, and located three
@@ -415,7 +465,24 @@ Freezing the test split before any run, and generating rather than writing its q
 limit but do not eliminate this.
 
 \section{Conclusion}
-%% RESULTS-PENDING.
+A language model that never decides can be held to a standard a fluent one cannot. With
+the model confined to mapping a question onto a closed schema, every decision derived
+symbolically, and authorization applied before any record enters a proof, the system
+answers $0.945$ of 255 enterprise decision questions correctly at $0.035$ unsupported,
+against $0.200$ and $0.302$ for the same model with retrieval, and discloses none of the
+restricted records that the same architecture leaks thirteen of when authorization is
+moved after reasoning.
+
+Two results temper that. Replacing only the component that reads the question moves
+hallucination fourfold, so what remains of the error is in understanding rather than in
+reasoning---and understanding is the one stage still performed by a model. And three of
+six ablations change nothing measurable: the verification subsystem has no work to do in
+a configuration where the model writes no prose, and kind agreement is not shown to
+prevent the failure it was built to prevent. We report them because a mechanism that
+cannot be shown to matter should not be claimed to.
+
+The architecture reduces unsupported answers in enterprise question answering. It does
+not eliminate them, and this paper does not claim a general result about hallucination.
 
 \bibliographystyle{plainnat}
 \bibliography{references}
