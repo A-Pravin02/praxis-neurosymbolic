@@ -41,11 +41,15 @@ against \textsc{Praxis} using that model only as a parser, and we ablate each sy
 mechanism. We report hallucination together with coverage, so that abstention is never
 mistaken for reliability.
 On 255 test questions, with the same open-weights model serving every system that uses
-one, the architecture answers $0.945$ correctly at an unsupported-answer rate of
-$0.035$, against $0.200$ and $0.302$ for that model with retrieval over the same
-corpus and $0.537$ and $0.247$ for it driving a classical rule engine; it discloses
-none of fifteen restricted records, where moving authorization after reasoning
-discloses thirteen. Hallucination is reduced, not eliminated.
+one, the architecture answers $0.945$ correctly at an unsupported-answer rate of $0.035$,
+against $0.200$ and $0.302$ for that model with retrieval over the same corpus and $0.537$
+and $0.247$ for it driving a classical rule engine. On a confirmatory split of five
+further companies, frozen after the system was final and scored once, the configuration
+whose parser was corrected using test-split failures falls to $0.835$ and $0.118$, and we
+report that figure as the one that generalises; the configuration with no language model
+in the loop replicates at $0.812$ and $0.133$. Authorization replicates exactly: none of
+fifteen restricted records disclosed, where moving authorization after reasoning discloses
+thirteen, on both splits. Hallucination is reduced, not eliminated.
 \end{abstract}
 
 \section{Introduction}
@@ -359,6 +363,41 @@ and $0.372$ for extractive retrieval.
 \label{tab:main}
 \end{table}
 
+\section{Confirmation on unseen companies}\label{sec:confirm}
+The test split is 255 questions over five generated companies, and a fair objection is
+that a system developed alongside a benchmark will score well on it. We therefore
+generated five further companies, froze them after the test split had been scored and the
+system was final, and scored them once. The result is 510 questions over ten disjoint
+companies, with no question shared. What this adds is companies rather than phrasings:
+the questions use the test split's wordings over different records, policy parameters and
+boundary placements, so it measures generalisation to an unseen company and not to unseen
+language.
+
+\paragraph{What replicates.} The architecture with embedding understanding scores $0.812$
+accuracy at $0.133$ hallucination, against $0.796$ and $0.149$ on the test split. The
+authorization result replicates exactly: of fifteen questions about records the asker may
+not see, the full system discloses none and the configuration that authorizes after
+reasoning discloses thirteen, at $p=1\times10^{-4}$---the same thirteen-of-fifteen
+pattern, on companies the system has never seen. That ablation also costs $0.056$ accuracy
+here ($0.757$; 14 questions to none, $p=1\times10^{-4}$).
+
+\paragraph{What does not.} The configuration using the language model as parser scores
+$0.835$ at $0.118$, against $0.945$ and $0.035$ on the test split. Its advantage over
+embedding understanding falls from fifteen accuracy points to two.
+
+We report this as the principal finding of the confirmatory split, and the explanation is
+methodological rather than mysterious. The parser's last defect was found by reading its
+test-split failures: it read a question about the asker's own entitlement as a request for
+the policy in general, and the correction was written after seeing which questions it got
+wrong. The test-split figure is therefore not a generalisation estimate, and the
+confirmatory figure is. We keep both, and treat $0.835$ as the number that describes the
+parser configuration on a company it has not seen.
+
+This is what a held-out confirmatory split is for, and it is worth stating that the
+inflated figure would otherwise have been reported in good faith: the change that produced
+it was measured in isolation, fixed ten questions and broke none, and carried $p=0.002$.
+None of that makes it a generalisation result.
+
 \section{Calibration of the computed confidence}\label{sec:calibration}
 The system never asks the model how sure it is. Confidence is computed in code from
 retrieval relevance, rule coverage and the verification outcome, and no metric in this
@@ -480,7 +519,10 @@ symbolically, and authorization applied before any record enters a proof, the sy
 answers $0.945$ of 255 enterprise decision questions correctly at $0.035$ unsupported,
 against $0.200$ and $0.302$ for the same model with retrieval, and discloses none of the
 restricted records that the same architecture leaks thirteen of when authorization is
-moved after reasoning.
+moved after reasoning. On five companies generated after the system was final, the
+authorization result repeats unchanged and the headline accuracy does not: the
+configuration whose parser was corrected against test-split failures scores $0.835$ there,
+and that is the figure we would defend.
 
 Two results temper that. Replacing only the component that reads the question moves
 hallucination fourfold, so what remains of the error is in understanding rather than in
