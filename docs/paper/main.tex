@@ -47,7 +47,8 @@ and $0.247$ for it driving a classical rule engine. On a confirmatory split of f
 further companies, frozen after the system was final and scored once, the configuration
 whose parser was corrected using test-split failures falls to $0.835$ and $0.118$, and we
 report that figure as the one that generalises; the configuration with no language model
-in the loop replicates at $0.812$ and $0.133$. Authorization replicates exactly: none of
+in the loop replicates at $0.812$ and $0.133$, as does the retrieval baseline it is
+measured against, at $0.216$ and $0.306$. Authorization replicates exactly: none of
 fifteen restricted records disclosed, where moving authorization after reasoning discloses
 thirteen, on both splits. Hallucination is reduced, not eliminated.
 \end{abstract}
@@ -381,9 +382,17 @@ reasoning discloses thirteen, at $p=1\times10^{-4}$---the same thirteen-of-fifte
 pattern, on companies the system has never seen. That ablation also costs $0.056$ accuracy
 here ($0.757$; 14 questions to none, $p=1\times10^{-4}$).
 
+The comparison with a language model also replicates. Retrieval over the same corpus
+scores $0.216$ at $0.306$, against $0.200$ and $0.302$ on the test split, and the
+architecture beats it on these unseen companies by 168 questions to 16 on correctness
+($p=4\times10^{-33}$) and 71 to 27 on hallucination ($p=1\times10^{-5}$).
+
 \paragraph{What does not.} The configuration using the language model as parser scores
 $0.835$ at $0.118$, against $0.945$ and $0.035$ on the test split. Its advantage over
-embedding understanding falls from fifteen accuracy points to two.
+embedding understanding falls from fifteen accuracy points to two, and with it the
+significance: on the test split the parser is better on 40 questions to 2
+($p=4\times10^{-10}$), and here on 7 to 1 ($p=0.07$), which we report as no measured
+difference.
 
 We report this as the principal finding of the confirmatory split, and the explanation is
 methodological rather than mysterious. The parser's last defect was found by reading its
@@ -397,6 +406,14 @@ This is what a held-out confirmatory split is for, and it is worth stating that 
 inflated figure would otherwise have been reported in good faith: the change that produced
 it was measured in isolation, fixed ten questions and broke none, and carried $p=0.002$.
 None of that makes it a generalisation result.
+
+\begin{table}[t]
+\centering\small
+\IfFileExists{figures/table_confirm.tex}{\resizebox{\linewidth}{!}{\input{figures/table_confirm.tex}}}{}
+\caption{Confirmatory split: five companies generated and frozen after the system was
+final, scored once. Rates with 95\% bootstrap intervals.}
+\label{tab:confirm}
+\end{table}
 
 \section{Calibration of the computed confidence}\label{sec:calibration}
 The system never asks the model how sure it is. Confidence is computed in code from
