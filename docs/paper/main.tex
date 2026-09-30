@@ -500,10 +500,21 @@ scorer is never called at all. Both belong to the same subsystem, and that subsy
 exists to police prose the model wrote. In the configuration evaluated here the model
 writes no prose: answers are composed from the reasoning's conclusion, and the
 claim check returns early on exactly that ground. The verification layer is therefore
-insurance against a failure this configuration cannot have, and its null result is a
-consequence of the architecture holding earlier rather than evidence that verification is
-idle. Whether it does work where the model phrases the answer is a question this
-evaluation does not answer, and the configuration needed to ask it exists.
+insurance against a failure this configuration cannot have. That was our explanation of
+the null, and it predicted that the gate would do work in the configuration where the
+model phrases the answer under verification. We ran that configuration, with and without
+the gate, over sixty questions: the model wrote the prose in 69 of 73 cases where its
+wording could be compared with the deterministic one, and the gate changed no answer
+there either.
+
+So the explanation is wrong, or at least incomplete. On this data the verification gate
+never withholds anything, including when there is model-written prose for it to withhold.
+We report the prediction and its refutation rather than the explanation alone, because an
+account of a null result that survives only until it is tested is not worth the reader's
+confidence. What the gate is, on this evidence, is a guarantee that has never been
+exercised; whether that is because the model's phrasing is tightly enough constrained by
+the conclusion it is given, or because the checks are too permissive, this evaluation does
+not distinguish.
 
 Removing kind agreement is exercised and simply does not reach significance: three
 questions are answered correctly without it against one with it, and three are
