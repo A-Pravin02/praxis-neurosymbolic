@@ -292,24 +292,55 @@ Raising the floor to 0.85 costs 8.6 points of overall accuracy and fixes **zero*
 cases. It is not a threshold problem. "Deliver … order" really is near the
 delivery goal; the match is correct and the conclusion is still wrong.
 
-**Root cause.** The pipeline has no *closed-world check on the asked-for
-attribute*. `KnowledgeProgram` declares its predicates, but nothing ever asks
-"does the attribute this question is about exist in the program at all?"
+**Root cause.** The goal catalogue is a fixed list and selection is
+nearest-neighbour over it (`app/neural/intent_detection.py::candidates`, a single
+`encoder.similarity(question, [goal descriptions])`). **A nearest-neighbour search
+always returns a neighbour.** There is no "none of the above" class, so the
+question "is this covered at all?" is never asked — only "which of these is
+closest?"
 
-**Fix.** After goal selection and before reasoning, extract the question's target
-attribute and require it to resolve to a declared predicate, or to a synonym
-registered for one. If it does not, route to pipeline F (insufficient knowledge)
-regardless of how well the goal scored. The signal already exists: `ns_parser`
-reaches 0.40 on this category precisely because the model sometimes emits an
-attribute that maps to nothing.
+### Five fixes were attempted and all five are refuted
 
-**Location.** `app/hybrid/router.py::_choose_goal`, gated on
-`app/symbolic/dsl.py::KnowledgeProgram`.
+Reproduce with `scripts/goal_threshold_sweep.py` and `scripts/probes/`.
 
-**Test.** `not_covered` accuracy on both the test and confirmatory splits.
+| # | Hypothesis | Result |
+|---|---|---|
+| 1 | Raise `GOAL_ACCEPT` | 0.85 costs 8.6 pts of accuracy, fixes **0/15** |
+| 2 | Count question words the pack has never seen | `not_covered` 2.67, `multi_hop` **4.85** — inverted |
+| 3 | Score those novel words for semantic alienness | `not_covered` 0.697, mid-pack, above `missing_info` 0.669 |
+| 4 | Strip the record, score the residual against the goal | Separates on generated worlds (`not_covered` 0.634, all others ≥ 0.727) but **does not transfer**: 12 of 86 Meridian cases fall below any useful floor, including "Can I return the Vertex 15 Laptop I ordered?" |
+| 5 | Use the *drop* from raw score to residual score | `multi_hop` **+0.083**, `not_covered` +0.007 — inverted again; on Meridian, "Is it too late to stop my laptop order?" drops +0.116 |
+
+Hypothesis 4 is the instructive one. It looked decisive — on the generated split
+the not-covered questions were the only category below 0.70 while genuine
+paraphrases ("I'd like to call off the Cotton Duvet Cover I ordered") sat at 0.78.
+It was selected on dev at 0.64 and then checked against the curated Meridian pack,
+where it immediately fired on core covered questions. The generated worlds phrase
+questions formulaically; Meridian's are colloquial ("The nuts turned up fine but
+I'd rather not keep them"), and the encoder scores those low whether or not they
+are covered. **A threshold tuned on generated data does not survive contact with
+real phrasing.** The change was implemented, measured, and reverted.
+
+**What the evidence actually points to.** `ns_parser` — the configuration where a
+language model parses the question instead of the encoder — is the only one that
+scores above zero here: **0.40 on test, 0.20 on confirm**, against 0.00 and 0.13.
+It does better for the one reason that matters: the parser can emit "none", and a
+nearest-neighbour search cannot. The fix therefore belongs in the understanding
+layer's ability to abstain, not in any threshold over similarity scores.
+
+**Recommended next step**, in order of cost: (a) require the parser and the
+encoder to agree on the goal before it is acted on, and measure whether the
+disagreements are the not-covered cases; (b) add an explicit rejection class to
+the intent catalogue so the nearest-neighbour search can return "no goal";
+(c) treat this as a known bound and report it.
+
+**Test.** `not_covered` accuracy on the test split, the confirmatory split, **and
+the 86-case curated Meridian benchmark** — the third is what caught hypothesis 4
+and no future attempt should be accepted without it.
 
 **Success metric.** `not_covered` accuracy ≥ 0.70 with over-abstention on the
-answerable categories held at ≤ 0.06 and overall accuracy not below 0.78.
+answerable categories held at ≤ 0.06, overall accuracy not below 0.78, and no
+regression on the curated benchmark's 0.733.
 
 **Note for honesty:** on this one category a plain RAG baseline is *better* than
 PRAXIS — `llm_rag` scores 0.73, PRAXIS 0.00. It should be reported that way.
@@ -452,10 +483,13 @@ configuration that does not call a model. Both belong in any honest comparison.
 
 Ordered by what the measurements say, not by a generic phase list.
 
-**Phase 1 — close the not-covered hole.** `hybrid/router.py`, `symbolic/dsl.py`.
-Closed-world check on the target attribute. Metric: `not_covered` ≥ 0.70 on both
-splits, over-abstention ≤ 0.06, overall accuracy ≥ 0.78. *This is the one change
-that most changes what the system can honestly claim.*
+**Phase 1 — close the not-covered hole.** Not a threshold change: five threshold
+and vocabulary fixes are refuted above. The work is to give the understanding
+layer a way to return "no goal" — parser/encoder agreement, or an explicit
+rejection class in the intent catalogue. Metric: `not_covered` ≥ 0.70 on the test
+and confirmatory splits, over-abstention ≤ 0.06, overall accuracy ≥ 0.78, and no
+regression on the curated benchmark. *This is the one change that most changes
+what the system can honestly claim.*
 
 **Phase 2 — resolve the two pipelines.** Benchmark path B or retire it. Metric: a
 report in `eval_reports/` covering whichever path serves a non-demo tenant.
