@@ -112,6 +112,17 @@ def _row_level_security() -> None:
 
 
 def _least_privilege_grants() -> None:
+    # Privilege separation assumes two roles: an owner that migrates and provisions the
+    # permission catalogue, and an application role that may not create schema objects or
+    # write that catalogue. A managed database that issues exactly one role - Render's
+    # does - would otherwise revoke from itself the rights its own startup needs, and the
+    # first deploy fails at "permission denied for table permissions" with nothing to
+    # suggest that the cause is a privilege model it never opted into. Where the migration
+    # is running as the application role, there is no separation to enforce and the
+    # revokes are skipped; where two roles exist, they apply as before.
+    separated = bool(op.get_bind().execute(
+        sa.text("SELECT current_user <> :role"), {"role": APP_ROLE}).scalar())
+
     op.execute(f"GRANT USAGE ON SCHEMA public TO {APP_ROLE}")
     op.execute(
         f"GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public "
@@ -122,11 +133,12 @@ def _least_privilege_grants() -> None:
         f"ALTER DEFAULT PRIVILEGES IN SCHEMA public "
         f"GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO {APP_ROLE}"
     )
-    # The application must never create or alter schema objects.
-    op.execute(f"REVOKE CREATE ON SCHEMA public FROM {APP_ROLE}")
     op.execute("REVOKE ALL ON SCHEMA public FROM PUBLIC")
-    # The permission catalogue is provisioned by the owner, read by the app.
-    op.execute(f"REVOKE INSERT, UPDATE, DELETE ON permissions FROM {APP_ROLE}")
+    if separated:
+        # The application must never create or alter schema objects.
+        op.execute(f"REVOKE CREATE ON SCHEMA public FROM {APP_ROLE}")
+        # The permission catalogue is provisioned by the owner, read by the app.
+        op.execute(f"REVOKE INSERT, UPDATE, DELETE ON permissions FROM {APP_ROLE}")
 
 
 def upgrade() -> None:

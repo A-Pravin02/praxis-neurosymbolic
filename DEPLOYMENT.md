@@ -23,14 +23,18 @@ semantic retrieval, which is the part that makes the paraphrase demo work at all
 1. Render dashboard → **New → Blueprint** → point it at this repository. It creates the
    `praxis-db` PostgreSQL instance and the `praxis-api` service, wires the connection
    string, and generates `JWT_SECRET` itself — that value is never written down here.
-2. **Enable pgvector once**, from the Render shell against the new database:
+2. **Enable two extensions once**, from the Render shell against the new database:
 
    ```sql
    CREATE EXTENSION IF NOT EXISTS vector;
+   CREATE EXTENSION IF NOT EXISTS pg_trgm;
    ```
 
-   Render ships the extension but does not enable it, and the migration that creates the
-   vector column fails without it.
+   Render ships both and enables neither, and the first migration refuses to run without
+   them. It names the one it is missing, so enabling only `vector` gets you a second
+   failure about `pg_trgm` on the next deploy rather than a working service; enable both
+   now. Verified on 30 September 2026 by deploying the built image against a database
+   created exactly this way.
 3. Seed and ingest, from the Render shell:
 
    ```bash
@@ -41,6 +45,14 @@ semantic retrieval, which is the part that makes the paraphrase demo work at all
    Without the second command the workspace has users and rules but no documents, and
    every retrieval question abstains.
 4. Set `CORS_ORIGINS` to the Vercel URL from step 2.
+
+Render issues a single database role, and the schema's privilege separation expects two:
+an owner that migrates and provisions the permission catalogue, and an application role
+that may not write it. The migration detects that it is running as the application role
+and skips the revokes that would otherwise take away the rights the service needs at
+startup; with two distinct roles configured, the separation applies as before. Without
+that check the first deploy failed at `permission denied for table permissions`, which
+says nothing about the cause.
 
 `LLM_PROVIDER` defaults to the offline provider, so a fresh deployment answers with no
 credential at all. For a hosted model set `LLM_PROVIDER=openai`, `LLM_BASE_URL` and

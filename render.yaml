@@ -51,10 +51,20 @@ services:
 
 # Notes
 #
-# pgvector: run `CREATE EXTENSION IF NOT EXISTS vector;` once against the database before
-# the first deploy, from the Render shell. Render's PostgreSQL ships the extension but
-# does not enable it for you, and the migration that creates the vector column fails
-# without it.
+# Extensions: run both of these once against the database before the first deploy, from
+# the Render shell. Render's PostgreSQL ships them and enables neither, and the first
+# migration refuses to run without them:
+#
+#   CREATE EXTENSION IF NOT EXISTS vector;
+#   CREATE EXTENSION IF NOT EXISTS pg_trgm;
+#
+# The migration names whichever it is missing, so enabling only one buys a second failed
+# deploy rather than a working service.
+#
+# Roles: Render issues one database role, and both URLs above point at it. The schema's
+# privilege separation expects two - an owner and a less privileged application role - and
+# the migration detects a single-role database and skips the revokes rather than taking
+# away the rights the service needs to start.
 #
 # LLM_PROVIDER is `mock` so a fresh deployment answers without any credential. To use a
 # hosted model set LLM_PROVIDER=openai, LLM_BASE_URL and LLM_API_KEY in the Render
