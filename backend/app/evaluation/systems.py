@@ -119,6 +119,12 @@ BUILDERS: dict[str, Callable] = {
     **{f"ns_parser_{name[3:]}": _neurosymbolic(ablations=frozenset(flags), understanding="llm")
        for name, flags in ABLATIONS.items()},
     "neurosymbolic_llm": _neurosymbolic(realizer="llm"),
+    # The verification gate exists to police prose the model wrote, and the default
+    # configuration writes none, so removing it changes nothing there. This pair is
+    # where the question can actually be asked: the model phrases the answer, and the
+    # gate is the only thing standing between its phrasing and the reply.
+    "neurosymbolic_llm_no_verification": _neurosymbolic(
+        realizer="llm", ablations=frozenset({"no_verification"})),
     "neurosymbolic_lexical": _neurosymbolic(encoder="hashing"),
     **{name: _neurosymbolic(ablations=frozenset(flags)) for name, flags in ABLATIONS.items()},
     "rag_extractive": nb.rag_extractive_system,

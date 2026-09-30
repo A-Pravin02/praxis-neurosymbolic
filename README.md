@@ -255,6 +255,44 @@ final-answer accuracy is double and hallucination roughly half, because a two-va
 engine that always applies the newest policy version is confidently wrong exactly where
 those shortcuts bite (`ambiguous` hallucination 0.43 against 0.14).
 
+### A second domain, and a confirmatory split
+
+Two things test whether the results above are properties of the architecture or of the
+one dataset it was built against.
+
+**A second knowledge pack.** `backend/data/harbour` is a health insurer: waiting periods
+that refuse a claim for elapsed time rather than for the treatment, a deductible and
+co-payment that make a settlement a chain of arithmetic, exclusions no plan reaches, and
+a dependant who may see exactly one other member's records. Forty questions, gold
+computed from the records outside the system: **0.850 accuracy, 0.000 hallucination**
+(`docs/benchmark/run12-harbour-test.md`). Writing it found three places where the code
+assumed a single domain — a company node identified by a literal, ownership resolved
+through hard-coded retail predicates, and three answers naming the retail company
+outright. All three are now declared by the pack.
+
+Run it with:
+
+```bash
+python scripts/run_ns_benchmark.py --pack backend/data/harbour --split test
+```
+
+**A confirmatory split.** Five further companies, generated and frozen *after* the test
+split had been scored and the system was final, then scored once — 510 questions over ten
+disjoint companies.
+
+| | Test split | Confirmatory |
+|---|---|---|
+| Praxis (offline encoder) | 0.796 / 0.149 | **0.812 / 0.133** |
+| LLM + RAG | 0.200 / 0.302 | **0.216 / 0.306** |
+| Restricted records disclosed | 0 of 15 | **0 of 15** |
+| Praxis (LLM parser) | 0.945 / 0.035 | **0.835 / 0.118** |
+
+Three of the four replicate. The fourth does not, and the reason is worth stating: the
+parser's last defect was found by reading its test-split failures, so that configuration's
+0.945 is not a generalisation estimate. Its advantage over the encoder is 40 questions to
+2 on the split it was fixed against and 7 to 1 here, which is no measured difference.
+**0.835 is the number to quote for it.**
+
 ### Which part earns the result
 
 Each component removed in turn, 255 generated test cases, each ablation paired against
@@ -452,6 +490,17 @@ about itself.
   **Vectors from the two providers are not comparable**, so a corpus embedded
   under one must be re-embedded before the other can query it
   (`scripts/reindex.py`).
+- **One configuration's headline number does not generalise.** The LLM-parser
+  configuration scores 0.945 on the test split and 0.835 on companies it has not seen,
+  because its last defect was found by reading test-split failures. Quote 0.835. The
+  configuration with no language model in the loop replicates (0.796 to 0.812), as does
+  the retrieval baseline it is measured against.
+- **Two mechanisms have no measured effect.** Removing the verification gate or the
+  number check changes no answer, because both police prose the model wrote and the
+  default configuration writes none — the reply is composed from the reasoning's
+  conclusion. Removing kind agreement is exercised and does not reach significance
+  (p=0.62). They are guarantees this evaluation does not show doing work, and the paper
+  does not list them among its contributions.
 - **Questions no policy covers are answered anyway.** On the 15 `not_covered`
   cases of the generated test split the system scores 0.00 accuracy and 0.87
   hallucination: "can you gift-wrap order 12345" comes back as a free-delivery
