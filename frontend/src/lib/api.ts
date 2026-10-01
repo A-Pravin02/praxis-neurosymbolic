@@ -212,6 +212,24 @@ interface StoredMessage {
   trace: Record<string, unknown>;
 }
 
+export interface ScopeEntry {
+  name: string;
+  subject: string;
+  kind: string;
+  description: string;
+}
+
+export interface WorkspaceScope {
+  decides: ScopeEntry[];
+  looks_up: ScopeEntry[];
+  note: string;
+}
+
+/** What the workspace's rule base can decide. Empty for a document-pipeline tenant. */
+export async function workspaceScope(): Promise<WorkspaceScope> {
+  return request<WorkspaceScope>("/chat/scope");
+}
+
 export async function listMessages(conversationId: string): Promise<ChatMessage[]> {
   const rows = await request<StoredMessage[]>(`/conversations/${conversationId}/messages`);
   return rows.map((row) => ({

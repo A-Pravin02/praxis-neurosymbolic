@@ -212,6 +212,18 @@ def chat_stream(payload: ChatRequest, request: Request,
     )
 
 
+@router.get("/chat/scope", dependencies=[Depends(require_permissions(CHAT_USE))])
+def chat_scope(db: DbSession, principal: CurrentPrincipal) -> dict:
+    """What this workspace's rule base can decide, for the client to show up front.
+
+    Empty for a tenant served by the document pipeline, which has no rule base to
+    describe; the client shows nothing rather than claiming a scope that does not exist.
+    """
+    if not ns_service.serves_tenant(db, principal):
+        return {"decides": [], "looks_up": [], "note": ""}
+    return ns_service.scope()
+
+
 def _sse(event: str, data: dict) -> str:
     return f"event: {event}\ndata: {json.dumps(data, default=str)}\n\n"
 

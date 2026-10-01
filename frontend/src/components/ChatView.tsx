@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 
+import { workspaceScope, type WorkspaceScope } from "../lib/api";
+
 import Markdown from "./Markdown";
 import { DecisionCard } from "./ReasoningPanel";
 import type { AssistantTurn, ChatMessage, PipelineMode } from "../lib/types";
@@ -65,9 +67,23 @@ export default function ChatView({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
+  const [scope, setScope] = useState<WorkspaceScope | null>(null);
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // What the rule base can decide, read from the pack's own declarations. Shown before
+  // the person types, because on a question outside the pack the router still answers
+  // the nearest covered one confidently - see docs/AUDIT.md finding 1.
+  useEffect(() => {
+    if (!neuroSymbolic) return;
+    let cancelled = false;
+    workspaceScope()
+      .then((loaded) => { if (!cancelled) setScope(loaded); })
+      .catch(() => { if (!cancelled) setScope(null); });
+    return () => { cancelled = true; };
+  }, [neuroSymbolic]);
 
   useEffect(() => {
     const node = textareaRef.current;
@@ -104,7 +120,7 @@ export default function ChatView({
               {neuroSymbolic
                 ? (agent
                   ? "Describe the customer's situation in your own words. Praxis applies the company's policies, the version in force and the customer's records, verifies the result, and tells you what you're allowed to offer — or exactly what it can't decide and why."
-                  : "Ask anything about orders, returns, refunds, delivery, leave or expenses, in your own words. I understand the question, then apply the company's actual rules to your records — and when a decision depends on something I don't know, I tell you exactly what.")
+                  : "Ask about orders, returns, refunds, delivery, leave or expenses, in your own words. I understand the question, then apply the company's actual rules to your records — and when a decision depends on something I don't know, I tell you exactly what. I only know the topics listed below; outside them I can be confidently wrong.")
                 : "Answers are built from your documents, structured facts and rules. Every factual claim is checked against evidence before it reaches you — and when the evidence is not there, the assistant says so instead of guessing."}
             </p>
             <div className="suggestions">
@@ -120,6 +136,23 @@ export default function ChatView({
                 </button>
               ))}
             </div>
+            {scope && scope.decides.length > 0 && (
+              <details className="scope">
+                <summary>
+                  What this workspace can decide
+                  <span className="scope-count">{scope.decides.length} topics</span>
+                </summary>
+                <ul>
+                  {scope.decides.map((entry) => (
+                    <li key={entry.name}>
+                      <span className="scope-subject">{entry.subject}</span>
+                      {entry.description}
+                    </li>
+                  ))}
+                </ul>
+                {scope.note && <p className="scope-note">{scope.note}</p>}
+              </details>
+            )}
           </div>
         ) : (
           <div className="messages-inner">
@@ -146,7 +179,7 @@ export default function ChatView({
               id="composer"
               ref={textareaRef}
               rows={1}
-              placeholder={neuroSymbolic ? "Ask anything — orders, returns, refunds, leave, expenses…"
+              placeholder={neuroSymbolic ? "Ask about orders, returns, refunds, leave or expenses…"
                 : "Ask about your documents, policies or entitlements…"}
               value={draft}
               onChange={(event) => setDraft(event.target.value)}

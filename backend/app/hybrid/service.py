@@ -92,6 +92,42 @@ def answer(principal: Principal, question: str, context: dict[str, Any]) -> Assi
     return turn
 
 
+def scope() -> dict[str, Any]:
+    """What this workspace's rule base can actually decide.
+
+    Read from the knowledge pack's own goal and lookup declarations, so it cannot drift
+    from what the reasoner will do - adding a goal changes this list, and no code here
+    needs touching.
+
+    The benchmark measures why this is published rather than left implicit. On questions
+    the pack does not cover, the router still finds the nearest goal it does have rules
+    for and answers *that* question confidently: asked whether an order can be gift-
+    wrapped, it replies that the order cannot be returned. Five attempts to detect those
+    questions automatically are recorded in docs/AUDIT.md and all five failed, because
+    goal selection is a nearest-neighbour search and a nearest-neighbour search always
+    returns a neighbour.
+
+    Until that is fixed, the honest mitigation is to stop inviting the question. Showing
+    what the workspace decides sets the expectation before a person types, rather than
+    after they have been given a confident answer to something they did not ask.
+    """
+    pack = _controller().pack
+    program = pack.program
+    decides = [{"name": goal.predicate, "subject": goal.subject_type, "kind": goal.kind,
+                "description": goal.description}
+               for goal in program.goals.values()]
+    looks_up = [{"name": lookup.name, "subject": lookup.subject_type, "kind": "lookup",
+                 "description": lookup.description}
+                for lookup in program.lookups.values()]
+    return {
+        "decides": sorted(decides, key=lambda g: g["description"]),
+        "looks_up": sorted(looks_up, key=lambda g: g["description"]),
+        "note": "Questions outside this list are not covered. The assistant may still "
+                "answer one from policy text, and it may get it wrong - check which "
+                "question the answer says it decided.",
+    }
+
+
 _CACHE: dict[str, Any] = {"revision": None, "controller": None}
 
 
