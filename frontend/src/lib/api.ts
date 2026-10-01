@@ -222,10 +222,12 @@ export interface ScopeEntry {
 export interface WorkspaceScope {
   decides: ScopeEntry[];
   looks_up: ScopeEntry[];
+  /** Set for a document workspace, which has no rule base to describe. */
+  documents: { title: string }[];
   note: string;
 }
 
-/** What the workspace's rule base can decide. Empty for a document-pipeline tenant. */
+/** What the workspace can answer from: its goals, or its documents. */
 export async function workspaceScope(): Promise<WorkspaceScope> {
   return request<WorkspaceScope>("/chat/scope");
 }

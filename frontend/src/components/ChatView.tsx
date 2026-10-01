@@ -77,13 +77,12 @@ export default function ChatView({
   // the person types, because on a question outside the pack the router still answers
   // the nearest covered one confidently - see docs/AUDIT.md finding 1.
   useEffect(() => {
-    if (!neuroSymbolic) return;
     let cancelled = false;
     workspaceScope()
       .then((loaded) => { if (!cancelled) setScope(loaded); })
       .catch(() => { if (!cancelled) setScope(null); });
     return () => { cancelled = true; };
-  }, [neuroSymbolic]);
+  }, []);
 
   useEffect(() => {
     const node = textareaRef.current;
@@ -136,17 +135,29 @@ export default function ChatView({
                 </button>
               ))}
             </div>
-            {scope && scope.decides.length > 0 && (
+            {scope && (scope.decides.length > 0 || scope.documents.length > 0) && (
               <details className="scope">
                 <summary>
-                  What this workspace can decide
-                  <span className="scope-count">{scope.decides.length} topics</span>
+                  {scope.decides.length > 0
+                    ? "What this workspace can decide"
+                    : "What this workspace can answer from"}
+                  <span className="scope-count">
+                    {scope.decides.length > 0
+                      ? `${scope.decides.length} topics`
+                      : `${scope.documents.length} documents`}
+                  </span>
                 </summary>
                 <ul>
                   {scope.decides.map((entry) => (
                     <li key={entry.name}>
                       <span className="scope-subject">{entry.subject}</span>
                       {entry.description}
+                    </li>
+                  ))}
+                  {scope.decides.length === 0 && scope.documents.map((doc) => (
+                    <li key={doc.title}>
+                      <span className="scope-subject">document</span>
+                      {doc.title}
                     </li>
                   ))}
                 </ul>

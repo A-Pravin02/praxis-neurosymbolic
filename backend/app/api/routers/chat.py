@@ -5,6 +5,7 @@ import uuid
 from collections.abc import Iterator
 
 from fastapi import APIRouter, Depends, Request, Response, status
+from sqlalchemy import select
 from fastapi.responses import StreamingResponse
 
 from app.api.schemas import (
@@ -12,6 +13,8 @@ from app.api.schemas import (
     MessageOut,
 )
 from app.config import settings
+from app.db.models.rag import Document
+from app.policy import service as policy_service
 from app.core import ratelimit
 from app.core.deps import CurrentPrincipal, DbSession, client_ip, require_permissions
 from app.core.errors import AuthorizationError, NotFoundError
@@ -214,14 +217,36 @@ def chat_stream(payload: ChatRequest, request: Request,
 
 @router.get("/chat/scope", dependencies=[Depends(require_permissions(CHAT_USE))])
 def chat_scope(db: DbSession, principal: CurrentPrincipal) -> dict:
-    """What this workspace's rule base can decide, for the client to show up front.
+    """What this workspace can actually answer from, for the client to show up front.
 
-    Empty for a tenant served by the document pipeline, which has no rule base to
-    describe; the client shows nothing rather than claiming a scope that does not exist.
+    Two kinds of answer, because there are two pipelines. A rule-base workspace lists the
+    goals it can decide. A document workspace has no rule base, so it lists the documents
+    it holds instead - which is the same disclosure in the only terms it has.
+
+    A document workspace needs this at least as much. Acme holds five documents, so a
+    question about anything else abstains, correctly, and a visitor with no way to see
+    the corpus reads that correct abstention as a broken assistant.
     """
-    if not ns_service.serves_tenant(db, principal):
-        return {"decides": [], "looks_up": [], "note": ""}
-    return ns_service.scope()
+    if ns_service.serves_tenant(db, principal):
+        return {**ns_service.scope(), "documents": []}
+
+    # The same document-level authorization retrieval applies, so the list cannot name a
+    # document the person is not allowed to retrieve from. A title is disclosure too:
+    # "Acme Salary Bands 2026 (HR confidential)" tells a reader the file exists and what
+    # is in it, which is most of what the permission was protecting.
+    titles = db.scalars(
+        select(Document.title)
+        .where(Document.tenant_id == principal.tenant_id, Document.status == "ready",
+               policy_service.permission_filter(principal, "document"),
+               policy_service.compiled_filter(db, principal, "document"))
+        .order_by(Document.title)
+    ).all()
+    return {
+        "decides": [], "looks_up": [],
+        "documents": [{"title": title} for title in titles],
+        "note": "Answers come only from these documents. A question they do not cover "
+                "is declined rather than guessed at." if titles else "",
+    }
 
 
 def _sse(event: str, data: dict) -> str:

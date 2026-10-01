@@ -69,9 +69,41 @@ def test_the_workspace_publishes_what_its_rule_base_can_decide(client):
     assert all(entry["subject"] and entry["name"] for entry in scope["decides"])
 
 
-def test_a_document_workspace_claims_no_rule_scope(client):
-    """Acme has no knowledge pack, so it must not advertise one it cannot apply."""
+def test_a_document_workspace_lists_its_documents_instead_of_goals(client):
+    """Acme has no knowledge pack, so it discloses the corpus it does have.
+
+    It needs that disclosure more, not less: Acme holds a handful of documents, so a
+    question about anything else is declined - correctly - and a visitor who cannot see
+    the corpus reads a correct abstention as a broken assistant.
+    """
     headers = auth_headers(client, "alice@acme.test")
     scope = client.get("/api/chat/scope", headers=headers).json()
-    assert scope["decides"] == []
+
+    assert scope["decides"] == [], "it must not advertise rules it cannot apply"
     assert scope["looks_up"] == []
+    titles = [doc["title"] for doc in scope["documents"]]
+    assert titles, "a document workspace says what it can answer from"
+    assert any("Handbook" in title for title in titles)
+    assert scope["note"]
+
+
+def test_the_scope_list_never_names_a_document_the_person_cannot_read(client):
+    """A title is disclosure.
+
+    "Acme Salary Bands 2026 (HR confidential)" tells a reader the file exists and what is
+    in it, which is most of what the permission was protecting. The scope list therefore
+    runs the same document-level authorization that retrieval does, rather than listing
+    everything the tenant happens to hold.
+    """
+    plain = client.get("/api/chat/scope",
+                       headers=auth_headers(client, "alice@acme.test")).json()
+    titles = [doc["title"] for doc in plain["documents"]]
+    assert titles, "the listing is not empty, so the assertion below means something"
+    assert not any("Salary" in title for title in titles), titles
+
+    privileged = client.get("/api/chat/scope",
+                            headers=auth_headers(client, "hr@acme.test")).json()
+    hr_titles = [doc["title"] for doc in privileged["documents"]]
+    assert any("Salary" in title for title in hr_titles), (
+        "someone holding the HR permission still sees it: this is authorization, "
+        f"not a blanket hide. saw {hr_titles}")
