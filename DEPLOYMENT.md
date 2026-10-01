@@ -18,6 +18,35 @@ semantic retrieval, which is the part that makes the paraphrase demo work at all
 
 `render.yaml` declares the API and its database together.
 
+## The paid plan is not optional
+
+`render.yaml` asks for a `standard` web service and a `basic-256mb` database. Both cost
+money, and dropping either to a free plan does not produce a cheaper Praxis — it produces
+one that answers nothing.
+
+The encoder is the reason. On a plan too small to hold it, `get_encoder`
+(`backend/app/neural/encoder.py`) catches the load failure, logs a warning and falls back
+to lexical hashing. The service starts, the health check passes, and every page looks
+right. Measured on the 255-case test split
+(`eval_reports/research/deploy-encoder/`, reproduce with
+`python scripts/run_research.py --split test --systems neurosymbolic neurosymbolic_lexical`):
+
+| | semantic encoder | lexical fallback |
+|---|---|---|
+| Accuracy | **0.796** [0.75, 0.84] | **0.059** [0.03, 0.09] |
+| Coverage | **0.943** | **0.000** |
+| Over-abstention | 0.057 | **1.000** |
+| Hallucination rate | 0.149 | 0.000 |
+
+The fallback's hallucination rate of zero is not a result, it is the shape of the failure:
+it abstains on every answerable question, so it never says anything false because it never
+says anything. A visitor sees a system that refuses its own demo.
+
+So the deployment choice is binary. Pay for the plans in `render.yaml`, or run the demo
+locally with `docker compose up` — which costs nothing and is the configuration every
+benchmark in this repository was measured on. A free-tier Render deployment is worse than
+no deployment, because it looks live.
+
 ## Step 1 — the database and API
 
 1. Render dashboard → **New → Blueprint** → point it at this repository. It creates the
