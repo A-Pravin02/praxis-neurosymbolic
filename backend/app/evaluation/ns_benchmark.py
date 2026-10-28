@@ -89,6 +89,11 @@ class SystemAnswer:
     confidence: float | None = None
     latency_ms: float = 0.0
     raw: str = ""
+    # True when the language-model parser produced an unusable interpretation and
+    # understanding fell back to the embedding interpreter. Recorded per case because a
+    # parser configuration that falls back often is partly the embedding system, and
+    # reading its score as "the model's understanding" would overstate the model.
+    parser_fallback: bool | None = None
 
 
 def neurosymbolic_system(pack: KnowledgePack) -> Callable[[dict], SystemAnswer]:

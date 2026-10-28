@@ -60,6 +60,10 @@ def uncovered_topic(interpretation: "Interpretation", pack: "KnowledgePack",
     known = pack.policies.vocabulary()
     for goal in pack.program.goals.values():
         known |= set(_WORD.findall(goal.description.lower()))
+    # F-6 fix: always include entity-type names from the schema so gap summaries
+    # are meaningful even before any policy documents are loaded for a tenant.
+    for entity_type in getattr(pack.program, "entities", ()):
+        known |= set(_WORD.findall(entity_type.lower()))
     terms = content_terms(interpretation.question, known)
     subject = ", ".join(terms[:4]) if terms else "this question"
     detail = "No policy, rule or record in the company knowledge covers it."
@@ -85,10 +89,14 @@ def undefined_case(interpretation: "Interpretation", goal, result: "GoalResult",
         return None
     missing = {m.predicate for m in result.missing if program.is_input(m.predicate)}
     for predicate in sorted(missing):
-        # Only a decision table over the input: every rule maps one value of it to one
-        # result. A calculation or an eligibility rule that merely *uses* the input is
-        # missing information, not an undefined case.
-        if not all(len(spec.rule.body) == 1 and spec.rule.body[0].predicate == predicate
+        # Only a decision table over the input: every rule must have exactly one fact
+        # condition that directly tests the key predicate's value. Rules may also have
+        # comparison or filter conditions — what matters is that each rule is enumerated
+        # over one value of the input, not that the body is a single literal.
+        def _is_key_fact(condition, pred=predicate):
+            return condition.type == "fact" and condition.predicate == pred
+
+        if not all(sum(1 for c in spec.rule.body if _is_key_fact(c)) == 1
                    for spec in specs):
             continue
         values = [v for v in program.inputs.get(predicate, []) if v.value is not None]

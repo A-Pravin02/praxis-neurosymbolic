@@ -437,7 +437,7 @@ class NeuroSymbolicController:
                 break
             asked |= wanted
             found = self.understanding.detect_inputs(interpretation, wanted,
-                                                          TARGETED_INPUT_THRESHOLD)
+                                                           TARGETED_INPUT_THRESHOLD)
             accepted = [f for f in found if req.grounder.accept_statement(
                 grounding, f, subject, subject_type, needed, reasoner)]
             trace.neural_symbolic_loop.append({
@@ -448,9 +448,17 @@ class NeuroSymbolicController:
             })
             if not accepted:
                 break
-            reasoner = Reasoner(program, view, stated=grounding.stated,
-                                open_subjects=grounding.open_subjects)
+            # F-1 fix: preserve touch-records across iterations so verification
+            # sees every fact that was used in any pass, not just the last one.
+            # Clearing _memo forces re-evaluation with the newly stated facts while
+            # keeping the accumulated touched dict intact.
+            prior_touched = dict(reasoner.touched)
+            reasoner._memo.clear()
+            reasoner.stated = dict(grounding.stated)
             result = reasoner.evaluate(subject, goal.name)
+            # Merge: the latest evaluation wins for any key it touches.
+            merged = {**prior_touched, **reasoner.touched}
+            reasoner.touched = merged
 
         # -- a question the rules decide, but not for the case described -----------------
         if result.status in (CONDITIONAL, "unknown"):
@@ -521,8 +529,16 @@ class NeuroSymbolicController:
             )
 
         report = verify(text, rephrased)
-        if not report.passed and rephrased:
+        if not report.passed and rephrased and not ablations.active("no_verification"):
             # The model's phrasing is not released; the deterministic one is re-verified.
+            #
+            # This is the third place `no_verification` has to reach. The guard is
+            # layered by design - the realizer refuses an invented figure, this
+            # re-verifies whatever it did release, and the release check below withholds
+            # a failing answer - and an ablation that removes only one layer measures
+            # nothing, because the next one quietly repairs the damage. Two successive
+            # runs of this experiment produced byte-identical arms for exactly that
+            # reason before all three were covered.
             text, rephrased = draft, False
             report = verify(text, False)
 

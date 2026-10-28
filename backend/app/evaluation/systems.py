@@ -69,7 +69,15 @@ def _neurosymbolic(*, ablations: frozenset[str] = frozenset(), realizer: str = "
             started = time.perf_counter()
             answer = controller.answer(case["question"], actor_email=case["user"],
                                        actor_roles=tuple(case.get("roles", ())))
+            interpretation = answer.trace.get("neural_interpretation", {})
+            # The parser marks a fallback two ways: it renames the encoder, and sets
+            # invalid_goal when the model named a goal outside the schema.
+            fallback = None
+            if understanding == "llm":
+                fallback = ("fallback:" in str(interpretation.get("encoder", ""))
+                            or bool((interpretation.get("parse") or {}).get("invalid_goal")))
             return nb.SystemAnswer(
+                parser_fallback=fallback,
                 text=answer.answer, outcome=answer.outcome, goal=answer.goal,
                 pipeline=answer.pipeline, decision=answer.decision, value=answer.value,
                 subject=answer.subject, sources=[s["id"] for s in answer.sources],

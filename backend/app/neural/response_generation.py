@@ -19,6 +19,7 @@ import re
 from dataclasses import dataclass, field
 
 from app.core.logging import get_logger, log_event
+from app.hybrid import ablations
 
 logger = get_logger("praxis.neural.generation")
 
@@ -167,8 +168,24 @@ class LanguageModelRealizer:
             log_event(logger, 30, "realizer model failed; using deterministic reply",
                       error=type(exc).__name__)
             return draft, False
+        if not text:
+            # Robustness, not verification: an empty completion is a provider failure
+            # and must fall back whatever the ablation says, or the system returns
+            # nothing at all.
+            log_event(logger, 30, "realizer model returned nothing; using deterministic reply")
+            return draft, False
+
         allowed = numbers_in(c.facts_text()) | numbers_in(draft)
-        if not text or not numbers_in(text) <= allowed:
+        if not numbers_in(text) <= allowed:
+            # This is a verification check: the model's wording introduced a figure the
+            # established conclusion does not support. `no_verification` must remove it,
+            # because an ablation that leaves a guard running measures nothing - the
+            # arms come out byte-identical and the study reports no effect where it
+            # simply failed to remove one.
+            if ablations.active("no_verification"):
+                log_event(logger, 30, "model phrasing introduced a figure; released "
+                                      "anyway under the no_verification ablation")
+                return text, True
             log_event(logger, 30, "model phrasing introduced a figure; using deterministic reply")
             return draft, False
         return text, True

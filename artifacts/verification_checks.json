@@ -1,0 +1,46 @@
+{
+ "split": "test",
+ "cases": 255,
+ "distinct_checks": 11,
+ "check_names": [
+  "answer agreement",
+  "authorization",
+  "calculation",
+  "contradictions",
+  "fact validity",
+  "policy applicability",
+  "policy version",
+  "record consistency",
+  "supported numbers",
+  "symbolic provenance",
+  "unsupported claims"
+ ],
+ "ran_on_cases": {
+  "fact validity": 236,
+  "authorization": 236,
+  "policy applicability": 238,
+  "policy version": 91,
+  "symbolic provenance": 236,
+  "supported numbers": 238,
+  "contradictions": 236,
+  "answer agreement": 143,
+  "unsupported claims": 236,
+  "calculation": 70,
+  "record consistency": 10
+ },
+ "checks_per_case": {
+  "0": 17,
+  "2": 2,
+  "7": 26,
+  "8": 106,
+  "9": 104
+ },
+ "min_per_case": 0,
+ "max_per_case": 9,
+ "median_per_case": 8,
+ "zero_check_cases": 17,
+ "zero_check_reason": [
+  "clarification/not_covered: 2",
+  "denied/unauthorized: 15"
+ ]
+}

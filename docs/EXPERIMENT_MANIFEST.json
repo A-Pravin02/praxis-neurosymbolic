@@ -1,0 +1,376 @@
+{
+  "generated": "2026-10-28 10:19 UTC",
+  "git_commit": "8138fd2",
+  "experiments": [
+    {
+      "id": "research/confirm/confirm",
+      "kind": "enterprise benchmark",
+      "tag": "confirm",
+      "split": "confirm",
+      "cases": 255,
+      "systems": [
+        {
+          "system": "llm_only",
+          "cases": 255,
+          "records": "eval_reports\\research\\confirm\\confirm.llm_only.jsonl",
+          "sha256": "49c17d4ccd22199a"
+        },
+        {
+          "system": "llm_rag",
+          "cases": 255,
+          "records": "eval_reports\\research\\confirm\\confirm.llm_rag.jsonl",
+          "sha256": "3166d4e6f427039b"
+        },
+        {
+          "system": "neurosymbolic",
+          "cases": 255,
+          "records": "eval_reports\\research\\confirm\\confirm.neurosymbolic.jsonl",
+          "sha256": "2fe355779b5f9d65"
+        },
+        {
+          "system": "ns_no_authorization",
+          "cases": 255,
+          "records": "eval_reports\\research\\confirm\\confirm.ns_no_authorization.jsonl",
+          "sha256": "42fca174538c9f07"
+        },
+        {
+          "system": "ns_parser",
+          "cases": 255,
+          "records": "eval_reports\\research\\confirm\\confirm.ns_parser.jsonl",
+          "sha256": "be58e6cbdd8cbb15"
+        }
+      ],
+      "report": "eval_reports\\research\\confirm\\confirm.report.json",
+      "metrics_checked": 20,
+      "metrics_mismatched": 0,
+      "reproducible": true
+    },
+    {
+      "id": "research/dev-iter1/dev",
+      "kind": "enterprise benchmark",
+      "tag": "dev-iter1",
+      "split": "dev",
+      "cases": 153,
+      "systems": [
+        {
+          "system": "neurosymbolic",
+          "cases": 153,
+          "records": "eval_reports\\research\\dev-iter1\\dev.neurosymbolic.jsonl",
+          "sha256": "14bd120a824ea3ae"
+        },
+        {
+          "system": "neurosymbolic_lexical",
+          "cases": 153,
+          "records": "eval_reports\\research\\dev-iter1\\dev.neurosymbolic_lexical.jsonl",
+          "sha256": "1698a33b31dabe57"
+        },
+        {
+          "system": "ns_latest_version",
+          "cases": 153,
+          "records": "eval_reports\\research\\dev-iter1\\dev.ns_latest_version.jsonl",
+          "sha256": "2de5d62ce43b5241"
+        },
+        {
+          "system": "ns_no_authorization",
+          "cases": 153,
+          "records": "eval_reports\\research\\dev-iter1\\dev.ns_no_authorization.jsonl",
+          "sha256": "0b0a55f1e9cc6915"
+        },
+        {
+          "system": "ns_no_verification",
+          "cases": 153,
+          "records": "eval_reports\\research\\dev-iter1\\dev.ns_no_verification.jsonl",
+          "sha256": "a169cabca73699d9"
+        },
+        {
+          "system": "ns_trust_statements",
+          "cases": 153,
+          "records": "eval_reports\\research\\dev-iter1\\dev.ns_trust_statements.jsonl",
+          "sha256": "afd96fa6d857895a"
+        },
+        {
+          "system": "ns_two_valued",
+          "cases": 153,
+          "records": "eval_reports\\research\\dev-iter1\\dev.ns_two_valued.jsonl",
+          "sha256": "5771a5b66421f2ba"
+        }
+      ],
+      "report": "eval_reports\\research\\dev-iter1\\dev.report.json",
+      "metrics_checked": 27,
+      "metrics_mismatched": 0,
+      "reproducible": true
+    },
+    {
+      "id": "research/paper/test",
+      "kind": "enterprise benchmark",
+      "tag": "paper",
+      "split": "test",
+      "cases": 255,
+      "systems": [
+        {
+          "system": "llm_only",
+          "cases": 255,
+          "records": "eval_reports\\research\\paper\\test.llm_only.jsonl",
+          "sha256": "8555239fc827b1ac"
+        },
+        {
+          "system": "llm_rag",
+          "cases": 255,
+          "records": "eval_reports\\research\\paper\\test.llm_rag.jsonl",
+          "sha256": "1778f2beaf22e870"
+        },
+        {
+          "system": "llm_rag_rules",
+          "cases": 255,
+          "records": "eval_reports\\research\\paper\\test.llm_rag_rules.jsonl",
+          "sha256": "f7f90753e8001a2d"
+        },
+        {
+          "system": "llm_rag_selfcheck",
+          "cases": 255,
+          "records": "eval_reports\\research\\paper\\test.llm_rag_selfcheck.jsonl",
+          "sha256": "8628f07ac866bf9d"
+        },
+        {
+          "system": "neurosymbolic",
+          "cases": 255,
+          "records": "eval_reports\\research\\paper\\test.neurosymbolic.jsonl",
+          "sha256": "81e214c8aeb08595"
+        },
+        {
+          "system": "ns_latest_version",
+          "cases": 255,
+          "records": "eval_reports\\research\\paper\\test.ns_latest_version.jsonl",
+          "sha256": "09ad6dcc1d3cd35f"
+        },
+        {
+          "system": "ns_no_authorization",
+          "cases": 255,
+          "records": "eval_reports\\research\\paper\\test.ns_no_authorization.jsonl",
+          "sha256": "806c7a990dc860ad"
+        },
+        {
+          "system": "ns_no_kind_agreement",
+          "cases": 255,
+          "records": "eval_reports\\research\\paper\\test.ns_no_kind_agreement.jsonl",
+          "sha256": "f7e510b9919321e4"
+        },
+        {
+          "system": "ns_no_number_check",
+          "cases": 255,
+          "records": "eval_reports\\research\\paper\\test.ns_no_number_check.jsonl",
+          "sha256": "80d5ccb72b5069cf"
+        },
+        {
+          "system": "ns_no_verification",
+          "cases": 255,
+          "records": "eval_reports\\research\\paper\\test.ns_no_verification.jsonl",
+          "sha256": "18e9a7a0875d9c3a"
+        },
+        {
+          "system": "ns_parser",
+          "cases": 255,
+          "records": "eval_reports\\research\\paper\\test.ns_parser.jsonl",
+          "sha256": "908cb373b9879168"
+        },
+        {
+          "system": "ns_trust_statements",
+          "cases": 255,
+          "records": "eval_reports\\research\\paper\\test.ns_trust_statements.jsonl",
+          "sha256": "706af92363e777e9"
+        },
+        {
+          "system": "ns_two_valued",
+          "cases": 255,
+          "records": "eval_reports\\research\\paper\\test.ns_two_valued.jsonl",
+          "sha256": "b5f7ea4cd60a6237"
+        },
+        {
+          "system": "rag_extractive",
+          "cases": 255,
+          "records": "eval_reports\\research\\paper\\test.rag_extractive.jsonl",
+          "sha256": "63d6b80704e6d30d"
+        }
+      ],
+      "report": "eval_reports\\research\\paper\\test.report.json",
+      "metrics_checked": 55,
+      "metrics_mismatched": 0,
+      "reproducible": true
+    },
+    {
+      "id": "research/deploy-encoder/test+raw",
+      "kind": "enterprise benchmark (records only)",
+      "tag": "deploy-encoder",
+      "split": "test",
+      "cases": 255,
+      "systems": [],
+      "report": null,
+      "metrics_checked": 0,
+      "metrics_mismatched": 0,
+      "reproducible": null,
+      "note": "per-question records present, no aggregate report written"
+    },
+    {
+      "id": "research/dev-iter0/dev+raw",
+      "kind": "enterprise benchmark (records only)",
+      "tag": "dev-iter0",
+      "split": "dev",
+      "cases": 153,
+      "systems": [],
+      "report": null,
+      "metrics_checked": 0,
+      "metrics_mismatched": 0,
+      "reproducible": null,
+      "note": "per-question records present, no aggregate report written"
+    },
+    {
+      "id": "research/gate/test+raw",
+      "kind": "enterprise benchmark (records only)",
+      "tag": "gate",
+      "split": "test",
+      "cases": 306,
+      "systems": [],
+      "report": null,
+      "metrics_checked": 0,
+      "metrics_mismatched": 0,
+      "reproducible": null,
+      "note": "per-question records present, no aggregate report written"
+    },
+    {
+      "id": "research/gate-ablation/test+raw",
+      "kind": "enterprise benchmark (records only)",
+      "tag": "gate-ablation",
+      "split": "test",
+      "cases": 255,
+      "systems": [],
+      "report": null,
+      "metrics_checked": 0,
+      "metrics_mismatched": 0,
+      "reproducible": null,
+      "note": "per-question records present, no aggregate report written"
+    },
+    {
+      "id": "research/gate-ablation-fixed/test+raw",
+      "kind": "enterprise benchmark (records only)",
+      "tag": "gate-ablation-fixed",
+      "split": "test",
+      "cases": 255,
+      "systems": [],
+      "report": null,
+      "metrics_checked": 0,
+      "metrics_mismatched": 0,
+      "reproducible": null,
+      "note": "per-question records present, no aggregate report written"
+    },
+    {
+      "id": "research/gate-ablation-v3/test+raw",
+      "kind": "enterprise benchmark (records only)",
+      "tag": "gate-ablation-v3",
+      "split": "test",
+      "cases": 255,
+      "systems": [],
+      "report": null,
+      "metrics_checked": 0,
+      "metrics_mismatched": 0,
+      "reproducible": null,
+      "note": "per-question records present, no aggregate report written"
+    },
+    {
+      "id": "research/parser-codefix/test+raw",
+      "kind": "enterprise benchmark (records only)",
+      "tag": "parser-codefix",
+      "split": "test",
+      "cases": 255,
+      "systems": [],
+      "report": null,
+      "metrics_checked": 0,
+      "metrics_mismatched": 0,
+      "reproducible": null,
+      "note": "per-question records present, no aggregate report written"
+    },
+    {
+      "id": "research/parser-test/test+raw",
+      "kind": "enterprise benchmark (records only)",
+      "tag": "parser-test",
+      "split": "test",
+      "cases": 255,
+      "systems": [],
+      "report": null,
+      "metrics_checked": 0,
+      "metrics_mismatched": 0,
+      "reproducible": null,
+      "note": "per-question records present, no aggregate report written"
+    },
+    {
+      "id": "research/qwen2.5-1.5b/dev+raw",
+      "kind": "enterprise benchmark (records only)",
+      "tag": "qwen2.5-1.5b",
+      "split": "dev",
+      "cases": 153,
+      "systems": [],
+      "report": null,
+      "metrics_checked": 0,
+      "metrics_mismatched": 0,
+      "reproducible": null,
+      "note": "per-question records present, no aggregate report written"
+    },
+    {
+      "id": "research/smoke-qwen/dev+raw",
+      "kind": "enterprise benchmark (records only)",
+      "tag": "smoke-qwen",
+      "split": "dev",
+      "cases": 4,
+      "systems": [],
+      "report": null,
+      "metrics_checked": 0,
+      "metrics_mismatched": 0,
+      "reproducible": null,
+      "note": "per-question records present, no aggregate report written"
+    },
+    {
+      "id": "football/claim-gating",
+      "kind": "from-scratch model, claim-level gating",
+      "model": {
+        "parameters": 4262144,
+        "best_val_loss": 0.7741534113883972,
+        "checkpoint": "artifacts/football/nanogpt/ckpt.pt"
+      },
+      "corpus": {
+        "sentences": 13249,
+        "characters": 1298046,
+        "tokens": {
+          "train": 292948,
+          "val": 15512
+        },
+        "vocab_size": 4096,
+        "tokenizer_sha256": "8b3cbf56195645ad5c35d6891bfd1d7b1bd2ae57f5da6e0a04aff930719d750e"
+      },
+      "source": {
+        "file": "C:\\Users\\aprav\\Downloads\\goal.txt",
+        "sha256": "a54790c9888bdd267b0261d95a6d774d1c5609b20aaaf2884c02e57f57b274ae",
+        "rows": 3637,
+        "description": "FIFA World Cup goal records, 1930-2022, men's and women's tournaments"
+      },
+      "split": {
+        "method": "by match, so no held-out match has sibling goals in training",
+        "seed": 1337,
+        "matches_total": 1162,
+        "matches_heldout": 139,
+        "goals_train": 3185,
+        "goals_heldout": 449
+      },
+      "sampling": {
+        "temperature": 0.8,
+        "top_k": 40,
+        "max_new_tokens": 80,
+        "seed": 1337
+      },
+      "claims_total": 1091,
+      "claims_checkable": 1056,
+      "records": "artifacts\\football\\results\\claims.jsonl",
+      "sha256": "e53a4c342e485ca1",
+      "reproducible": true,
+      "caveat": "the gated hallucination rate is zero by construction: only graph-supported claims are released, so this is not independent evidence of verifier precision"
+    }
+  ]
+}

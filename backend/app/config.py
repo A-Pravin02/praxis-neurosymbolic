@@ -48,7 +48,11 @@ class Settings(BaseSettings):
     rate_limit_default_per_minute: int = 240
 
     # --- providers ---
-    llm_provider: Literal["mock", "openai", "anthropic", "ollama"] = "mock"
+    # "local" runs an open-weights model through transformers on the local GPU. The
+    # provider and the registry entry already existed, but this literal omitted it, so
+    # the documented `LLM_PROVIDER=local` path raised a validation error and the LLM
+    # baselines could not be run at all.
+    llm_provider: Literal["mock", "openai", "anthropic", "ollama", "local"] = "mock"
     llm_model: str = "praxis-mock-1"
     llm_api_key: str = ""
     llm_base_url: str = ""

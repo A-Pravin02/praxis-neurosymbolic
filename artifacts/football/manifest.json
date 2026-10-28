@@ -1,0 +1,54 @@
+{
+  "source": {
+    "file": "C:\\Users\\aprav\\Downloads\\goal.txt",
+    "sha256": "a54790c9888bdd267b0261d95a6d774d1c5609b20aaaf2884c02e57f57b274ae",
+    "rows": 3637,
+    "description": "FIFA World Cup goal records, 1930-2022, men's and women's tournaments"
+  },
+  "split": {
+    "method": "by match, so no held-out match has sibling goals in training",
+    "seed": 1337,
+    "matches_total": 1162,
+    "matches_heldout": 139,
+    "goals_train": 3185,
+    "goals_heldout": 449
+  },
+  "corpus": {
+    "sentences": 13249,
+    "characters": 1298046,
+    "tokens": {
+      "train": 292948,
+      "val": 15512
+    },
+    "vocab_size": 4096,
+    "tokenizer_sha256": "8b3cbf56195645ad5c35d6891bfd1d7b1bd2ae57f5da6e0a04aff930719d750e"
+  },
+  "leakage_check": {
+    "evaluated_fixtures": 137,
+    "ambiguous_or_shared_dropped": 2,
+    "method": "a fixture is evaluated only when its (match, tournament) pair maps to exactly one match and never appeared in training",
+    "passed": true
+  },
+  "rules_verified": {
+    "period_minute_windows": true,
+    "violations": 0
+  },
+  "evaluation": {
+    "cases": 411,
+    "categories": [
+      "first_scorer",
+      "goal_count",
+      "minute"
+    ]
+  },
+  "artifacts": {
+    "train": {
+      "tokens": 292948,
+      "sha256": "c73fdfd183a5fc694cbf41007f6d147927f50233db35a7e61101b1d10672f577"
+    },
+    "val": {
+      "tokens": 15512,
+      "sha256": "27ef09835be8cb272783a9338908afd037ad1ca7cf27e82866651192fc9cb1d4"
+    }
+  }
+}

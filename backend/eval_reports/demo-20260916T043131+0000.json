@@ -1,0 +1,123 @@
+{
+  "suite": "demo",
+  "generated_at": "2026-09-16T04:31:31+00:00",
+  "llm_provider": "mock",
+  "llm_model": "praxis-mock-1",
+  "embedding_provider": "hashing",
+  "metrics": {
+    "neurosymbolic": {
+      "mode": "neurosymbolic",
+      "cases": 3,
+      "factual_accuracy": 1.0,
+      "groundedness": 1.0,
+      "citation_accuracy": 1.0,
+      "unsupported_claim_rate": 0.0,
+      "hallucination_rate": 0.0,
+      "contradiction_detection_rate": null,
+      "symbolic_accuracy": null,
+      "abstention_accuracy": null,
+      "false_abstention_rate": 0.0,
+      "forbidden_content_rate": 0.0,
+      "retrieval_precision": 0.3889,
+      "retrieval_recall": 1.0,
+      "mean_latency_ms": 41.67,
+      "p95_latency_ms": 44.0
+    }
+  },
+  "outcomes": {
+    "neurosymbolic": [
+      {
+        "case_id": "rag-sick-leave",
+        "mode": "neurosymbolic",
+        "question": "How many sick leave days does the handbook allow?",
+        "answer": "The sick leave allowance is 10 days.\n\nSick leave The sick leave allowance is 10 days per calendar year. [1]",
+        "expected_kind": "grounded",
+        "gate_decision": "ANSWER",
+        "verification_status": "VERIFIED",
+        "confidence": 0.6576,
+        "latency_ms": 40,
+        "correct": true,
+        "judged": true,
+        "grounded": true,
+        "hallucinated": false,
+        "abstained": false,
+        "citation_correct": true,
+        "conflict_detected": true,
+        "leaked_forbidden": false,
+        "unsupported_claims": 0,
+        "total_claims": 2,
+        "retrieval_precision": 0.3333333333333333,
+        "retrieval_recall": 1.0,
+        "cited_documents": [
+          "Acme Employee Handbook 2019 (superseded)",
+          "Acme Employee Handbook 2026",
+          "Praxis Router X1 Product Specification"
+        ],
+        "notes": [
+          "pipeline grounding score 1.0"
+        ]
+      },
+      {
+        "case_id": "rag-notice-period",
+        "mode": "neurosymbolic",
+        "question": "What is the notice period after probation according to the handbook?",
+        "answer": "Notice period After probation, the notice period is 30 days for employees and 60 days for the company. [1]\n\nNotice period After probation, the notice period is 30 days for employees. [2]\n\nDuring probation the notice period is 7 days for either party. [3]",
+        "expected_kind": "grounded",
+        "gate_decision": "ANSWER",
+        "verification_status": "VERIFIED",
+        "confidence": 0.5676,
+        "latency_ms": 44,
+        "correct": true,
+        "judged": true,
+        "grounded": true,
+        "hallucinated": false,
+        "abstained": false,
+        "citation_correct": true,
+        "conflict_detected": false,
+        "leaked_forbidden": false,
+        "unsupported_claims": 0,
+        "total_claims": 3,
+        "retrieval_precision": 0.3333333333333333,
+        "retrieval_recall": 1.0,
+        "cited_documents": [
+          "Acme Employee Handbook 2019 (superseded)",
+          "Acme Employee Handbook 2026",
+          "Praxis Router X1 Support Bulletin (undated)"
+        ],
+        "notes": [
+          "pipeline grounding score 1.0"
+        ]
+      },
+      {
+        "case_id": "rag-training-budget",
+        "mode": "neurosymbolic",
+        "question": "What is the annual training budget per employee in the handbook?",
+        "answer": "Learning and development The annual training budget is 1200 USD per employee. [1]",
+        "expected_kind": "grounded",
+        "gate_decision": "ANSWER",
+        "verification_status": "VERIFIED",
+        "confidence": 0.5983,
+        "latency_ms": 41,
+        "correct": true,
+        "judged": true,
+        "grounded": true,
+        "hallucinated": false,
+        "abstained": false,
+        "citation_correct": true,
+        "conflict_detected": true,
+        "leaked_forbidden": false,
+        "unsupported_claims": 0,
+        "total_claims": 1,
+        "retrieval_precision": 0.5,
+        "retrieval_recall": 1.0,
+        "cited_documents": [
+          "Acme Employee Handbook 2019 (superseded)",
+          "Acme Employee Handbook 2026"
+        ],
+        "notes": [
+          "pipeline grounding score 1.0"
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "note": "Measured on this machine with a synthetic token stream. The synthetic stream is a hardware probe only and is never used for a reported training result.",
+  "device": "NVIDIA GeForce RTX 4050 Laptop GPU",
+  "total_vram_gb": 6.44,
+  "torch": "2.5.1+cu121",
+  "amp_dtype": "bfloat16",
+  "grad_accum_steps": 1,
+  "measurements": [
+    {"preset": "pilot", "params_m": 13.8, "batch_size": 8,  "block_size": 256, "tokens_per_second": 69933, "peak_gb": 0.69, "verdict": "fits"},
+    {"preset": "pilot", "params_m": 13.8, "batch_size": 16, "block_size": 256, "tokens_per_second": 88168, "peak_gb": 1.16, "verdict": "fits"},
+    {"preset": "pilot", "params_m": 13.8, "batch_size": 24, "block_size": 256, "tokens_per_second": 87636, "peak_gb": 1.62, "verdict": "fits"},
+    {"preset": "small", "params_m": 29.9, "batch_size": 8,  "block_size": 512, "tokens_per_second": 45217, "peak_gb": 1.84, "verdict": "fits"},
+    {"preset": "small", "params_m": 29.9, "batch_size": 16, "block_size": 512, "tokens_per_second": 42948, "peak_gb": 3.17, "verdict": "fits - selected"},
+    {"preset": "small", "params_m": 29.9, "batch_size": 24, "block_size": 512, "tokens_per_second": 40932, "peak_gb": 4.58, "verdict": "fits"},
+    {"preset": "base",  "params_m": 97.5, "batch_size": 8,  "block_size": 512, "tokens_per_second": 16075, "peak_gb": 4.37, "verdict": "fits but slow"},
+    {"preset": "base",  "params_m": 97.5, "batch_size": 16, "block_size": 512, "tokens_per_second": 6367,  "peak_gb": 7.26, "verdict": "exceeds VRAM - spilled to shared memory, throughput collapsed"},
+    {"preset": "base",  "params_m": 97.5, "batch_size": 24, "block_size": 512, "tokens_per_second": 1193,  "peak_gb": 10.18, "verdict": "exceeds VRAM - unusable"}
+  ],
+  "interpretation": "Peak allocations above 6.44 GB did not raise OutOfMemoryError because Windows WDDM silently spills to host memory. Throughput falling from 16,075 to 1,193 tokens/s is the real signal that those configurations do not fit. They are rejected.",
+  "selected_configuration": {
+    "preset": "small",
+    "parameters": 29894656,
+    "non_embedding_parameters": 25698304,
+    "batch_size": 16,
+    "block_size": 512,
+    "measured_tokens_per_second": 42948,
+    "measured_peak_gb": 3.17,
+    "rationale": "Inside the 10-50M parameter range the specification asks for, uses half the available VRAM so gradient accumulation can raise the effective batch without risk, and sustains ~43k tokens/s which makes a multi-epoch run practical in hours rather than days."
+  }
+}

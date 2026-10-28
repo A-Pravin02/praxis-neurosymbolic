@@ -1,0 +1,99 @@
+{
+  "checkpoint": "C:\\Users\\aprav\\OneDrive\\Desktop\\praxisvit\\artifacts\\football\\nanogpt\\ckpt.pt",
+  "model_parameters": 4262144,
+  "best_val_loss": 0.7741534113883972,
+  "corpus": {
+    "sentences": 13249,
+    "characters": 1298046,
+    "tokens": {
+      "train": 292948,
+      "val": 15512
+    },
+    "vocab_size": 4096,
+    "tokenizer_sha256": "8b3cbf56195645ad5c35d6891bfd1d7b1bd2ae57f5da6e0a04aff930719d750e"
+  },
+  "sampling": {
+    "temperature": 0.8,
+    "top_k": 40,
+    "max_new_tokens": 80,
+    "seed": 1337
+  },
+  "prompts": 337,
+  "claims_total": 1091,
+  "truncated_fragments_discarded": 300,
+  "claims_checkable": 1056,
+  "status_counts": {
+    "SUPPORTED": 523,
+    "CONTRADICTED": 493,
+    "UNVERIFIED": 40,
+    "NOT_CHECKABLE": 35
+  },
+  "systems": {
+    "slm_only": {
+      "claims_released": 1056,
+      "false_released": 533,
+      "hallucination_rate": 0.5047348484848485,
+      "coverage": 1.0
+    },
+    "slm_verified": {
+      "claims_released": 523,
+      "false_released": 0,
+      "hallucination_rate": 0.0,
+      "coverage": 0.4952651515151515
+    }
+  },
+  "by_prompt_source": {
+    "held_out": {
+      "claims": 431,
+      "supported": 208,
+      "false_rate": 0.5174
+    },
+    "seen": {
+      "claims": 625,
+      "supported": 315,
+      "false_rate": 0.496
+    }
+  },
+  "rule_failures": [
+    [
+      "Yugoslavia is credited with the goal but did not play in Czechoslovakia vs Romania",
+      2
+    ],
+    [
+      "Russia is credited with the goal but did not play in China vs Australia",
+      1
+    ],
+    [
+      "Austria is credited with the goal but did not play in Czechoslovakia vs Switzerland",
+      1
+    ],
+    [
+      "Argentina is credited with the goal but did not play in Italy vs Brazil",
+      1
+    ],
+    [
+      "Colombia is credited with the goal but did not play in Netherlands vs Paraguay",
+      1
+    ],
+    [
+      "Japan is credited with the goal but did not play in Belgium vs Russia",
+      1
+    ],
+    [
+      "Hungary is credited with the goal but did not play in Brazil vs Mexico",
+      1
+    ],
+    [
+      "United States is credited with the goal but did not play in Germany vs Japan",
+      1
+    ],
+    [
+      "North Korea is credited with the goal but did not play in Brazil vs Ghana",
+      1
+    ],
+    [
+      "Yugoslavia is credited with the goal but did not play in Portugal vs Hungary",
+      1
+    ]
+  ]
+}

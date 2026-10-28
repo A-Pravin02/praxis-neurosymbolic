@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PRAXIS</title>
+<style>
+  :root{
+    --bg:#0d1117; --panel:#161b22; --panel2:#1c2129; --line:#2a313b;
+    --ink:#e6edf3; --dim:#8b949e; --faint:#6e7681;
+    --neural:#a78bfa; --symbolic:#56d364; --gate:#f0883e; --bad:#f85149;
+    --accent:#58a6ff;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  header{padding:14px 22px;border-bottom:1px solid var(--line);background:var(--panel);
+         display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+  header h1{margin:0;font-size:17px;letter-spacing:.3px}
+  header .sub{color:var(--dim);font-size:12.5px}
+  header .spacer{flex:1}
+  .tag{font:11px var(--mono);padding:2px 7px;border-radius:4px;
+       border:1px solid var(--line);color:var(--dim)}
+  main{display:grid;grid-template-columns:300px 1fr;gap:0;height:calc(100vh - 53px)}
+  aside{border-right:1px solid var(--line);background:var(--panel);overflow-y:auto;padding:14px}
+  aside h2{font-size:11px;text-transform:uppercase;letter-spacing:.9px;color:var(--faint);
+           margin:16px 0 8px}
+  aside h2:first-child{margin-top:0}
+  .case{padding:8px 10px;border:1px solid var(--line);border-radius:6px;margin-bottom:6px;
+        cursor:pointer;background:var(--panel2)}
+  .case:hover{border-color:var(--accent)}
+  .case.on{border-color:var(--accent);background:#17233a}
+  .case .cat{font:10.5px var(--mono);color:var(--accent);text-transform:uppercase;
+             letter-spacing:.6px}
+  .case .q{font-size:12.5px;color:var(--ink);margin-top:3px}
+  button{background:var(--accent);color:#06101f;border:0;border-radius:6px;padding:8px 12px;
+         font-weight:600;font-size:13px;cursor:pointer;width:100%}
+  button.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+  button:disabled{opacity:.5;cursor:wait}
+  textarea{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--ink);
+           border-radius:6px;padding:8px;font-size:12.5px;resize:vertical;min-height:58px;
+           font-family:inherit}
+  section.work{overflow-y:auto;padding:18px 22px}
+  .empty{color:var(--faint);text-align:center;margin-top:16vh}
+  .stage{border:1px solid var(--line);border-radius:8px;margin-bottom:12px;overflow:hidden;
+         background:var(--panel)}
+  .stage>.head{padding:9px 13px;background:var(--panel2);border-bottom:1px solid var(--line);
+               display:flex;align-items:center;gap:9px}
+  .stage>.head .n{width:19px;height:19px;border-radius:50%;display:grid;place-items:center;
+                  font:10.5px/1 var(--mono);font-weight:700;color:#06101f}
+  .stage>.head h3{margin:0;font-size:12.5px;letter-spacing:.3px;flex:1}
+  .stage>.head .meta{font:11px var(--mono);color:var(--dim)}
+  .stage>.body{padding:12px 13px}
+  .s-neural .n{background:var(--neural)} .s-neural{border-left:3px solid var(--neural)}
+  .s-sym .n{background:var(--symbolic)}  .s-sym{border-left:3px solid var(--symbolic)}
+  .s-gate .n{background:var(--gate)}     .s-gate{border-left:3px solid var(--gate)}
+  .s-out .n{background:var(--accent)}    .s-out{border-left:3px solid var(--accent)}
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  th{text-align:left;color:var(--faint);font-weight:600;font-size:10.5px;
+     text-transform:uppercase;letter-spacing:.6px;padding:4px 8px 4px 0;
+     border-bottom:1px solid var(--line)}
+  td{padding:5px 8px 5px 0;border-bottom:1px solid #20262e;vertical-align:top}
+  tr:last-child td{border-bottom:0}
+  code,.mono{font-family:var(--mono);font-size:11.5px}
+  .pill{display:inline-block;font:10.5px var(--mono);padding:1.5px 6px;border-radius:3px;
+        text-transform:uppercase;letter-spacing:.5px}
+  .ok{background:#12301c;color:#56d364;border:1px solid #1d4a2a}
+  .no{background:#3a1416;color:#f85149;border:1px solid #5c1f22}
+  .warn{background:#3a2a10;color:#f0883e;border:1px solid #5c431a}
+  .neutral{background:#20262e;color:var(--dim);border:1px solid var(--line)}
+  .bar{height:4px;background:#20262e;border-radius:2px;overflow:hidden;min-width:52px}
+  .bar>i{display:block;height:100%;background:var(--neural)}
+  .step{padding:4px 0 4px 14px;border-left:2px solid #20262e;color:var(--dim);
+        font-size:12px;position:relative}
+  .step:before{content:"";position:absolute;left:-4px;top:11px;width:6px;height:6px;
+               border-radius:50%;background:#30363d}
+  .answer{background:#0b1b2e;border:1px solid #1d3b5c;border-radius:6px;padding:11px 13px;
+          font-size:13.5px;white-space:pre-wrap;line-height:1.55}
+  .kv{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+  .kv span{font:11px var(--mono);color:var(--dim);background:var(--panel2);
+           border:1px solid var(--line);border-radius:4px;padding:2.5px 7px}
+  .verdict{display:flex;align-items:center;gap:9px;padding:9px 13px;border-radius:6px;
+           margin-bottom:12px;font-size:13px}
+  .verdict.pass{background:#0f2416;border:1px solid #1d4a2a}
+  .verdict.fail{background:#2a1214;border:1px solid #5c1f22}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .note{color:var(--faint);font-size:11.5px;margin-top:8px;font-style:italic}
+  .suite td{font-size:12px}
+  .spin{display:inline-block;width:11px;height:11px;border:2px solid var(--line);
+        border-top-color:var(--accent);border-radius:50%;animation:sp .7s linear infinite;
+        vertical-align:-1px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  @media (max-width:900px){main{grid-template-columns:1fr;height:auto}
+    aside{border-right:0;border-bottom:1px solid var(--line)}}
+</style>
+</head>
+<body>
+<header>
+  <h1>PRAXIS</h1>
+  <span class="sub">neuro-symbolic reasoning and verification layer</span>
+  <span class="spacer"></span>
+  <span class="tag" id="enc">encoder 33M · ONNX</span>
+  <span class="tag">decision path: no LLM</span>
+</header>
+
+<main>
+  <aside>
+    <h2>Sample cases</h2>
+    <div id="cases"></div>
+
+    <h2>Run the whole sample set</h2>
+    <button id="runall" class="ghost">Run all 10 cases</button>
+
+    <h2>Ask your own</h2>
+    <textarea id="q" placeholder="e.g. Can order ORD-84722 be returned?"></textarea>
+    <button id="ask" style="margin-top:7px">Ask world 101</button>
+    <div class="note">Asked as support@w101.test with the support role.</div>
+  </aside>
+
+  <section class="work" id="work">
+    <div class="empty">Pick a sample case, or ask a question.</div>
+  </section>
+</main>
+
+<script>
+const $ = s => document.querySelector(s);
+const el = (t, c, h) => { const e = document.createElement(t);
+  if (c) e.className = c; if (h !== undefined) e.innerHTML = h; return e; };
+const esc = s => String(s === null || s === undefined ? "" : s)
+  .replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
+const pill = (ok, t) => `<span class="pill ${ok ? 'ok' : 'no'}">${t}</span>`;
+
+let samples = [];
+
+async function loadSamples() {
+  samples = await (await fetch('/api/samples')).json();
+  const box = $('#cases'); box.innerHTML = '';
+  samples.forEach(s => {
+    const d = el('div', 'case');
+    d.innerHTML = `<div class="cat">${esc(s.category)}</div>
+                   <div class="q">${esc(s.question)}</div>`;
+    d.onclick = () => { document.querySelectorAll('.case').forEach(x =>
+      x.classList.remove('on')); d.classList.add('on'); runCase(s.id); };
+    box.appendChild(d);
+  });
+}
+
+function busy(msg) {
+  $('#work').innerHTML = `<div class="empty"><span class="spin"></span> ${esc(msg)}</div>`;
+}
+
+async function runCase(id) {
+  busy('running the pipeline …');
+  const r = await (await fetch('/api/case/' + encodeURIComponent(id))).json();
+  render(r);
+}
+
+$('#ask').onclick = async () => {
+  const q = $('#q').value.trim(); if (!q) return;
+  document.querySelectorAll('.case').forEach(x => x.classList.remove('on'));
+  busy('running the pipeline …');
+  const r = await (await fetch('/api/ask', {method:'POST',
+    headers:{'Content-Type':'application/json'}, body: JSON.stringify({question:q, world:101})})).json();
+  render(r);
+};
+
+$('#runall').onclick = async () => {
+  busy('running all 10 sample cases …');
+  const r = await (await fetch('/api/suite')).json();
+  renderSuite(r);
+};
+
+function renderSuite(r) {
+  const w = $('#work'); w.innerHTML = '';
+  const pass = r.correct === r.total;
+  w.appendChild(el('div', 'verdict ' + (pass ? 'pass' : 'fail'),
+    `<strong>${r.correct} of ${r.total} correct</strong>
+     <span style="color:var(--dim)">· ${r.elapsed_ms} ms for the set</span>`));
+  const st = el('div', 'stage s-out');
+  let rows = r.results.map(x => `<tr>
+      <td><code>${esc(x.case.category)}</code></td>
+      <td>${esc(x.case.question)}</td>
+      <td><code>${esc(x.release.outcome)}</code></td>
+      <td><code>${esc(x.gold.kind)}</code></td>
+      <td>${x.verdict.correct === null ? '<span class="pill neutral">n/a</span>'
+            : pill(x.verdict.correct, x.verdict.correct ? 'correct' : 'wrong')}</td>
+      <td class="mono">${x.release.latency_ms} ms</td></tr>`).join('');
+  st.innerHTML = `<div class="head"><span class="n">&Sigma;</span>
+      <h3>Sample set results</h3><span class="meta">world 101 · frozen test split</span></div>
+    <div class="body"><table class="suite"><thead><tr>
+      <th>Category</th><th>Question</th><th>Outcome</th><th>Gold kind</th>
+      <th>Verdict</th><th>Latency</th></tr></thead><tbody>${rows}</tbody></table>
+      <div class="note">The not_covered case is expected to fail: the system answers a
+      related in-scope question instead of recognising that no policy covers it. It is
+      shown because the paper reports it as the architecture's sharpest limitation.</div>
+    </div>`;
+  w.appendChild(st);
+}
+
+function render(r) {
+  if (r.error) { $('#work').innerHTML = `<div class="empty">${esc(r.error)}</div>`; return; }
+  const w = $('#work'); w.innerHTML = '';
+
+  if (r.verdict.correct !== null && r.gold.kind) {
+    w.appendChild(el('div', 'verdict ' + (r.verdict.correct ? 'pass' : 'fail'),
+      `${pill(r.verdict.correct, r.verdict.correct ? 'correct' : 'wrong')}
+       <span>gold: <code>${esc(r.gold.kind)}</code>
+       ${r.gold.value !== null && r.gold.value !== undefined
+         ? '= <code>' + esc(r.gold.value) + '</code>' : ''}
+       · expected outcome <code>${esc(r.gold.expected_outcome)}</code></span>`));
+  }
+
+  // question
+  const q = el('div', 'stage');
+  q.innerHTML = `<div class="body"><div style="font-size:15px">${esc(r.case.question)}</div>
+    <div class="kv"><span>${esc(r.case.id)}</span><span>world ${esc(r.case.world)}</span>
+    <span>${esc(r.case.user)}</span><span>roles: ${esc((r.case.roles||[]).join(', '))}</span></div></div>`;
+  w.appendChild(q);
+
+  // 1 neural
+  const cands = (r.neural.candidates || []).map(c => `<tr>
+      <td><code>${esc(c.name)}</code></td>
+      <td><span class="pill neutral">${esc(c.goal_kind || c.kind)}</span></td>
+      <td style="width:90px"><div class="bar"><i style="width:${(c.score*100).toFixed(0)}%"></i></div></td>
+      <td class="mono">${(c.score ?? 0).toFixed(4)}</td></tr>`).join('');
+  const ents = (r.neural.entities || []).map(e =>
+      `<span>${esc(e.type)}: ${esc(e.id || e.text)}</span>`).join('');
+  w.appendChild(stage('s-neural', '1', 'Neural interpretation',
+    'no decision is taken here',
+    `<table><thead><tr><th>Candidate goal</th><th>Kind</th><th colspan="2">Similarity</th>
+     </tr></thead><tbody>${cands}</tbody></table>
+     <div class="kv">${ents}<span>speech act: ${esc(r.neural.speech_act)}</span></div>
+     <div class="note">The encoder proposes; the highest-scoring goal is carried forward.
+     It never asserts the answer.</div>`));
+
+  // 2 symbolic
+  // Conditions are collapsed by default: expanded, one decisive rule can be twenty
+  // rows tall and the facts beside it two, which leaves the panel mostly empty.
+  const rules = (r.symbolic.rules || []).slice(0, 6).map(ru => {
+    const proved = ru.status === 'proved';
+    const cs = ru.conditions || [];
+    const conds = cs.map(c =>
+      `<div class="step">${esc(c.condition)} —
+       <span class="pill ${c.status === 'satisfied' ? 'ok' : 'warn'}">${esc(c.status)}</span>
+       ${c.note ? '<span style="color:var(--faint)"> ' + esc(c.note) + '</span>' : ''}</div>`).join('');
+    return `<tr><td style="width:84px"><code>${esc(ru.rule)}</code></td>
+      <td><div>${esc(ru.name)}</div>
+      ${ru.because ? '<div style="color:var(--dim);font-size:11.5px;margin-top:2px">'
+        + esc(ru.because) + '</div>' : ''}
+      ${cs.length ? `<details><summary style="cursor:pointer;color:var(--faint);
+        font-size:11px;margin-top:3px">${cs.length} conditions</summary>
+        ${conds}</details>` : ''}</td>
+      <td style="width:72px">${pill(proved, esc(ru.status))}</td></tr>`;
+  }).join('');
+  const facts = (r.symbolic.facts || []).slice(0, 9).map(f =>
+    `<tr><td><code>${esc(f.predicate)}</code></td><td><code>${esc(f.subject)}</code></td>
+     <td>${esc(f.value)}</td><td><span class="pill neutral">${esc(f.source)}</span></td></tr>`).join('');
+  w.appendChild(stage('s-sym', '2', 'Symbolic reasoning',
+    'goal: ' + (r.symbolic.goal || '—'),
+    `<div class="grid2">
+      <div><table><thead><tr><th>Predicate</th><th>Subject</th><th>Value</th><th>From</th>
+      </tr></thead><tbody>${facts}</tbody></table></div>
+      <div><table><thead><tr><th>Rule</th><th>Under three-valued logic</th><th>Status</th>
+      </tr></thead><tbody>${rules}</tbody></table></div></div>
+     <div class="note">An unrecorded fact is <em>unknown</em>, not false — a two-valued
+     engine would deny entitlements nobody recorded.</div>`));
+
+  // 3 verification
+  const checks = (r.verification.checks || []).map(c =>
+    `<tr><td style="width:160px">${esc(c.check)}</td>
+     <td>${pill(c.passed, c.passed ? 'pass' : 'fail')}</td>
+     <td style="color:var(--dim)">${esc(c.detail)}</td></tr>`).join('');
+  const nPass = (r.verification.checks || []).filter(c => c.passed).length;
+  w.appendChild(stage('s-gate', '3', 'Deterministic verification',
+    `${nPass}/${(r.verification.checks || []).length} checks passed`,
+    `<table><tbody>${checks}</tbody></table>
+     <div class="note">Four-valued: supported, contradicted, unverified, not checkable.
+     Missing evidence is never read as refutation.</div>`));
+
+  // 4 release
+  const steps = (r.symbolic.steps || []).map(s => `<div class="step">${esc(s)}</div>`).join('');
+  w.appendChild(stage('s-out', '4', 'Release',
+    r.verification.passed ? 'gate passed' : 'gate withheld',
+    `<div class="answer">${esc(r.release.answer)}</div>
+     <div class="kv">
+       <span>outcome: ${esc(r.release.outcome)}</span>
+       <span>confidence: ${esc(r.release.confidence)}</span>
+       <span>${esc(r.release.latency_ms)} ms</span>
+       <span>pipeline: ${esc(r.release.pipeline)}</span>
+       <span>sources: ${esc((r.release.sources || []).join(', '))}</span></div>
+     <details style="margin-top:11px"><summary style="cursor:pointer;color:var(--dim);
+       font-size:12px">Reasoning trace (${(r.symbolic.steps || []).length} steps)</summary>
+       <div style="margin-top:7px">${steps}</div></details>`));
+}
+
+function stage(cls, n, title, meta, body) {
+  const d = el('div', 'stage ' + cls);
+  d.innerHTML = `<div class="head"><span class="n">${n}</span><h3>${esc(title)}</h3>
+    <span class="meta">${esc(meta)}</span></div><div class="body">${body}</div>`;
+  return d;
+}
+
+loadSamples();
+</script>
+</body>
+</html>

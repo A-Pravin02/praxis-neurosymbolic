@@ -478,29 +478,73 @@ Two test cases were written for the pre-versioning pack:
 
 The files were not edited; both cases count as failures.
 
-### Not yet run: the language-model baselines
+### Run 8 — the language-model baselines, measured
 
-`llm_only`, `llm_rag` and `llm_rag_rules` are implemented, but none has produced a result
-yet:
-- no hosted-provider key is configured on this machine;
-- the local open-weights model (Qwen2.5-1.5B-Instruct, 3.1 GB) could not be downloaded
-  here: the connection to Hugging Face ran at about 24 KB/s.
+**Superseded: these were previously unrun** — on *this* track. The separate
+research benchmark (`scripts/run_research.py`, 255 generated-world cases) had already
+been run in full with Qwen2.5-7B-Instruct under the `paper` tag, and the manuscript's
+headline numbers come from it. What follows is the first language-model result on the
+`copilot` split specifically. They were blocked by two things, both now
+resolved. No provider key was configured, and a Hugging Face download ran at about
+24 KB/s. Measured on 2026-10-26, throughput was **2.15 MB/s**, roughly 90x faster. A
+third obstacle only surfaced on attempting the run: `app/config.py` omitted `"local"`
+from the `llm_provider` literal, so the documented `LLM_PROVIDER=local` path raised a
+validation error on import. Fixed.
 
-**So the central comparison with LLM and RAG baselines is not measured in this
-repository yet.** The results above compare the full system with its lexical ablation and
-with retrieval alone. To complete it:
+Frozen `copilot` split, 53 cases, first run, reported as the frozen result.
+Base model **Qwen2.5-1.5B-Instruct**, fp16, local GPU, greedy decoding.
+Source: `eval_reports/ns-benchmark-meridian-copilot-20261026T062639Z.json`.
+
+| Metric | neurosymbolic | llm_only | llm_cot | llm_rag | llm_rag_rules | llm_rag_selfcheck |
+|---|---|---|---|---|---|---|
+| Final answer accuracy | **0.774** | 0.094 | 0.094 | 0.113 | 0.264 | 0.075 |
+| Decision accuracy | **0.840** | 0.400 | 0.440 | 0.400 | 0.480 | 0.360 |
+| Calculation accuracy | **0.833** | 0.000 | 0.000 | 0.000 | 0.417 | 0.000 |
+| Policy compliance | **0.925** | 0.547 | 0.528 | 0.585 | 0.660 | 0.547 |
+| Hallucination rate | **0.075** | 0.453 | 0.472 | 0.415 | 0.340 | 0.453 |
+| Unsupported-answer rate | **0.000** | 1.000 | 1.000 | 0.000 | 0.000 | 0.000 |
+| Mean latency (ms) | **86** | 3308 | 2520 | 2648 | 6484 | 4730 |
+
+Paired statistics (`scripts/analyze_benchmark.py`): McNemar exact, two-sided, plus a
+20,000-resample paired percentile bootstrap over questions, alpha = 0.05. A difference
+is only called persuasive when the test is significant **and** the interval excludes
+zero.
+
+| Baseline | Accuracy difference | 95% CI | p | Hallucination difference | 95% CI | p |
+|---|---|---|---|---|---|---|
+| llm_only | +0.679 | [+0.528, +0.811] | <0.0001 | -0.377 | [-0.528, -0.226] | 0.00004 |
+| llm_cot | +0.679 | [+0.528, +0.811] | <0.0001 | -0.396 | [-0.547, -0.245] | 0.00005 |
+| llm_rag | +0.660 | [+0.509, +0.811] | <0.0001 | -0.340 | [-0.491, -0.189] | 0.00028 |
+| llm_rag_rules | +0.509 | [+0.340, +0.660] | <0.0001 | -0.264 | [-0.415, -0.132] | 0.00131 |
+| llm_rag_selfcheck | +0.698 | [+0.566, +0.830] | <0.0001 | -0.377 | [-0.528, -0.226] | 0.00004 |
+
+Three observations, beyond the headline:
+
+1. **The earlier figure reproduced exactly.** `neurosymbolic` scored 0.774 here, the same
+   as post-hoc run 5. The pipeline is deterministic and those fixes hold.
+2. **Verification carries the result, not retrieval.** `llm_rag` (0.113) barely improves
+   on `llm_only` (0.094). A basic rule engine helps most among the baselines
+   (`llm_rag_rules`, 0.264), and the full verification stack roughly triples that again.
+3. **Self-checking does not substitute for an external verifier.** `llm_rag_selfcheck`
+   (0.075) is no better than `llm_only` and hallucinates at an identical rate, 0.453.
+
+**What this does not establish.** The base model is 1.5B parameters. This supports the
+claim that the architecture beats a *small* instruction-tuned model on this domain. It
+does **not** support "PRAXIS beats LLMs". A stronger base model could close much of the
+gap, and that is the largest remaining threat to validity. A cross-model run (E6) on a
+second family is in progress; a frontier-scale comparison is still unmeasured and needs a
+hosted key.
+
+To reproduce:
 
 ```bash
-# hosted (e.g. a free Groq key)
-LLM_PROVIDER=openai LLM_BASE_URL=https://api.groq.com/openai/v1 LLM_API_KEY=... \
-LLM_MODEL=llama-3.3-70b-versatile python scripts/run_ns_benchmark.py --split copilot
-# or locally, once the model is downloaded (needs torch + transformers, ~6 GB GPU)
-LLM_PROVIDER=local python scripts/run_ns_benchmark.py --split copilot
-python scripts/demo_copilot.py        # the four-system demonstration, same configuration
+export HF_HOME="$PWD/backend/.model_cache"
+export LLM_PROVIDER=local LOCAL_LLM_MODEL=Qwen/Qwen2.5-1.5B-Instruct
+python scripts/run_ns_benchmark.py --split copilot   --systems neurosymbolic,neurosymbolic_lexical,rag_extractive,llm_only,llm_cot,llm_rag,llm_rag_rules,llm_rag_selfcheck
+python scripts/analyze_benchmark.py eval_reports/ns-benchmark-meridian-copilot-<stamp>.json
 ```
 
-Report the first run of that command as the frozen result: the copilot set was fixed
-before any of these systems ran on it.
+Full environment setup without Docker: [RUNNING_NO_DOCKER.md](RUNNING_NO_DOCKER.md).
 
 ### What the results show
 
@@ -527,8 +571,11 @@ rather than guessing.
 
 ### What the results do not show
 
-- **No comparison against a real LLM yet.** See "Not yet run" above. **Without it, the
-  central research question is only partly answered.**
+- **Only a small base model so far.** The comparison in run 8 used a 1.5B
+  instruction-tuned model. It establishes that the architecture beats a small local
+  model on this domain; it does **not** establish anything about frontier-scale models,
+  where the gap could be much smaller. Until a cross-model and a larger-model run exist,
+  the central research question is answered **for small base models only**.
 - **No business-outcome measurements.** Handle time, first-contact resolution, escalation
   and satisfaction need a pilot with agents; the protocol is in
   [PILOT_STUDY_PROTOCOL.md](PILOT_STUDY_PROTOCOL.md). The console reports only what is

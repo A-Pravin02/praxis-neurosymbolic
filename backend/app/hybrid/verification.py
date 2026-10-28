@@ -281,13 +281,25 @@ class Verifier:
         if not rephrased:
             return Check("unsupported claims", True,
                          "the reply was composed only from the reasoning's conclusion")
-        sentences = [s for s in _sentences(answer) if len(s.split()) > 3]
+        # F-3 fix (a): exclude sentences shorter than 6 words — they carry no new
+        # fact but reliably score below the cosine threshold, producing false fallbacks.
+        sentences = [s for s in _sentences(answer) if len(s.split()) > 5]
         supported = [s for s in _sentences(draft) if s]
         if not sentences or not supported:
             return Check("unsupported claims", True, "nothing to compare")
         scores = self.pack.encoder.similarity(sentences, supported)
-        weak = [s for s, row in zip(sentences, scores)
-                if float(row.max()) < UNSUPPORTED_SENTENCE_THRESHOLD]
+        allowed_numbers = numbers_in(draft)
+        weak: list[str] = []
+        for s, row in zip(sentences, scores):
+            # F-3 fix (b): a sentence with a number that is not in the deterministic
+            # draft is unsupported regardless of how well it paraphrases the draft.
+            # Cosine similarity cannot catch meaning-changing numeric substitutions.
+            sentence_numbers = numbers_in(s)
+            if sentence_numbers and not sentence_numbers <= allowed_numbers:
+                weak.append(s)
+                continue
+            if float(row.max()) < UNSUPPORTED_SENTENCE_THRESHOLD:
+                weak.append(s)
         return Check("unsupported claims", not weak,
                      "every sentence of the model's phrasing is supported by the conclusion"
                      if not weak else f"sentences not supported by the conclusion: {weak[:2]}")

@@ -360,8 +360,9 @@ def run(split: str, systems: list[str], *, out_dir: Path, limit: int | None = No
         started = time.perf_counter()
 
         def solve(case: dict) -> dict:
-            answer = runners[case["world"]](case)
-            answer = answer if isinstance(answer, Answer) else _from_system_answer(answer)
+            produced = runners[case["world"]](case)
+            answer = produced if isinstance(produced, Answer) \
+                else _from_system_answer(produced)
             row = score(case, answer.as_dict(), worlds[case["world"]])
             row["raw"] = answer.raw[:1500]
             # A model reply the structured-output contract could not read. Scored from
@@ -370,6 +371,10 @@ def run(split: str, systems: list[str], *, out_dir: Path, limit: int | None = No
             from app.evaluation.ns_benchmark import _parse_json
             row["parse_failed"] = bool(answer.raw) and not _parse_json(
                 answer.raw.split("REVISED:")[-1])
+            # Distinct from parse_failed, which is about unreadable JSON. This records
+            # that understanding fell back to embeddings, so a parser configuration's
+            # score can be read for how much of it was actually the model.
+            row["parser_fallback"] = getattr(produced, "parser_fallback", None)
             return row
 
         with path.open("a", encoding="utf-8") as sink:

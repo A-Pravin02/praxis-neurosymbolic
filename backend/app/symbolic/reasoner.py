@@ -410,7 +410,12 @@ class Reasoner:
 
         if conditional:
             top = max(o.priority for o in conditional)
-            lead = next(o for o in conditional if o.priority == top)
+            best_cond = [o for o in conditional if o.priority == top]
+            # Conditionals at the same priority with different prospective values are
+            # genuine uncertain branches, not a rule authoring conflict: the answer
+            # genuinely depends on facts not yet known. Pick the lead value from the
+            # highest-priority conditional and let the caller present "it depends".
+            lead = best_cond[0]
             return GoalResult(subject, predicate, CONDITIONAL, value=lead.value,
                               source="derived", decided_by=lead, outcomes=outcomes,
                               missing=_unique([m for c in conditional for m in c.missing()]))
@@ -484,13 +489,22 @@ class Reasoner:
 
     def _fails_for_every_alternative(self, condition, bindings, names) -> bool:
         provisional = [n for n in names if n in self._provisional]
-        if len(provisional) != 1 or not self._alternatives.get(provisional[0]):
+        # F-4 fix: extend to multiple provisional variables by iterating the
+        # Cartesian product of their alternatives.  The original code returned
+        # False immediately when len(provisional) != 1, which over-approximated
+        # as UNKNOWN even when every concrete combination violated the comparison.
+        if not provisional:
             return False
-        name = provisional[0]
-        for alternative in self._alternatives[name]:
+        if not all(self._alternatives.get(name) for name in provisional):
+            return False
+        from itertools import product as cart_product
+        alternative_lists = [self._alternatives[name] for name in provisional]
+        for combo in cart_product(*alternative_lists):
             trial = dict(bindings)
-            trial[name] = alternative
-            left, right = self._value(condition.left, trial), self._value(condition.right, trial)
+            for name, val in zip(provisional, combo):
+                trial[name] = val
+            left = self._value(condition.left, trial)
+            right = self._value(condition.right, trial)
             if _is_open(left) or _is_open(right) or compare(condition.op, left, right):
                 return False
         return True

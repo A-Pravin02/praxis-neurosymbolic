@@ -47,3 +47,30 @@ backend/.model_cache/
 backend/data/meridian/.history/
 backend/data/meridian/REVISION
 backend/data/meridian/knowledge/zz_admin.yaml
+
+# Model checkpoints and tokenised corpora: large binaries that the scripts
+# regenerate. `artifacts/football/results/` and the manifests are kept, because
+# the paper's Study II numbers are recomputed from them.
+artifacts/**/*.pt
+artifacts/**/*.bin
+artifacts/football/_superseded/
+
+# The evidence the paper is checked against. `*.jsonl` and `eval_reports/` above
+# exclude working output; these three splits plus the Study II claim records are
+# what scripts/verify_claims.py and scripts/independent_metrics.py read, so a
+# clone can re-verify every published number without re-running the experiments.
+!artifacts/football/eval.jsonl
+!artifacts/football/results/claims.jsonl
+!eval_reports/
+eval_reports/*
+!eval_reports/research/
+eval_reports/research/*
+!eval_reports/research/paper/
+!eval_reports/research/confirm/
+!eval_reports/research/gate-ablation-v3/
+!eval_reports/research/**/*.jsonl
+!eval_reports/research/**/*.json
+!eval_reports/research/**/*.md
+
+# Page previews rendered while checking layout; not deliverables.
+docs/paper/preview/

@@ -465,6 +465,21 @@ class FactGrounding:
                     "reason": "contradicts the company record, which is used instead"})
                 return False
 
+        # F-2 fix: if this (subject, predicate) pair was already stated with a
+        # different value (e.g. by a prior neural-symbolic loop iteration) the new
+        # statement is contradictory — reject it and keep the original rather than
+        # silently overwriting.  This mirrors the record-contradiction path above.
+        existing = grounding.stated.get((subject, statement.predicate))
+        if existing is not None and not _same(existing, statement.value,
+                                              tolerance=_tolerance(value_type)):
+            existing_shown = format_value(existing, value_type, graph=self.graph)
+            grounding.rejected.append(
+                {"predicate": statement.predicate, "stated": shown,
+                 "record": existing_shown, "evidence": statement.evidence,
+                 "reason": "contradicts an earlier stated value for the same input; "
+                            "the first stated value is kept"})
+            return False
+
         grounding.stated[(subject, statement.predicate)] = statement.value
         grounding.accepted.append({"predicate": statement.predicate, "value": shown,
                                    "status": "stated by you", "evidence": statement.evidence,
