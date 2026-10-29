@@ -9,7 +9,10 @@
 
 param(
     [Parameter(Mandatory = $true)][string]$Docx,
-    [string]$Pdf
+    [string]$Pdf,
+    # Fail if the document is longer than this. The IEEE paper has a six-page limit;
+    # the project report has none, so the check is opt-in rather than assumed.
+    [int]$MaxPages = 0
 )
 
 $ErrorActionPreference = "Stop"
@@ -30,8 +33,8 @@ try {
         $doc.SaveAs([ref]$Pdf, [ref]17)           # wdFormatPDF
         "exported : $Pdf"
         "pages    : $pages"
-        if ($pages -gt 6) {
-            Write-Warning "$pages pages - the IEEE submission limit for this paper is 6."
+        if ($MaxPages -gt 0 -and $pages -gt $MaxPages) {
+            Write-Warning "$pages pages - the limit for this document is $MaxPages."
             exit 2
         }
     }

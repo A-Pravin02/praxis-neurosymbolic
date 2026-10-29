@@ -90,3 +90,53 @@ cd docs/paper && pdflatex main && bibtex main && pdflatex main && pdflatex main
   is the reference for reported numbers.
 - Bibliographic entries in `references.bib` were entered from memory and must be checked
   against publisher records before submission.
+
+## Latency: what the reported figures measure
+
+The paper is exactly six pages and the column holding the experimental design has no
+slack, so the protocol is stated here. Table II's latency column is the **per-question
+mean of wall-clock time inside `NeuroSymbolicController.answer`**, on CPU, with no GPU.
+It excludes process start-up, model download and knowledge-pack loading. It *includes*
+the first question of each world, which also builds that world's goal catalogue and
+policy index, and that question costs several times any other.
+
+Three figures in the artifacts measure three different things, and they are easy to
+mistake for each other:
+
+| Figure | What it is |
+|---|---|
+| 77.9 ms | Table II, LLM-free. Mean over 255 questions, measured during a run of all 14 systems. Median 61.3 ms; the slowest case is 1421 ms, the first question of world 101. |
+| 46.6 ms | The same system re-run alone with `--workers 1` (`eval_reports/research/latency-protocol/`). Accuracy and hallucination reproduce exactly at 0.796 and 0.149; only latency moves, because the published run shared a machine with the language-model systems. The published figure is therefore the conservative one. |
+| 146 ms / 3.2 ms | The ten demo cases, first pass and repeat (`artifacts/demo_suite.json`). The encoder memoises embeddings by text, so asking the same question twice in one process is about forty times cheaper. Only the first pass is comparable to the two figures above. |
+
+Regenerate the last of these with `python scripts/record_demo_suite.py`, which records
+both passes and labels which is which.
+
+## Models and inference stacks, per configuration
+
+Reported separately because the paper's capability limitation turns on it: the 1.5B and
+7B results do not share an inference stack, so a difference between them is not purely a
+difference of model size.
+
+| Configuration | Model | Role | Inference stack |
+|---|---|---|---|
+| PRAXIS (default, "LLM-free") | none on the decision path | — | deterministic realizer; bge-small 33M encoder via ONNX, CPU |
+| PRAXIS + parser | Qwen2.5-7B-Instruct | semantic parser only; decisions stay symbolic | OpenAI-compatible local endpoint (`scripts/local_llm_server.py`) |
+| `llm_only`, `llm_rag`, `llm_rag_rules`, `llm_rag_selfcheck` | Qwen2.5-7B-Instruct | answers the question | same endpoint as above |
+| Scale comparison, Section XII | Qwen2.5-1.5B-Instruct | same roles as the 7B | Hugging Face `transformers`, greedy, CPU/CUDA (`LocalTransformersProvider`) |
+| Relevance-gate measurement | Qwen2.5-1.5B-Instruct | semantic parser | `transformers`, as above |
+| Study II | 19.9M decoder trained from scratch | generator under the gate | project code, see Section XI |
+
+Decoding is greedy everywhere and temperature is 0.
+
+## Independent re-verification
+
+These commands were run and their results are what the paper and the change log report.
+A reviewer re-running them is re-verifying, not taking the report's word:
+
+```bash
+python scripts/independent_metrics.py    # 151 values from raw records, 0 mismatched
+python scripts/verify_claims.py          # 25 textual claims against the artifacts
+cd backend && python -m pytest tests/ -m no_db -q    # 143 passed
+powershell -File scripts/export_pdf.ps1 docs/paper/PRAXIS_IEEE.docx   # 6 pages
+```

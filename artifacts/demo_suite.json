@@ -1,1 +1,3291 @@
-{"elapsed_ms": 39.9, "total": 10, "correct": 7, "results": [{"case": {"id": "W101-T-known-1", "world": 101, "category": "known", "question": "Can order ORD-84722 be returned?", "user": "support@w101.test", "roles": ["support"]}, "gold": {"kind": "decision", "value": true, "because": "within the return window (RET-1, RET-3)", "clauses": ["RET-1", "RET-3"], "expected_outcome": "answered", "expected_goal": "return_allowed"}, "neural": {"speech_act": "decide", "candidates": [{"kind": "goal", "name": "recommended_resolution", "subject_type": "order", "goal_kind": "recommendation", "score": 0.7167}, {"kind": "goal", "name": "replacement_available", "subject_type": "order", "goal_kind": "decision", "score": 0.7069}, {"kind": "goal", "name": "cancellation_allowed", "subject_type": "order", "goal_kind": "decision", "score": 0.7044}, {"kind": "goal", "name": "return_allowed", "subject_type": "order", "goal_kind": "decision", "score": 0.7033}, {"kind": "goal", "name": "free_delivery", "subject_type": "order", "goal_kind": "decision", "score": 0.695}], "entities": [{"type": "order", "id": "ORD-84722", "text": "ORD-84722", "method": "id"}], "encoder": "BAAI/bge-small-en-v1.5"}, "symbolic": {"goal": "return_allowed", "facts": [{"subject": "ORD-84722", "predicate": "order_status", "value": "delivered", "source": "record", "rule": ""}, {"subject": "ORD-84722", "predicate": "contains", "value": "Brass Table Lamp", "source": "record", "rule": ""}, {"subject": "PRD-198", "predicate": "product_category", "value": "Home", "source": "record", "rule": ""}, {"subject": "ORD-84722", "predicate": "order_category", "value": "Home", "source": "derived", "rule": "R-KG-CAT"}, {"subject": "ORD-84722", "predicate": "delivered_on", "value": "20 Oct 2026", "source": "record", "rule": ""}, {"subject": "meridian", "predicate": "today", "value": "27 Nov 2026", "source": "record", "rule": ""}, {"subject": "ORD-84722", "predicate": "days_since_delivery", "value": "38", "source": "derived", "rule": "R-CLK-DEL"}, {"subject": "home", "predicate": "return_window_days", "value": "40", "source": "record", "rule": ""}, {"subject": "ORD-84722", "predicate": "placed_by", "value": "Anjali Bose", "source": "record", "rule": ""}, {"subject": "CUST-6509", "predicate": "membership_tier", "value": "standard", "source": "record", "rule": ""}, {"subject": "ORD-84722", "predicate": "order_membership", "value": "standard", "source": "derived", "rule": "R-KG-TIER"}, {"subject": "home", "predicate": "plus_extension_days", "value": "12", "source": "record", "rule": ""}, {"subject": "ORD-84722", "predicate": "effective_return_window", "value": "40", "source": "derived", "rule": "R-RET-W1"}, {"subject": "ORD-84722", "predicate": "delivery_date", "value": "20 Oct 2026", "source": "derived", "rule": "R-DATE-REC"}, {"subject": "ORD-84722", "predicate": "returns_policy", "value": "Returns policy version 1", "source": "derived", "rule": "version:returns"}, {"subject": "RETURNS-v1", "predicate": "damage_report_days", "value": "8", "source": "record", "rule": ""}, {"subject": "ORD-84722", "predicate": "return_allowed", "value": "yes", "source": "derived", "rule": "R-RET-A"}, {"subject": "PRD-198", "predicate": "in_stock", "value": "yes", "source": "record", "rule": ""}, {"subject": "ORD-84722", "predicate": "cancellation_allowed", "value": "no", "source": "derived", "rule": "R-CAN-3"}, {"subject": "ORD-84722", "predicate": "recommended_resolution", "value": "return and refund after inspection", "source": "derived", "rule": "R-SUP-RETURN"}, {"subject": "ORD-84722", "predicate": "order_total", "value": "\u20b93,469", "source": "record", "rule": ""}, {"subject": "meridian", "predicate": "approval_threshold", "value": "\u20b922,000", "source": "record", "rule": ""}], "rules": [{"rule": "R-RET-A", "name": "Change-of-mind return within the window", "clauses": ["RET-1", "RET-2", "RET-3"], "status": "proved", "priority": 100, "value": "yes", "because": "it was delivered 38 days ago, within the 40-day return window for Home items", "failed": null, "conditions": [{"index": 0, "condition": "order_status(Brass Table Lamp order) = delivered", "status": "satisfied", "note": "", "missing": []}, {"index": 1, "condition": "order_category(Brass Table Lamp order) = Home", "status": "satisfied", "note": "", "missing": []}, {"index": 2, "condition": "not non_returnable(Home)", "status": "satisfied", "note": "", "missing": []}, {"index": 3, "condition": "days_since_delivery(Brass Table Lamp order) = 38", "status": "satisfied", "note": "", "missing": []}, {"index": 4, "condition": "effective_return_window(Brass Table Lamp order) = 40", "status": "satisfied", "note": "", "missing": []}, {"index": 5, "condition": "38 \u2264 40", "status": "satisfied", "note": "", "missing": []}]}, {"rule": "R-KG-CAT", "name": "Category of an ordered item", "clauses": ["RET-1"], "status": "proved", "priority": 100, "value": "Home", "because": "", "failed": null, "conditions": [{"index": 0, "condition": "contains(Brass Table Lamp order) = Brass Table Lamp", "status": "satisfied", "note": "", "missing": []}, {"index": 1, "condition": "product_category(Brass Table Lamp) = Home", "status": "satisfied", "note": "", "missing": []}]}, {"rule": "R-CLK-DEL", "name": "Days since delivery", "clauses": ["RET-1"], "status": "proved", "priority": 100, "value": "38", "because": "", "failed": null, "conditions": [{"index": 0, "condition": "delivered_on(Brass Table Lamp order) = 20 Oct 2026", "status": "satisfied", "note": "", "missing": []}, {"index": 1, "condition": "today(Meridian Marketplace) = 27 Nov 2026", "status": "satisfied", "note": "", "missing": []}]}, {"rule": "R-RET-W1", "name": "Standard return window", "clauses": ["RET-1"], "status": "proved", "priority": 100, "value": "40", "because": "", "failed": null, "conditions": [{"index": 0, "condition": "order_category(Brass Table Lamp order) = Home", "status": "satisfied", "note": "", "missing": []}, {"index": 1, "condition": "return_window_days(Home) = 40", "status": "satisfied", "note": "", "missing": []}, {"index": 2, "condition": "order_membership(Brass Table Lamp order) = standard", "status": "satisfied", "note": "", "missing": []}]}, {"rule": "R-KG-TIER", "name": "Membership of the customer who placed an order", "clauses": ["CO-4"], "status": "proved", "priority": 100, "value": "standard", "because": "", "failed": null, "conditions": [{"index": 0, "condition": "placed_by(Brass Table Lamp order) = Anjali Bose", "status": "satisfied", "note": "", "missing": []}, {"index": 1, "condition": "membership_tier(Anjali Bose) = standard", "status": "satisfied", "note": "", "missing": []}]}], "steps": ["Goal: return_allowed(ORD-84722) \u2014 whether an item that was bought can be sent back to the seller.", "Resolved the returns policy version: Returns policy version 1 \u2014 the delivery date is 20 Oct 2026.", "Rule R-RET-A (Change-of-mind return within the window) proved: it was delivered 38 days ago, within the 40-day return window for Home items", "Rule R-KG-CAT (Category of an ordered item) proved.", "Rule R-CLK-DEL (Days since delivery) proved.", "Rule R-RET-W1 (Standard return window) proved.", "Rule R-KG-TIER (Membership of the customer who placed an order) proved.", "Rule R-RET-D (Damaged, defective or wrong item) refuted at `38 \u2264 8`: the problem was reported 38 days after delivery, but damaged or wrong items must be reported within 8 days", "Result: determined, value yes.", "Verification passed: every record fact used is in the company records, and every stated fact is one a person may state; all 6 records used are visible to the person asking (support access); every cited clause is from the policy version that governs the case; Returns policy version 1 (in force from 21 Mar 2026 until 16 Nov 2026) applied for 20 Oct 2026; the result was derived by rule R-RET-A; every figure in the answer comes from the reasoning; no conflicting rules, and no rejected statement was used; the reply states the derived decision (yes); the reply was composed only from the reasoning's conclusion."], "policy_versions": [{"subject": "ORD-84722", "policy": "returns", "version": "RETURNS-v1", "name": "Returns policy version 1", "number": 1, "effective_from": "21 Mar 2026", "effective_ordinal": 739696, "superseded_on": "16 Nov 2026", "superseded_ordinal": 739936, "reference_date": "20 Oct 2026", "reference_ordinal": 739909, "basis": "the delivery date is 20 Oct 2026", "assumed": false, "versions_available": ["RETURNS-v1", "RETURNS-v2"]}], "authorization": {"access": "support", "person": null, "visible_records": 134, "withheld_records": 4}}, "verification": {"passed": true, "checks": [{"check": "fact validity", "passed": true, "detail": "every record fact used is in the company records, and every stated fact is one a person may state"}, {"check": "authorization", "passed": true, "detail": "all 6 records used are visible to the person asking (support access)"}, {"check": "policy applicability", "passed": true, "detail": "every cited clause is from the policy version that governs the case"}, {"check": "policy version", "passed": true, "detail": "Returns policy version 1 (in force from 21 Mar 2026 until 16 Nov 2026) applied for 20 Oct 2026"}, {"check": "symbolic provenance", "passed": true, "detail": "the result was derived by rule R-RET-A"}, {"check": "supported numbers", "passed": true, "detail": "every figure in the answer comes from the reasoning"}, {"check": "contradictions", "passed": true, "detail": "no conflicting rules, and no rejected statement was used"}, {"check": "answer agreement", "passed": true, "detail": "the reply states the derived decision (yes)"}, {"check": "unsupported claims", "passed": true, "detail": "the reply was composed only from the reasoning's conclusion"}]}, "release": {"outcome": "answered", "decision": true, "value": true, "answer": "Yes \u2014 the customer's Brass Table Lamp order can be returned: it was delivered 38 days ago, within the 40-day return window for Home items.\nApplied Returns policy version 1, in force on 20 Oct 2026.", "confidence": 0.93, "latency_ms": 5.5, "sources": ["RET-1", "RET-2", "RET-3", "ORD-84722"], "pipeline": "Policy reasoning"}, "verdict": {"correct": true}}, {"case": {"id": "W101-T-paraphrased-1", "world": 101, "category": "paraphrased", "question": "Can I still hand back the things from order ORD-84567?", "user": "arjun.varma@w101.test", "roles": []}, "gold": {"kind": "decision", "value": true, "because": "within the return window (RET-1, RET-3)", "clauses": ["RET-1", "RET-3"], "expected_outcome": "answered", "expected_goal": "return_allowed"}, "neural": {"speech_act": "decide", "candidates": [{"kind": "goal", "name": "cancellation_allowed", "subject_type": "order", "goal_kind": "decision", "score": 0.7515}, {"kind": "goal", "name": "return_allowed", "subject_type": "order", "goal_kind": "decision", "score": 0.7195}, {"kind": "goal", "name": "refund_required", "subject_type": "order", "goal_kind": "decision", "score": 0.7162}, {"kind": "goal", "name": "recommended_resolution", "subject_type": "order", "goal_kind": "recommendation", "score": 0.7158}, {"kind": "goal", "name": "replacement_available", "subject_type": "order", "goal_kind": "decision", "score": 0.7028}], "entities": [{"type": "order", "id": "ORD-84567", "text": "ORD-84567", "method": "id"}], "encoder": "BAAI/bge-small-en-v1.5"}, "symbolic": {"goal": "cancellation_allowed", "facts": [{"subject": "ORD-84567", "predicate": "order_status", "value": "delivered", "source": "record", "rule": ""}, {"subject": "ORD-84567", "predicate": "cancellation_allowed", "value": "no", "source": "derived", "rule": "R-CAN-3"}], "rules": [{"rule": "R-CAN-3", "name": "No cancellation once shipped", "clauses": ["CAN-3"], "status": "proved", "priority": 200, "value": "no", "because": "the order is already delivered, and orders cannot be cancelled once they have shipped; you can refuse the delivery or return the item after it arrives", "failed": null, "conditions": [{"index": 0, "condition": "order_status(Stride Running Shoes order) = delivered", "status": "satisfied", "note": "", "missing": []}, {"index": 1, "condition": "delivered in ['shipped', 'out for delivery', 'delivered']", "status": "satisfied", "note": "", "missing": []}]}], "steps": ["Goal: cancellation_allowed(ORD-84567) \u2014 whether an order that has been placed can still be cancelled or stopped.", "Rule R-CAN-3 (No cancellation once shipped) proved: the order is already delivered, and orders cannot be cancelled once they have shipped; you can refuse the delivery or return the item after it arrives", "Rule R-CAN-1 (Free cancellation before packing) refuted at `delivered = placed`: the order status is delivered", "Rule R-CAN-2 (Cancellation after packing) refuted at `delivered = packed`: the order status is delivered", "Result: determined, value no.", "Verification passed: every record fact used is in the company records, and every stated fact is one a person may state; all 1 records used are visible to the person asking (customer access); every cited clause is from the policy version that governs the case; the result was derived by rule R-CAN-3; every figure in the answer comes from the reasoning; no conflicting rules, and no rejected statement was used; the reply states the derived decision (no); the reply was composed only from the reasoning's conclusion."], "policy_versions": [], "authorization": {"access": "customer", "person": "CUST-6508", "visible_records": 43, "withheld_records": 95}}, "verification": {"passed": true, "checks": [{"check": "fact validity", "passed": true, "detail": "every record fact used is in the company records, and every stated fact is one a person may state"}, {"check": "authorization", "passed": true, "detail": "all 1 records used are visible to the person asking (customer access)"}, {"check": "policy applicability", "passed": true, "detail": "every cited clause is from the policy version that governs the case"}, {"check": "symbolic provenance", "passed": true, "detail": "the result was derived by rule R-CAN-3"}, {"check": "supported numbers", "passed": true, "detail": "every figure in the answer comes from the reasoning"}, {"check": "contradictions", "passed": true, "detail": "no conflicting rules, and no rejected statement was used"}, {"check": "answer agreement", "passed": true, "detail": "the reply states the derived decision (no)"}, {"check": "unsupported claims", "passed": true, "detail": "the reply was composed only from the reasoning's conclusion"}]}, "release": {"outcome": "answered", "decision": false, "value": false, "answer": "No \u2014 your Stride Running Shoes order can no longer be cancelled: the order is already delivered, and orders cannot be cancelled once they have shipped; you can refuse the delivery or return the item after it arrives.", "confidence": 0.97, "latency_ms": 2.3, "sources": ["CAN-3", "ORD-84567"], "pipeline": "Policy reasoning"}, "verdict": {"correct": false}}, {"case": {"id": "W101-T-calculation-1", "world": 101, "category": "calculation", "question": "What amount comes back to me if I call off order ORD-85272?", "user": "pooja.das@w101.test", "roles": []}, "gold": {"kind": "value", "value": 2456.64, "because": "order total minus the cancellation fee (REF-1, CAN-2)", "clauses": ["REF-1", "CAN-2"], "expected_outcome": "answered", "expected_goal": "cancellation_refund"}, "neural": {"speech_act": "calculate", "candidates": [{"kind": "goal", "name": "cancellation_refund", "subject_type": "order", "goal_kind": "calculation", "score": 0.8031}, {"kind": "goal", "name": "cancellation_allowed", "subject_type": "order", "goal_kind": "decision", "score": 0.7279}, {"kind": "goal", "name": "refund_required", "subject_type": "order", "goal_kind": "decision", "score": 0.7116}, {"kind": "goal", "name": "refund_approved", "subject_type": "return", "goal_kind": "explanation", "score": 0.6892}, {"kind": "goal", "name": "free_delivery", "subject_type": "order", "goal_kind": "decision", "score": 0.6824}], "entities": [{"type": "order", "id": "ORD-85272", "text": "ORD-85272", "method": "id"}], "encoder": "BAAI/bge-small-en-v1.5"}, "symbolic": {"goal": "cancellation_refund", "facts": [{"subject": "ORD-85272", "predicate": "order_status", "value": "packed", "source": "record", "rule": ""}, {"subject": "ORD-85272", "predicate": "cancellation_allowed", "value": "yes", "source": "derived", "rule": "R-CAN-2"}, {"subject": "ORD-85272", "predicate": "order_total", "value": "\u20b92,559", "source": "record", "rule": ""}, {"subject": "ORD-85272", "predicate": "placed_by", "value": "Pooja Das", "source": "record", "rule": ""}, {"subject": "CUST-6513", "predicate": "membership_tier", "value": "standard", "source": "record", "rule": ""}, {"subject": "ORD-85272", "predicate": "order_membership", "value": "standard", "source": "derived", "rule": "R-KG-TIER"}, {"subject": "meridian", "predicate": "cancellation_fee_rate", "value": "4%", "source": "record", "rule": ""}, {"subject": "meridian", "predicate": "cancellation_fee_cap", "value": "\u20b9750", "source": "record", "rule": ""}, {"subject": "ORD-85272", "predicate": "cancellation_fee", "value": "\u20b9102.36", "source": "derived", "rule": "R-FEE-3"}, {"subject": "ORD-85272", "predicate": "cancellation_refund", "value": "\u20b92,456.64", "source": "derived", "rule": "R-REF-C"}], "rules": [{"rule": "R-REF-C", "name": "Refund on cancellation", "clauses": ["REF-1"], "status": "proved", "priority": 100, "value": "\u20b92,456.64", "because": "the refund is the order total of \u20b92,559 minus a cancellation fee of \u20b9102.36", "failed": null, "conditions": [{"index": 0, "condition": "cancellation_allowed(Denim Weekend Jeans order) = yes", "status": "satisfied", "note": "", "missing": []}, {"index": 1, "condition": "order_total(Denim Weekend Jeans order) = \u20b92,559", "status": "satisfied", "note": "", "missing": []}, {"index": 2, "condition": "cancellation_fee(Denim Weekend Jeans order) = \u20b9102.36", "status": "satisfied", "note": "", "missing": []}]}, {"rule": "R-CAN-2", "name": "Cancellation after packing", "clauses": ["CAN-2"], "status": "proved", "priority": 100, "value": "yes", "because": "the order has been packed but not shipped, so it can still be cancelled", "failed": null, "conditions": [{"index": 0, "condition": "order_status(Denim Weekend Jeans order) = packed", "status": "satisfied", "note": "", "missing": []}, {"index": 1, "condition": "packed = packed", "status": "satisfied", "note": "", "missing": []}]}, {"rule": "R-FEE-3", "name": "Cancellation fee after packing", "clauses": ["CAN-2"], "status": "proved", "priority": 100, "value": "\u20b9102.36", "because": "a fee of 4% of the \u20b92,559 order total applies, capped at \u20b9750", "failed": null, "conditions": [{"index": 0, "condition": "order_status(Denim Weekend Jeans order) = packed", "status": "satisfied", "note": "", "missing": []}, {"index": 1, "condition": "order_membership(Denim Weekend Jeans order) = standard", "status": "satisfied", "note": "", "missing": []}, {"index": 2, "condition": "order_total(Denim Weekend Jeans order) = \u20b92,559", "status": "satisfied", "note": "", "missing": []}, {"index": 3, "condition": "cancellation_fee_rate(Meridian Marketplace) = 4%", "status": "satisfied", "note": "", "missing": []}, {"index": 4, "condition": "cancellation_fee_cap(Meridian Marketplace) = \u20b9750", "status": "satisfied", "note": "", "missing": []}]}, {"rule": "R-KG-TIER", "name": "Membership of the customer who placed an order", "clauses": ["CO-4"], "status": "proved", "priority": 100, "value": "standard", "because": "", "failed": null, "conditions": [{"index": 0, "condition": "placed_by(Denim Weekend Jeans order) = Pooja Das", "status": "satisfied", "note": "", "missing": []}, {"index": 1, "condition": "membership_tier(Pooja Das) = standard", "status": "satisfied", "note": "", "missing": []}]}], "steps": ["Goal: cancellation_refund(ORD-85272) \u2014 how much money comes back when an order is cancelled, after any cancellation charge.", "Rule R-REF-C (Refund on cancellation) proved: the refund is the order total of \u20b92,559 minus a cancellation fee of \u20b9102.36", "Rule R-CAN-2 (Cancellation after packing) proved: the order has been packed but not shipped, so it can still be cancelled", "Rule R-FEE-3 (Cancellation fee after packing) proved: a fee of 4% of the \u20b92,559 order total applies, capped at \u20b9750", "Rule R-KG-TIER (Membership of the customer who placed an order) proved.", "Result: determined, value \u20b92,456.64.", "Verification passed: every record fact used is in the company records, and every stated fact is one a person may state; all 3 records used are visible to the person asking (customer access); every cited clause is from the policy version that governs the case; the result was derived by rule R-REF-C; cancellation_refund = 2456.64 re-derives to the same value from scratch; every figure in the answer comes from the reasoning; no conflicting rules, and no rejected statement was used; the reply states the derived value \u20b92,456.64; the reply was composed only from the reasoning's conclusion."], "policy_versions": [], "authorization": {"access": "customer", "person": "CUST-6513", "visible_records": 41, "withheld_records": 97}}, "verification": {"passed": true, "checks": [{"check": "fact validity", "passed": true, "detail": "every record fact used is in the company records, and every stated fact is one a person may state"}, {"check": "authorization", "passed": true, "detail": "all 3 records used are visible to the person asking (customer access)"}, {"check": "policy applicability", "passed": true, "detail": "every cited clause is from the policy version that governs the case"}, {"check": "symbolic provenance", "passed": true, "detail": "the result was derived by rule R-REF-C"}, {"check": "calculation", "passed": true, "detail": "cancellation_refund = 2456.64 re-derives to the same value from scratch"}, {"check": "supported numbers", "passed": true, "detail": "every figure in the answer comes from the reasoning"}, {"check": "contradictions", "passed": true, "detail": "no conflicting rules, and no rejected statement was used"}, {"check": "answer agreement", "passed": true, "detail": "the reply states the derived value \u20b92,456.64"}, {"check": "unsupported claims", "passed": true, "detail": "the reply was composed only from the reasoning's conclusion"}]}, "release": {"outcome": "answered", "decision": 2456.64, "value": 2456.64, "answer": "Cancelling your Denim Weekend Jeans order would refund \u20b92,456.64: the refund is the order total of \u20b92,559 minus a cancellation fee of \u20b9102.36.", "confidence": 1.0, "latency_ms": 2.4, "sources": ["CAN-2", "REF-1", "ORD-85272"], "pipeline": "Calculation"}, "verdict": {"correct": true}}, {"case": {"id": "W101-T-multi_hop-1", "world": 101, "category": "multi_hop", "question": "I'd like to call off the Cotton Duvet Cover I ordered. Can I?", "user": "anjali.bose@w101.test", "roles": []}, "gold": {"kind": "decision", "value": true, "because": "status placed (CAN-1, CAN-2)", "clauses": ["CAN-1", "CAN-2"], "expected_outcome": "answered", "expected_goal": "cancellation_allowed"}, "neural": {"speech_act": "decide", "candidates": [{"kind": "goal", "name": "cancellation_allowed", "subject_type": "order", "goal_kind": "decision", "score": 0.6231}, {"kind": "goal", "name": "return_allowed", "subject_type": "order", "goal_kind": "decision", "score": 0.6066}, {"kind": "goal", "name": "refund_required", "subject_type": "order", "goal_kind": "decision", "score": 0.6037}, {"kind": "goal", "name": "recommended_resolution", "subject_type": "order", "goal_kind": "recommendation", "score": 0.6018}, {"kind": "goal", "name": "replacement_available", "subject_type": "order", "goal_kind": "decision", "score": 0.5902}], "entities": [{"type": "product", "id": "PRD-207", "text": "cotton cover duvet", "method": "name"}], "encoder": "BAAI/bge-small-en-v1.5"}, "symbolic": {"goal": "cancellation_allowed", "facts": [{"subject": "ORD-84657", "predicate": "order_status", "value": "placed", "source": "record", "rule": ""}, {"subject": "ORD-84657", "predicate": "cancellation_allowed", "value": "yes", "source": "derived", "rule": "R-CAN-1"}], "rules": [{"rule": "R-CAN-1", "name": "Free cancellation before packing", "clauses": ["CAN-1"], "status": "proved", "priority": 100, "value": "yes", "because": "the order is still at the placed stage, so it can be cancelled free of charge", "failed": null, "conditions": [{"index": 0, "condition": "order_status(Cotton Duvet Cover order) = placed", "status": "satisfied", "note": "", "missing": []}, {"index": 1, "condition": "placed = placed", "status": "satisfied", "note": "", "missing": []}]}], "steps": ["Goal: cancellation_allowed(ORD-84657) \u2014 whether an order that has been placed can still be cancelled or stopped.", "Rule R-CAN-1 (Free cancellation before packing) proved: the order is still at the placed stage, so it can be cancelled free of charge", "Rule R-CAN-2 (Cancellation after packing) refuted at `placed = packed`: the order status is placed", "Rule R-CAN-3 (No cancellation once shipped) refuted at `placed in ['shipped', 'out for delivery', 'delivered']`.", "Result: determined, value yes.", "Verification passed: every record fact used is in the company records, and every stated fact is one a person may state; all 1 records used are visible to the person asking (customer access); every cited clause is from the policy version that governs the case; the result was derived by rule R-CAN-1; every figure in the answer comes from the reasoning; no conflicting rules, and no rejected statement was used; the reply states the derived decision (yes); the reply was composed only from the reasoning's conclusion."], "policy_versions": [], "authorization": {"access": "customer", "person": "CUST-6509", "visible_records": 43, "withheld_records": 95}}, "verification": {"passed": true, "checks": [{"check": "fact validity", "passed": true, "detail": "every record fact used is in the company records, and every stated fact is one a person may state"}, {"check": "authorization", "passed": true, "detail": "all 1 records used are visible to the person asking (customer access)"}, {"check": "policy applicability", "passed": true, "detail": "every cited clause is from the policy version that governs the case"}, {"check": "symbolic provenance", "passed": true, "detail": "the result was derived by rule R-CAN-1"}, {"check": "supported numbers", "passed": true, "detail": "every figure in the answer comes from the reasoning"}, {"check": "contradictions", "passed": true, "detail": "no conflicting rules, and no rejected statement was used"}, {"check": "answer agreement", "passed": true, "detail": "the reply states the derived decision (yes)"}, {"check": "unsupported claims", "passed": true, "detail": "the reply was composed only from the reasoning's conclusion"}]}, "release": {"outcome": "answered", "decision": true, "value": true, "answer": "Yes \u2014 your Cotton Duvet Cover order can still be cancelled: the order is still at the placed stage, so it can be cancelled free of charge.", "confidence": 0.87, "latency_ms": 2.4, "sources": ["CAN-1", "ORD-84657"], "pipeline": "Policy reasoning"}, "verdict": {"correct": true}}, {"case": {"id": "W101-T-policy_version-1", "world": 101, "category": "policy_version", "question": "Order ORD-85023 was delivered faulty. Is the customer allowed to send it back?", "user": "support@w101.test", "roles": ["support"]}, "gold": {"kind": "decision", "value": true, "because": "damage window (RET-4)", "clauses": ["RET-4"], "expected_outcome": "answered", "expected_goal": "return_allowed"}, "neural": {"speech_act": "decide", "candidates": [{"kind": "goal", "name": "recommended_resolution", "subject_type": "order", "goal_kind": "recommendation", "score": 0.7475}, {"kind": "goal", "name": "replacement_available", "subject_type": "order", "goal_kind": "decision", "score": 0.7237}, {"kind": "goal", "name": "return_allowed", "subject_type": "order", "goal_kind": "decision", "score": 0.7151}, {"kind": "goal", "name": "free_delivery", "subject_type": "order", "goal_kind": "decision", "score": 0.7085}, {"kind": "goal", "name": "cancellation_allowed", "subject_type": "order", "goal_kind": "decision", "score": 0.7008}], "entities": [{"type": "order", "id": "ORD-85023", "text": "ORD-85023", "method": "id"}], "encoder": "BAAI/bge-small-en-v1.5"}, "symbolic": {"goal": "return_allowed", "facts": [{"subject": "ORD-85023", "predicate": "order_status", "value": "delivered", "source": "record", "rule": ""}, {"subject": "ORD-85023", "predicate": "contains", "value": "Pulse Wireless Earbuds", "source": "record", "rule": ""}, {"subject": "PRD-177", "predicate": "product_category", "value": "Electronics", "source": "record", "rule": ""}, {"subject": "ORD-85023", "predicate": "order_category", "value": "Electronics", "source": "derived", "rule": "R-KG-CAT"}, {"subject": "ORD-85023", "predicate": "delivered_on", "value": "18 Nov 2026", "source": "record", "rule": ""}, {"subject": "meridian", "predicate": "today", "value": "27 Nov 2026", "source": "record", "rule": ""}, {"subject": "ORD-85023", "predicate": "days_since_delivery", "value": "9", "source": "derived", "rule": "R-CLK-DEL"}, {"subject": "electronics", "predicate": "return_window_days", "value": "7", "source": "record", "rule": ""}, {"subject": "ORD-85023", "predicate": "placed_by", "value": "Vikram Reddy", "source": "record", "rule": ""}, {"subject": "CUST-6511", "predicate": "membership_tier", "value": "standard", "source": "record", "rule": ""}, {"subject": "ORD-85023", "predicate": "order_membership", "value": "standard", "source": "derived", "rule": "R-KG-TIER"}, {"subject": "electronics", "predicate": "plus_extension_days", "value": "0", "source": "record", "rule": ""}, {"subject": "ORD-85023", "predicate": "effective_return_window", "value": "7", "source": "derived", "rule": "R-RET-W1"}, {"subject": "ORD-85023", "predicate": "return_reason", "value": "wrong item", "source": "stated", "rule": ""}, {"subject": "ORD-85023", "predicate": "delivery_date", "value": "18 Nov 2026", "source": "derived", "rule": "R-DATE-REC"}, {"subject": "ORD-85023", "predicate": "returns_policy", "value": "Returns policy version 2", "source": "derived", "rule": "version:returns"}, {"subject": "RETURNS-v2", "predicate": "damage_report_days", "value": "14", "source": "record", "rule": ""}, {"subject": "ORD-85023", "predicate": "return_allowed", "value": "yes", "source": "derived", "rule": "R-RET-D"}, {"subject": "PRD-177", "predicate": "in_stock", "value": "no", "source": "record", "rule": ""}, {"subject": "ORD-85023", "predicate": "cancellation_allowed", "value": "no", "source": "derived", "rule": "R-CAN-3"}, {"subject": "ORD-85023", "predicate": "recommended_resolution", "value": "full refund", "source": "derived", "rule": "R-SUP-REFUND"}, {"subject": "ORD-85023", "predicate": "order_total", "value": "\u20b93,989", "source": "record", "rule": ""}, {"subject": "meridian", "predicate": "approval_threshold", "value": "\u20b922,000", "source": "record", "rule": ""}], "rules": [{"rule": "R-RET-D", "name": "Damaged, defective or wrong item", "clauses": ["RET-4"], "status": "proved", "priority": 200, "value": "yes", "because": "the item was reported as wrong item 9 days after delivery, within the 14-day window for damaged or wrong items", "failed": null, "conditions": [{"index": 0, "condition": "order_status(Pulse Wireless Earbuds order) = delivered", "status": "satisfied", "note": "", "missing": []}, {"index": 1, "condition": "return_reason(Pulse Wireless Earbuds order) = wrong item", "status": "satisfied", "note": "", "missing": []}, {"index": 2, "condition": "wrong item in ['damaged on arrival', 'wrong item']", "status": "satisfied", "note": "", "missing": []}, {"index": 3, "condition": "order_category(Pulse Wireless Earbuds order) = Electronics", "status": "satisfied", "note": "", "missing": []}, {"index": 4, "condition": "not excluded_from_damage_returns(Electronics)", "status": "satisfied", "note": "", "missing": []}, {"index": 5, "condition": "days_since_delivery(Pulse Wireless Earbuds order) = 9", "status": "satisfied", "note": "", "missing": []}, {"index": 6, "condition": "returns_policy(Pulse Wireless Earbuds order) = Returns policy version 2", "status": "satisfied", "note": "", "missing": []}, {"index": 7, "condition": "damage_report_days(Returns policy version 2) = 14", "status": "satisfied", "note": "", "missing": []}, {"index": 8, "condition": "9 \u2264 14", "status": "satisfied", "note": "", "missing": []}]}, {"rule": "R-KG-CAT", "name": "Category of an ordered item", "clauses": ["RET-1"], "status": "proved", "priority": 100, "value": "Electronics", "because": "", "failed": null, "conditions": [{"index": 0, "condition": "contains(Pulse Wireless Earbuds order) = Pulse Wireless Earbuds", "status": "satisfied", "note": "", "missing": []}, {"index": 1, "condition": "product_category(Pulse Wireless Earbuds) = Electronics", "status": "satisfied", "note": "", "missing": []}]}, {"rule": "R-CLK-DEL", "name": "Days since delivery", "clauses": ["RET-1"], "status": "proved", "priority": 100, "value": "9", "because": "", "failed": null, "conditions": [{"index": 0, "condition": "delivered_on(Pulse Wireless Earbuds order) = 18 Nov 2026", "status": "satisfied", "note": "", "missing": []}, {"index": 1, "condition": "today(Meridian Marketplace) = 27 Nov 2026", "status": "satisfied", "note": "", "missing": []}]}], "steps": ["Goal: return_allowed(ORD-85023) \u2014 whether an item that was bought can be sent back to the seller.", "Resolved the returns policy version: Returns policy version 2 \u2014 the delivery date is 18 Nov 2026.", "Rule R-RET-D (Damaged, defective or wrong item) proved: the item was reported as wrong item 9 days after delivery, within the 14-day window for damaged or wrong items", "Rule R-KG-CAT (Category of an ordered item) proved.", "Rule R-CLK-DEL (Days since delivery) proved.", "Rule R-RET-A (Change-of-mind return within the window) refuted at `9 \u2264 7`: it was delivered 9 days ago, past the 7-day return window for Electronics items", "Result: determined, value yes.", "Verification passed: every record fact used is in the company records, and every stated fact is one a person may state; all 6 records used are visible to the person asking (support access); every cited clause is from the policy version that governs the case; Returns policy version 2 (in force from 16 Nov 2026) applied for 18 Nov 2026; the result was derived by rule R-RET-D; every figure in the answer comes from the reasoning; no conflicting rules, and no rejected statement was used; the reply states the derived decision (yes); the reply was composed only from the reasoning's conclusion."], "policy_versions": [{"subject": "ORD-85023", "policy": "returns", "version": "RETURNS-v2", "name": "Returns policy version 2", "number": 2, "effective_from": "16 Nov 2026", "effective_ordinal": 739936, "superseded_on": null, "superseded_ordinal": null, "reference_date": "18 Nov 2026", "reference_ordinal": 739938, "basis": "the delivery date is 18 Nov 2026", "assumed": false, "versions_available": ["RETURNS-v1", "RETURNS-v2"]}], "authorization": {"access": "support", "person": null, "visible_records": 134, "withheld_records": 4}}, "verification": {"passed": true, "checks": [{"check": "fact validity", "passed": true, "detail": "every record fact used is in the company records, and every stated fact is one a person may state"}, {"check": "authorization", "passed": true, "detail": "all 6 records used are visible to the person asking (support access)"}, {"check": "policy applicability", "passed": true, "detail": "every cited clause is from the policy version that governs the case"}, {"check": "policy version", "passed": true, "detail": "Returns policy version 2 (in force from 16 Nov 2026) applied for 18 Nov 2026"}, {"check": "symbolic provenance", "passed": true, "detail": "the result was derived by rule R-RET-D"}, {"check": "supported numbers", "passed": true, "detail": "every figure in the answer comes from the reasoning"}, {"check": "contradictions", "passed": true, "detail": "no conflicting rules, and no rejected statement was used"}, {"check": "answer agreement", "passed": true, "detail": "the reply states the derived decision (yes)"}, {"check": "unsupported claims", "passed": true, "detail": "the reply was composed only from the reasoning's conclusion"}]}, "release": {"outcome": "answered", "decision": true, "value": true, "answer": "Yes \u2014 the customer's Pulse Wireless Earbuds order can be returned: the item was reported as wrong item 9 days after delivery, within the 14-day window for damaged or wrong items.\nThis relies on what the customer said: return reason = wrong item. Applied Returns policy version 2, in force on 18 Nov 2026.", "confidence": 0.89, "latency_ms": 5.2, "sources": ["RET-1", "RET-4", "ORD-85023"], "pipeline": "Policy reasoning"}, "verdict": {"correct": true}}, {"case": {"id": "W101-T-false_premise-1", "world": 101, "category": "false_premise", "question": "Since you allow 51 days for home returns, order ORD-85330 can go back, yes?", "user": "pooja.das@w101.test", "roles": []}, "gold": {"kind": "decision", "value": false, "because": "outside every window (RET-1, RET-2, RET-4)", "clauses": ["RET-1", "RET-2", "RET-4"], "expected_outcome": "answered", "expected_goal": "return_allowed"}, "neural": {"speech_act": "calculate", "candidates": [{"kind": "goal", "name": "travel_claim_eligible", "subject_type": "claim", "goal_kind": "decision", "score": 0.6841}, {"kind": "goal", "name": "return_allowed", "subject_type": "order", "goal_kind": "decision", "score": 0.677}, {"kind": "goal", "name": "approval_required", "subject_type": "order", "goal_kind": "decision", "score": 0.6741}, {"kind": "goal", "name": "refund_required", "subject_type": "order", "goal_kind": "decision", "score": 0.6668}, {"kind": "goal", "name": "replacement_available", "subject_type": "order", "goal_kind": "decision", "score": 0.6614}], "entities": [{"type": "order", "id": "ORD-85330", "text": "ORD-85330", "method": "id"}, {"type": "category", "id": "home", "text": "Home", "method": "name"}, {"type": "days", "value": 51.0, "text": "51 days", "method": "pattern"}], "encoder": "BAAI/bge-small-en-v1.5"}, "symbolic": {"goal": "travel_claim_eligible", "facts": [{"subject": "meridian", "predicate": "min_trip_km", "value": "60", "source": "record", "rule": ""}, {"subject": "meridian", "predicate": "receipt_threshold", "value": "\u20b93,000", "source": "record", "rule": ""}, {"subject": "meridian", "predicate": "claim_deadline_days", "value": "60", "source": "record", "rule": ""}, {"subject": "case:claim", "predicate": "receipts_attached", "value": "yes", "source": "stated", "rule": ""}], "rules": [{"rule": "R-TRV-E1", "name": "Eligible trip without receipts", "clauses": ["TRV-2", "TRV-4", "TRV-5"], "status": "conditional", "priority": 100, "value": "yes", "because": "the trip is at least 60 km and the claim is small enough not to need receipts", "failed": null, "conditions": [{"index": 0, "condition": "travel_distance_km(case:claim) = ?", "status": "unknown", "note": "", "missing": [{"predicate": "travel_distance_km", "subject": "case:claim"}]}, {"index": 1, "condition": "min_trip_km(Meridian Marketplace) = 60", "status": "satisfied", "note": "", "missing": []}, {"index": 2, "condition": "?travel_distance_km \u2265 60", "status": "unknown", "note": "", "missing": [{"predicate": "travel_distance_km", "subject": "case:claim"}]}, {"index": 3, "condition": "claimed_amount(case:claim) = ?", "status": "unknown", "note": "", "missing": [{"predicate": "claimed_amount", "subject": "case:claim"}]}, {"index": 4, "condition": "receipt_threshold(Meridian Marketplace) = \u20b93,000", "status": "satisfied", "note": "", "missing": []}, {"index": 5, "condition": "?claimed_amount \u2264 \u20b93,000", "status": "unknown", "note": "", "missing": [{"predicate": "claimed_amount", "subject": "case:claim"}]}, {"index": 6, "condition": "claim_submitted_after_days(case:claim) = ?", "status": "unknown", "note": "", "missing": [{"predicate": "claim_submitted_after_days", "subject": "case:claim"}]}, {"index": 7, "condition": "claim_deadline_days(Meridian Marketplace) = 60", "status": "satisfied", "note": "", "missing": []}, {"index": 8, "condition": "?claim_submitted_after_days \u2264 60", "status": "unknown", "note": "", "missing": [{"predicate": "claim_submitted_after_days", "subject": "case:claim"}]}]}, {"rule": "R-TRV-E2", "name": "Eligible trip with receipts", "clauses": ["TRV-2", "TRV-4", "TRV-5"], "status": "conditional", "priority": 100, "value": "yes", "because": "the trip is at least 60 km, receipts are attached for a claim above \u20b93,000, and it was submitted within 60 days", "failed": null, "conditions": [{"index": 0, "condition": "travel_distance_km(case:claim) = ?", "status": "unknown", "note": "", "missing": [{"predicate": "travel_distance_km", "subject": "case:claim"}]}, {"index": 1, "condition": "min_trip_km(Meridian Marketplace) = 60", "status": "satisfied", "note": "", "missing": []}, {"index": 2, "condition": "?travel_distance_km \u2265 60", "status": "unknown", "note": "", "missing": [{"predicate": "travel_distance_km", "subject": "case:claim"}]}, {"index": 3, "condition": "claimed_amount(case:claim) = ?", "status": "unknown", "note": "", "missing": [{"predicate": "claimed_amount", "subject": "case:claim"}]}, {"index": 4, "condition": "receipt_threshold(Meridian Marketplace) = \u20b93,000", "status": "satisfied", "note": "", "missing": []}, {"index": 5, "condition": "?claimed_amount > \u20b93,000", "status": "unknown", "note": "", "missing": [{"predicate": "claimed_amount", "subject": "case:claim"}]}, {"index": 6, "condition": "receipts_attached(case:claim) = yes", "status": "satisfied", "note": "", "missing": []}, {"index": 7, "condition": "yes = yes", "status": "satisfied", "note": "", "missing": []}, {"index": 8, "condition": "claim_submitted_after_days(case:claim) = ?", "status": "unknown", "note": "", "missing": [{"predicate": "claim_submitted_after_days", "subject": "case:claim"}]}, {"index": 9, "condition": "claim_deadline_days(Meridian Marketplace) = 60", "status": "satisfied", "note": "", "missing": []}, {"index": 10, "condition": "?claim_submitted_after_days \u2264 60", "status": "unknown", "note": "", "missing": [{"predicate": "claim_submitted_after_days", "subject": "case:claim"}]}]}], "steps": ["Goal: travel_claim_eligible(case:claim) \u2014 whether a business trip expense qualifies to be paid back by the company.", "No record was named; evaluated an open-world case linked to the person asking.", "Rejected the unverified claim exception_approved = yes: it can only be confirmed by a company record, and there is no order record to check it against.", "Rejected the policy claim claim_deadline_days = 51 days: the Meridian Marketplace policy sets the claim deadline days at 60, so the policy as written was applied.", "Rule R-TRV-E1 (Eligible trip without receipts) conditional: the trip is at least 60 km and the claim is small enough not to need receipts", "Rule R-TRV-E2 (Eligible trip with receipts) conditional: the trip is at least 60 km, receipts are attached for a claim above \u20b93,000, and it was submitted within 60 days", "Result: conditional, value yes.", "Verification passed: every record fact used is in the company records, and every stated fact is one a person may state; all 1 records used are visible to the person asking (customer access); every cited clause is from the policy version that governs the case; the result was derived by rule R-TRV-E1; every figure in the answer comes from the reasoning; no conflicting rules, and no rejected statement was used; the reply was composed only from the reasoning's conclusion."], "policy_versions": [], "authorization": {"access": "customer", "person": "CUST-6513", "visible_records": 41, "withheld_records": 97}}, "verification": {"passed": true, "checks": [{"check": "fact validity", "passed": true, "detail": "every record fact used is in the company records, and every stated fact is one a person may state"}, {"check": "authorization", "passed": true, "detail": "all 1 records used are visible to the person asking (customer access)"}, {"check": "policy applicability", "passed": true, "detail": "every cited clause is from the policy version that governs the case"}, {"check": "symbolic provenance", "passed": true, "detail": "the result was derived by rule R-TRV-E1"}, {"check": "supported numbers", "passed": true, "detail": "every figure in the answer comes from the reasoning"}, {"check": "contradictions", "passed": true, "detail": "no conflicting rules, and no rejected statement was used"}, {"check": "unsupported claims", "passed": true, "detail": "the reply was composed only from the reasoning's conclusion"}]}, "release": {"outcome": "conditional", "decision": null, "value": true, "answer": "You mentioned that a manager, supervisor or team lead has already approved an exception or special refund for this order, but there is no order record to check it against, so it hasn't been treated as approved. You said the policy allows 51 days, but the Meridian Marketplace policy sets the claim deadline days at 60, so I've applied the policy as written.\nProvisionally, this trip qualifies for reimbursement.\nThat holds as long as the trip was at least 60 km, claimed amount \u2264 \u20b93,000 and you submit the claim within 60 days of the trip.\nNo specific claim was named, so this is evaluated as a general case using what you said and the policies that apply to you.", "confidence": 0.74, "latency_ms": 3.9, "sources": ["TRV-2", "TRV-4", "TRV-5"], "pipeline": "Policy reasoning"}, "verdict": {"correct": false}}, {"case": {"id": "W101-T-missing_info-1", "world": 101, "category": "missing_info", "question": "Is an exchange for the same product possible on order ORD-84871?", "user": "support@w101.test", "roles": ["support"]}, "gold": {"kind": "conditional", "value": null, "because": "needs the item to have arrived damaged or wrong (RET-5)", "clauses": ["RET-5"], "expected_outcome": ["conditional", "clarification"], "expected_goal": "replacement_available"}, "neural": {"speech_act": "decide", "candidates": [{"kind": "goal", "name": "replacement_available", "subject_type": "order", "goal_kind": "decision", "score": 0.8005}, {"kind": "goal", "name": "same_day_product", "subject_type": "product", "goal_kind": "enumeration", "score": 0.728}, {"kind": "goal", "name": "return_allowed", "subject_type": "order", "goal_kind": "decision", "score": 0.7228}, {"kind": "goal", "name": "recommended_resolution", "subject_type": "order", "goal_kind": "recommendation", "score": 0.6893}, {"kind": "goal", "name": "cancellation_allowed", "subject_type": "order", "goal_kind": "decision", "score": 0.6879}], "entities": [{"type": "order", "id": "ORD-84871", "text": "ORD-84871", "method": "id"}], "encoder": "BAAI/bge-small-en-v1.5"}, "symbolic": {"goal": "replacement_available", "facts": [{"subject": "ORD-84871", "predicate": "order_status", "value": "delivered", "source": "record", "rule": ""}, {"subject": "ORD-84871", "predicate": "contains", "value": "Orbit Smartwatch", "source": "record", "rule": ""}, {"subject": "PRD-184", "predicate": "product_category", "value": "Electronics", "source": "record", "rule": ""}, {"subject": "ORD-84871", "predicate": "order_category", "value": "Electronics", "source": "derived", "rule": "R-KG-CAT"}, {"subject": "ORD-84871", "predicate": "delivered_on", "value": "18 Nov 2026", "source": "record", "rule": ""}, {"subject": "meridian", "predicate": "today", "value": "27 Nov 2026", "source": "record", "rule": ""}, {"subject": "ORD-84871", "predicate": "days_since_delivery", "value": "9", "source": "derived", "rule": "R-CLK-DEL"}, {"subject": "electronics", "predicate": "return_window_days", "value": "7", "source": "record", "rule": ""}, {"subject": "ORD-84871", "predicate": "placed_by", "value": "Karthik Gupta", "source": "record", "rule": ""}, {"subject": "CUST-6510", "predicate": "membership_tier", "value": "plus", "source": "record", "rule": ""}, {"subject": "ORD-84871", "predicate": "order_membership", "value": "plus", "source": "derived", "rule": "R-KG-TIER"}, {"subject": "electronics", "predicate": "plus_extension_days", "value": "0", "source": "record", "rule": ""}, {"subject": "ORD-84871", "predicate": "effective_return_window", "value": "7", "source": "derived", "rule": "R-RET-W2"}, {"subject": "ORD-84871", "predicate": "delivery_date", "value": "18 Nov 2026", "source": "derived", "rule": "R-DATE-REC"}, {"subject": "ORD-84871", "predicate": "returns_policy", "value": "Returns policy version 2", "source": "derived", "rule": "version:returns"}, {"subject": "RETURNS-v2", "predicate": "damage_report_days", "value": "14", "source": "record", "rule": ""}, {"subject": "PRD-184", "predicate": "in_stock", "value": "yes", "source": "record", "rule": ""}], "rules": [{"rule": "R-RET-R", "name": "Replacement for a damaged or wrong item", "clauses": ["RET-5"], "status": "conditional", "priority": 100, "value": "yes", "because": "the item arrived return reason, it is within the return rules, and the same product is in stock", "failed": null, "conditions": [{"index": 0, "condition": "return_allowed(Orbit Smartwatch order) = yes", "status": "satisfied", "note": "", "missing": []}, {"index": 1, "condition": "return_reason(Orbit Smartwatch order) = ?", "status": "unknown", "note": "", "missing": [{"predicate": "return_reason", "subject": "ORD-84871"}]}, {"index": 2, "condition": "?return_reason in ['damaged on arrival', 'wrong item']", "status": "unknown", "note": "", "missing": [{"predicate": "return_reason", "subject": "ORD-84871"}]}, {"index": 3, "condition": "days_since_delivery(Orbit Smartwatch order) = 9", "status": "satisfied", "note": "", "missing": []}, {"index": 4, "condition": "returns_policy(Orbit Smartwatch order) = Returns policy version 2", "status": "satisfied", "note": "", "missing": []}, {"index": 5, "condition": "damage_report_days(Returns policy version 2) = 14", "status": "satisfied", "note": "", "missing": []}, {"index": 6, "condition": "9 \u2264 14", "status": "satisfied", "note": "", "missing": []}, {"index": 7, "condition": "contains(Orbit Smartwatch order) = Orbit Smartwatch", "status": "satisfied", "note": "", "missing": []}, {"index": 8, "condition": "in_stock(Orbit Smartwatch) = yes", "status": "satisfied", "note": "", "missing": []}]}, {"rule": "R-RET-D", "name": "Damaged, defective or wrong item", "clauses": ["RET-4"], "status": "conditional", "priority": 200, "value": "yes", "because": "the item was reported as return reason 9 days after delivery, within the 14-day window for damaged or wrong items", "failed": null, "conditions": [{"index": 0, "condition": "order_status(Orbit Smartwatch order) = delivered", "status": "satisfied", "note": "", "missing": []}, {"index": 1, "condition": "return_reason(Orbit Smartwatch order) = ?", "status": "unknown", "note": "", "missing": [{"predicate": "return_reason", "subject": "ORD-84871"}]}, {"index": 2, "condition": "?return_reason in ['damaged on arrival', 'wrong item']", "status": "unknown", "note": "", "missing": [{"predicate": "return_reason", "subject": "ORD-84871"}]}, {"index": 3, "condition": "order_category(Orbit Smartwatch order) = Electronics", "status": "satisfied", "note": "", "missing": []}, {"index": 4, "condition": "not excluded_from_damage_returns(Electronics)", "status": "satisfied", "note": "", "missing": []}, {"index": 5, "condition": "days_since_delivery(Orbit Smartwatch order) = 9", "status": "satisfied", "note": "", "missing": []}, {"index": 6, "condition": "returns_policy(Orbit Smartwatch order) = Returns policy version 2", "status": "satisfied", "note": "", "missing": []}, {"index": 7, "condition": "damage_report_days(Returns policy version 2) = 14", "status": "satisfied", "note": "", "missing": []}, {"index": 8, "condition": "9 \u2264 14", "status": "satisfied", "note": "", "missing": []}]}, {"rule": "R-KG-CAT", "name": "Category of an ordered item", "clauses": ["RET-1"], "status": "proved", "priority": 100, "value": "Electronics", "because": "", "failed": null, "conditions": [{"index": 0, "condition": "contains(Orbit Smartwatch order) = Orbit Smartwatch", "status": "satisfied", "note": "", "missing": []}, {"index": 1, "condition": "product_category(Orbit Smartwatch) = Electronics", "status": "satisfied", "note": "", "missing": []}]}, {"rule": "R-CLK-DEL", "name": "Days since delivery", "clauses": ["RET-1"], "status": "proved", "priority": 100, "value": "9", "because": "", "failed": null, "conditions": [{"index": 0, "condition": "delivered_on(Orbit Smartwatch order) = 18 Nov 2026", "status": "satisfied", "note": "", "missing": []}, {"index": 1, "condition": "today(Meridian Marketplace) = 27 Nov 2026", "status": "satisfied", "note": "", "missing": []}]}], "steps": ["Goal: replacement_available(ORD-84871) \u2014 whether a faulty, damaged or wrong item can be exchanged for a new one of the same product instead of money back.", "Resolved the returns policy version: Returns policy version 2 \u2014 the delivery date is 18 Nov 2026.", "Rule R-RET-R (Replacement for a damaged or wrong item) conditional: the item arrived return reason, it is within the return rules, and the same product is in stock", "Rule R-RET-D (Damaged, defective or wrong item) conditional: the item was reported as return reason 9 days after delivery, within the 14-day window for damaged or wrong items", "Rule R-KG-CAT (Category of an ordered item) proved.", "Rule R-CLK-DEL (Days since delivery) proved.", "Result: conditional, value yes.", "Verification passed: every record fact used is in the company records, and every stated fact is one a person may state; all 6 records used are visible to the person asking (support access); every cited clause is from the policy version that governs the case; Returns policy version 2 (in force from 16 Nov 2026) applied for 18 Nov 2026; the result was derived by rule R-RET-R; every figure in the answer comes from the reasoning; no conflicting rules, and no rejected statement was used; the reply was composed only from the reasoning's conclusion."], "policy_versions": [{"subject": "ORD-84871", "policy": "returns", "version": "RETURNS-v2", "name": "Returns policy version 2", "number": 2, "effective_from": "16 Nov 2026", "effective_ordinal": 739936, "superseded_on": null, "superseded_ordinal": null, "reference_date": "18 Nov 2026", "reference_ordinal": 739938, "basis": "the delivery date is 18 Nov 2026", "assumed": false, "versions_available": ["RETURNS-v1", "RETURNS-v2"]}], "authorization": {"access": "support", "person": null, "visible_records": 134, "withheld_records": 4}}, "verification": {"passed": true, "checks": [{"check": "fact validity", "passed": true, "detail": "every record fact used is in the company records, and every stated fact is one a person may state"}, {"check": "authorization", "passed": true, "detail": "all 6 records used are visible to the person asking (support access)"}, {"check": "policy applicability", "passed": true, "detail": "every cited clause is from the policy version that governs the case"}, {"check": "policy version", "passed": true, "detail": "Returns policy version 2 (in force from 16 Nov 2026) applied for 18 Nov 2026"}, {"check": "symbolic provenance", "passed": true, "detail": "the result was derived by rule R-RET-R"}, {"check": "supported numbers", "passed": true, "detail": "every figure in the answer comes from the reasoning"}, {"check": "contradictions", "passed": true, "detail": "no conflicting rules, and no rejected statement was used"}, {"check": "unsupported claims", "passed": true, "detail": "the reply was composed only from the reasoning's conclusion"}]}, "release": {"outcome": "conditional", "decision": null, "value": true, "answer": "Provisionally, a replacement can be sent for the customer's Orbit Smartwatch order.\nThat holds as long as the item arrived damaged, defective or wrong.\nApplied Returns policy version 2, in force on 18 Nov 2026.", "confidence": 0.9, "latency_ms": 5.3, "sources": ["RET-1", "RET-4", "RET-5", "ORD-84871"], "pipeline": "Policy reasoning"}, "verdict": {"correct": true}}, {"case": {"id": "W101-T-recommendation-1", "world": 101, "category": "recommendation", "question": "Ticket for ORD-85334: the product arrived defective. Which remedy do we offer the customer?", "user": "support@w101.test", "roles": ["support"]}, "gold": {"kind": "result", "value": "no_standard_remedy", "because": "SUP-1: none applies", "clauses": ["SUP-1"], "expected_outcome": "answered", "expected_goal": "recommended_resolution"}, "neural": {"speech_act": "enumerate", "candidates": [{"kind": "goal", "name": "recommended_resolution", "subject_type": "order", "goal_kind": "recommendation", "score": 0.7252}, {"kind": "goal", "name": "replacement_available", "subject_type": "order", "goal_kind": "decision", "score": 0.6703}, {"kind": "goal", "name": "delay_compensation", "subject_type": "order", "goal_kind": "calculation", "score": 0.6648}, {"kind": "goal", "name": "handling_team", "subject_type": "ticket", "goal_kind": "recommendation", "score": 0.6377}, {"kind": "goal", "name": "free_delivery", "subject_type": "order", "goal_kind": "decision", "score": 0.6067}], "entities": [{"type": "order", "id": "ORD-85334", "text": "ORD-85334", "method": "id"}], "encoder": "BAAI/bge-small-en-v1.5"}, "symbolic": {"goal": "recommended_resolution", "facts": [{"subject": "ORD-85334", "predicate": "order_status", "value": "delivered", "source": "record", "rule": ""}, {"subject": "ORD-85334", "predicate": "contains", "value": "Vertex 15 Laptop", "source": "record", "rule": ""}, {"subject": "PRD-171", "predicate": "product_category", "value": "Electronics", "source": "record", "rule": ""}, {"subject": "ORD-85334", "predicate": "order_category", "value": "Electronics", "source": "derived", "rule": "R-KG-CAT"}, {"subject": "ORD-85334", "predicate": "delivered_on", "value": "14 Nov 2026", "source": "record", "rule": ""}, {"subject": "meridian", "predicate": "today", "value": "27 Nov 2026", "source": "record", "rule": ""}, {"subject": "ORD-85334", "predicate": "days_since_delivery", "value": "13", "source": "derived", "rule": "R-CLK-DEL"}, {"subject": "electronics", "predicate": "return_window_days", "value": "7", "source": "record", "rule": ""}, {"subject": "ORD-85334", "predicate": "placed_by", "value": "Pooja Das", "source": "record", "rule": ""}, {"subject": "CUST-6513", "predicate": "membership_tier", "value": "standard", "source": "record", "rule": ""}, {"subject": "ORD-85334", "predicate": "order_membership", "value": "standard", "source": "derived", "rule": "R-KG-TIER"}, {"subject": "electronics", "predicate": "plus_extension_days", "value": "0", "source": "record", "rule": ""}, {"subject": "ORD-85334", "predicate": "effective_return_window", "value": "7", "source": "derived", "rule": "R-RET-W1"}, {"subject": "ORD-85334", "predicate": "return_reason", "value": "damaged on arrival", "source": "stated", "rule": ""}, {"subject": "ORD-85334", "predicate": "delivery_date", "value": "14 Nov 2026", "source": "derived", "rule": "R-DATE-REC"}, {"subject": "ORD-85334", "predicate": "returns_policy", "value": "Returns policy version 1", "source": "derived", "rule": "version:returns"}, {"subject": "RETURNS-v1", "predicate": "damage_report_days", "value": "8", "source": "record", "rule": ""}, {"subject": "ORD-85334", "predicate": "cancellation_allowed", "value": "no", "source": "derived", "rule": "R-CAN-3"}], "rules": [], "steps": ["Goal: recommended_resolution(ORD-85334) \u2014 what remedy or resolution can be offered to a customer with a problem order: a replacement, a refund, a cancellation, a return or nothing.", "Resolved the returns policy version: Returns policy version 1 \u2014 the delivery date is 14 Nov 2026.", "Rule R-SUP-REPL (Offer a replacement) refuted at `replacement_available(Vertex 15 Laptop order) = no (needs yes)`: a replacement isn't available for this order", "Rule R-SUP-REFUND (Full refund when a damaged item can't be replaced) refuted at `return_allowed(Vertex 15 Laptop order) = no (needs yes)`: the item isn't eligible for return", "Rule R-SUP-CANCEL (Cancel an order that hasn't shipped) refuted at `cancellation_allowed(Vertex 15 Laptop order) = no (needs yes)`: the order can no longer be cancelled", "Rule R-SUP-RETURN (Accept a standard return) refuted at `return_allowed(Vertex 15 Laptop order) = no (needs yes)`: the item isn't eligible for return under the returns policy", "Rule R-SUP-GOODWILL (Goodwill credit with a recorded supervisor approval) refuted at `exception_approved(Vertex 15 Laptop order) is not recorded`: there is no supervisor approval recorded on the order for an exception", "Result: default, value no standard remedy.", "Verification passed: every record fact used is in the company records, and every stated fact is one a person may state; all 6 records used are visible to the person asking (support access); every cited clause is from the policy version that governs the case; Returns policy version 1 (in force from 21 Mar 2026 until 16 Nov 2026) applied for 14 Nov 2026; no rule concluded recommended_resolution, so the policy default applies, with 5 rule(s) refuted; every figure in the answer comes from the reasoning; no conflicting rules, and no rejected statement was used; the reply was composed only from the reasoning's conclusion."], "policy_versions": [{"subject": "ORD-85334", "policy": "returns", "version": "RETURNS-v1", "name": "Returns policy version 1", "number": 1, "effective_from": "21 Mar 2026", "effective_ordinal": 739696, "superseded_on": "16 Nov 2026", "superseded_ordinal": 739936, "reference_date": "14 Nov 2026", "reference_ordinal": 739934, "basis": "the delivery date is 14 Nov 2026", "assumed": false, "versions_available": ["RETURNS-v1", "RETURNS-v2"]}], "authorization": {"access": "support", "person": null, "visible_records": 134, "withheld_records": 4}}, "verification": {"passed": true, "checks": [{"check": "fact validity", "passed": true, "detail": "every record fact used is in the company records, and every stated fact is one a person may state"}, {"check": "authorization", "passed": true, "detail": "all 6 records used are visible to the person asking (support access)"}, {"check": "policy applicability", "passed": true, "detail": "every cited clause is from the policy version that governs the case"}, {"check": "policy version", "passed": true, "detail": "Returns policy version 1 (in force from 21 Mar 2026 until 16 Nov 2026) applied for 14 Nov 2026"}, {"check": "symbolic provenance", "passed": true, "detail": "no rule concluded recommended_resolution, so the policy default applies, with 5 rule(s) refuted"}, {"check": "supported numbers", "passed": true, "detail": "every figure in the answer comes from the reasoning"}, {"check": "contradictions", "passed": true, "detail": "no conflicting rules, and no rejected statement was used"}, {"check": "unsupported claims", "passed": true, "detail": "the reply was composed only from the reasoning's conclusion"}]}, "release": {"outcome": "answered", "decision": "no_standard_remedy", "value": "no_standard_remedy", "answer": "The recommended resolution for the customer's Vertex 15 Laptop order is to decline, because no standard remedy applies: a replacement isn't available for this order and the item isn't eligible for return.\nThis relies on what the customer said: return reason = damaged on arrival. Applied Returns policy version 1, in force on 14 Nov 2026.", "confidence": 0.88, "latency_ms": 6.0, "sources": ["CAN-1", "CAN-2", "RET-1", "RET-5", "SUP-1", "SUP-3", "ORD-85334"], "pipeline": "Multi-hop reasoning"}, "verdict": {"correct": true}}, {"case": {"id": "W101-T-unauthorized-1", "world": 101, "category": "unauthorized", "question": "How much was order ORD-84978 and can I cancel it?", "user": "arjun.varma@w101.test", "roles": []}, "gold": {"kind": "denied", "value": null, "because": "", "clauses": [], "expected_outcome": "denied", "expected_goal": "cancellation_allowed"}, "neural": {"speech_act": "calculate", "candidates": [{"kind": "goal", "name": "cancellation_refund", "subject_type": "order", "goal_kind": "calculation", "score": 0.7797}, {"kind": "goal", "name": "cancellation_allowed", "subject_type": "order", "goal_kind": "decision", "score": 0.7314}, {"kind": "goal", "name": "free_delivery", "subject_type": "order", "goal_kind": "decision", "score": 0.7035}, {"kind": "goal", "name": "recommended_resolution", "subject_type": "order", "goal_kind": "recommendation", "score": 0.684}, {"kind": "goal", "name": "refund_required", "subject_type": "order", "goal_kind": "decision", "score": 0.6818}], "entities": [{"type": "order", "id": "ORD-84978", "text": "ORD-84978", "method": "id"}], "encoder": "BAAI/bge-small-en-v1.5"}, "symbolic": {"goal": null, "facts": [], "rules": [], "steps": ["The referenced record is outside the person's access; access was refused before any reasoning."], "policy_versions": [], "authorization": {"access": "customer", "person": "CUST-6508", "visible_records": 43, "withheld_records": 95}}, "verification": {"passed": null, "checks": []}, "release": {"outcome": "denied", "decision": null, "value": null, "answer": "That record belongs to a different account, so I can't look at it or reason about it for you.", "confidence": 0.0, "latency_ms": 1.4, "sources": [], "pipeline": "Access refused"}, "verdict": {"correct": true}}, {"case": {"id": "W101-T-not_covered-1", "world": 101, "category": "not_covered", "question": "What is the warranty period on the Lumen Tablet?", "user": "vikram.reddy@w101.test", "roles": []}, "gold": {"kind": "not_covered", "value": null, "because": "no policy clause covers it", "clauses": [], "expected_outcome": "insufficient", "expected_goal": null}, "neural": {"speech_act": "inform", "candidates": [{"kind": "goal", "name": "replacement_available", "subject_type": "order", "goal_kind": "decision", "score": 0.5561}, {"kind": "goal", "name": "recommended_resolution", "subject_type": "order", "goal_kind": "recommendation", "score": 0.5394}, {"kind": "goal", "name": "delay_compensation", "subject_type": "order", "goal_kind": "calculation", "score": 0.5348}, {"kind": "lookup", "name": "order_tracking", "subject_type": "order", "goal_kind": "lookup", "score": 0.5329}, {"kind": "goal", "name": "same_day_product", "subject_type": "product", "goal_kind": "enumeration", "score": 0.5297}], "entities": [{"type": "product", "id": "PRD-185", "text": "lumen tablet", "method": "name"}], "encoder": "BAAI/bge-small-en-v1.5"}, "symbolic": {"goal": "replacement_available", "facts": [{"subject": "ORD-84970", "predicate": "order_status", "value": "placed", "source": "record", "rule": ""}, {"subject": "ORD-84970", "predicate": "cancellation_allowed", "value": "yes", "source": "derived", "rule": "R-CAN-1"}, {"subject": "ORD-84970", "predicate": "recommended_resolution", "value": "cancel order", "source": "derived", "rule": "R-SUP-CANCEL"}], "rules": [], "steps": ["Goal: replacement_available(ORD-84970) \u2014 whether a faulty, damaged or wrong item can be exchanged for a new one of the same product instead of money back.", "Rule R-RET-R (Replacement for a damaged or wrong item) refuted at `return_allowed(Lumen Tablet order) = no (needs yes)`: the item is not eligible for return", "Result: default, value no.", "Verification passed: every record fact used is in the company records, and every stated fact is one a person may state; all 1 records used are visible to the person asking (customer access); every cited clause is from the policy version that governs the case; no rule concluded replacement_available, so the policy default applies, with 1 rule(s) refuted; every figure in the answer comes from the reasoning; no conflicting rules, and no rejected statement was used; the reply was composed only from the reasoning's conclusion."], "policy_versions": [], "authorization": {"access": "customer", "person": "CUST-6511", "visible_records": 43, "withheld_records": 95}}, "verification": {"passed": true, "checks": [{"check": "fact validity", "passed": true, "detail": "every record fact used is in the company records, and every stated fact is one a person may state"}, {"check": "authorization", "passed": true, "detail": "all 1 records used are visible to the person asking (customer access)"}, {"check": "policy applicability", "passed": true, "detail": "every cited clause is from the policy version that governs the case"}, {"check": "symbolic provenance", "passed": true, "detail": "no rule concluded replacement_available, so the policy default applies, with 1 rule(s) refuted"}, {"check": "supported numbers", "passed": true, "detail": "every figure in the answer comes from the reasoning"}, {"check": "contradictions", "passed": true, "detail": "no conflicting rules, and no rejected statement was used"}, {"check": "unsupported claims", "passed": true, "detail": "the reply was composed only from the reasoning's conclusion"}]}, "release": {"outcome": "answered", "decision": false, "value": false, "answer": "No \u2014 a replacement isn't available for your Lumen Tablet order: the item is not eligible for return.", "confidence": 0.81, "latency_ms": 5.2, "sources": ["RET-5", "ORD-84970"], "pipeline": "Policy reasoning"}, "verdict": {"correct": false}}]}
+{
+ "elapsed_ms": 1462.1,
+ "total": 10,
+ "correct": 7,
+ "results": [
+  {
+   "case": {
+    "id": "W101-T-known-1",
+    "world": 101,
+    "category": "known",
+    "question": "Can order ORD-84722 be returned?",
+    "user": "support@w101.test",
+    "roles": [
+     "support"
+    ]
+   },
+   "gold": {
+    "kind": "decision",
+    "value": true,
+    "because": "within the return window (RET-1, RET-3)",
+    "clauses": [
+     "RET-1",
+     "RET-3"
+    ],
+    "expected_outcome": "answered",
+    "expected_goal": "return_allowed"
+   },
+   "neural": {
+    "speech_act": "decide",
+    "candidates": [
+     {
+      "kind": "goal",
+      "name": "recommended_resolution",
+      "subject_type": "order",
+      "goal_kind": "recommendation",
+      "score": 0.7167
+     },
+     {
+      "kind": "goal",
+      "name": "replacement_available",
+      "subject_type": "order",
+      "goal_kind": "decision",
+      "score": 0.7069
+     },
+     {
+      "kind": "goal",
+      "name": "cancellation_allowed",
+      "subject_type": "order",
+      "goal_kind": "decision",
+      "score": 0.7044
+     },
+     {
+      "kind": "goal",
+      "name": "return_allowed",
+      "subject_type": "order",
+      "goal_kind": "decision",
+      "score": 0.7033
+     },
+     {
+      "kind": "goal",
+      "name": "free_delivery",
+      "subject_type": "order",
+      "goal_kind": "decision",
+      "score": 0.695
+     }
+    ],
+    "entities": [
+     {
+      "type": "order",
+      "id": "ORD-84722",
+      "text": "ORD-84722",
+      "method": "id"
+     }
+    ],
+    "encoder": "BAAI/bge-small-en-v1.5"
+   },
+   "symbolic": {
+    "goal": "return_allowed",
+    "facts": [
+     {
+      "subject": "ORD-84722",
+      "predicate": "order_status",
+      "value": "delivered",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "ORD-84722",
+      "predicate": "contains",
+      "value": "Brass Table Lamp",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "PRD-198",
+      "predicate": "product_category",
+      "value": "Home",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "ORD-84722",
+      "predicate": "order_category",
+      "value": "Home",
+      "source": "derived",
+      "rule": "R-KG-CAT"
+     },
+     {
+      "subject": "ORD-84722",
+      "predicate": "delivered_on",
+      "value": "20 Oct 2026",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "meridian",
+      "predicate": "today",
+      "value": "27 Nov 2026",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "ORD-84722",
+      "predicate": "days_since_delivery",
+      "value": "38",
+      "source": "derived",
+      "rule": "R-CLK-DEL"
+     },
+     {
+      "subject": "home",
+      "predicate": "return_window_days",
+      "value": "40",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "ORD-84722",
+      "predicate": "placed_by",
+      "value": "Anjali Bose",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "CUST-6509",
+      "predicate": "membership_tier",
+      "value": "standard",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "ORD-84722",
+      "predicate": "order_membership",
+      "value": "standard",
+      "source": "derived",
+      "rule": "R-KG-TIER"
+     },
+     {
+      "subject": "home",
+      "predicate": "plus_extension_days",
+      "value": "12",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "ORD-84722",
+      "predicate": "effective_return_window",
+      "value": "40",
+      "source": "derived",
+      "rule": "R-RET-W1"
+     },
+     {
+      "subject": "ORD-84722",
+      "predicate": "delivery_date",
+      "value": "20 Oct 2026",
+      "source": "derived",
+      "rule": "R-DATE-REC"
+     },
+     {
+      "subject": "ORD-84722",
+      "predicate": "returns_policy",
+      "value": "Returns policy version 1",
+      "source": "derived",
+      "rule": "version:returns"
+     },
+     {
+      "subject": "RETURNS-v1",
+      "predicate": "damage_report_days",
+      "value": "8",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "ORD-84722",
+      "predicate": "return_allowed",
+      "value": "yes",
+      "source": "derived",
+      "rule": "R-RET-A"
+     },
+     {
+      "subject": "PRD-198",
+      "predicate": "in_stock",
+      "value": "yes",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "ORD-84722",
+      "predicate": "cancellation_allowed",
+      "value": "no",
+      "source": "derived",
+      "rule": "R-CAN-3"
+     },
+     {
+      "subject": "ORD-84722",
+      "predicate": "recommended_resolution",
+      "value": "return and refund after inspection",
+      "source": "derived",
+      "rule": "R-SUP-RETURN"
+     },
+     {
+      "subject": "ORD-84722",
+      "predicate": "order_total",
+      "value": "\u20b93,469",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "meridian",
+      "predicate": "approval_threshold",
+      "value": "\u20b922,000",
+      "source": "record",
+      "rule": ""
+     }
+    ],
+    "rules": [
+     {
+      "rule": "R-RET-A",
+      "name": "Change-of-mind return within the window",
+      "clauses": [
+       "RET-1",
+       "RET-2",
+       "RET-3"
+      ],
+      "status": "proved",
+      "priority": 100,
+      "value": "yes",
+      "because": "it was delivered 38 days ago, within the 40-day return window for Home items",
+      "failed": null,
+      "conditions": [
+       {
+        "index": 0,
+        "condition": "order_status(Brass Table Lamp order) = delivered",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 1,
+        "condition": "order_category(Brass Table Lamp order) = Home",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 2,
+        "condition": "not non_returnable(Home)",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 3,
+        "condition": "days_since_delivery(Brass Table Lamp order) = 38",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 4,
+        "condition": "effective_return_window(Brass Table Lamp order) = 40",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 5,
+        "condition": "38 \u2264 40",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       }
+      ]
+     },
+     {
+      "rule": "R-KG-CAT",
+      "name": "Category of an ordered item",
+      "clauses": [
+       "RET-1"
+      ],
+      "status": "proved",
+      "priority": 100,
+      "value": "Home",
+      "because": "",
+      "failed": null,
+      "conditions": [
+       {
+        "index": 0,
+        "condition": "contains(Brass Table Lamp order) = Brass Table Lamp",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 1,
+        "condition": "product_category(Brass Table Lamp) = Home",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       }
+      ]
+     },
+     {
+      "rule": "R-CLK-DEL",
+      "name": "Days since delivery",
+      "clauses": [
+       "RET-1"
+      ],
+      "status": "proved",
+      "priority": 100,
+      "value": "38",
+      "because": "",
+      "failed": null,
+      "conditions": [
+       {
+        "index": 0,
+        "condition": "delivered_on(Brass Table Lamp order) = 20 Oct 2026",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 1,
+        "condition": "today(Meridian Marketplace) = 27 Nov 2026",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       }
+      ]
+     },
+     {
+      "rule": "R-RET-W1",
+      "name": "Standard return window",
+      "clauses": [
+       "RET-1"
+      ],
+      "status": "proved",
+      "priority": 100,
+      "value": "40",
+      "because": "",
+      "failed": null,
+      "conditions": [
+       {
+        "index": 0,
+        "condition": "order_category(Brass Table Lamp order) = Home",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 1,
+        "condition": "return_window_days(Home) = 40",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 2,
+        "condition": "order_membership(Brass Table Lamp order) = standard",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       }
+      ]
+     },
+     {
+      "rule": "R-KG-TIER",
+      "name": "Membership of the customer who placed an order",
+      "clauses": [
+       "CO-4"
+      ],
+      "status": "proved",
+      "priority": 100,
+      "value": "standard",
+      "because": "",
+      "failed": null,
+      "conditions": [
+       {
+        "index": 0,
+        "condition": "placed_by(Brass Table Lamp order) = Anjali Bose",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 1,
+        "condition": "membership_tier(Anjali Bose) = standard",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       }
+      ]
+     }
+    ],
+    "steps": [
+     "Goal: return_allowed(ORD-84722) \u2014 whether an item that was bought can be sent back to the seller.",
+     "Resolved the returns policy version: Returns policy version 1 \u2014 the delivery date is 20 Oct 2026.",
+     "Rule R-RET-A (Change-of-mind return within the window) proved: it was delivered 38 days ago, within the 40-day return window for Home items",
+     "Rule R-KG-CAT (Category of an ordered item) proved.",
+     "Rule R-CLK-DEL (Days since delivery) proved.",
+     "Rule R-RET-W1 (Standard return window) proved.",
+     "Rule R-KG-TIER (Membership of the customer who placed an order) proved.",
+     "Rule R-RET-D (Damaged, defective or wrong item) refuted at `38 \u2264 8`: the problem was reported 38 days after delivery, but damaged or wrong items must be reported within 8 days",
+     "Result: determined, value yes.",
+     "Verification passed: every record fact used is in the company records, and every stated fact is one a person may state; all 6 records used are visible to the person asking (support access); every cited clause is from the policy version that governs the case; Returns policy version 1 (in force from 21 Mar 2026 until 16 Nov 2026) applied for 20 Oct 2026; the result was derived by rule R-RET-A; every figure in the answer comes from the reasoning; no conflicting rules, and no rejected statement was used; the reply states the derived decision (yes); the reply was composed only from the reasoning's conclusion."
+    ],
+    "policy_versions": [
+     {
+      "subject": "ORD-84722",
+      "policy": "returns",
+      "version": "RETURNS-v1",
+      "name": "Returns policy version 1",
+      "number": 1,
+      "effective_from": "21 Mar 2026",
+      "effective_ordinal": 739696,
+      "superseded_on": "16 Nov 2026",
+      "superseded_ordinal": 739936,
+      "reference_date": "20 Oct 2026",
+      "reference_ordinal": 739909,
+      "basis": "the delivery date is 20 Oct 2026",
+      "assumed": false,
+      "versions_available": [
+       "RETURNS-v1",
+       "RETURNS-v2"
+      ]
+     }
+    ],
+    "authorization": {
+     "access": "support",
+     "person": null,
+     "visible_records": 134,
+     "withheld_records": 4
+    }
+   },
+   "verification": {
+    "passed": true,
+    "checks": [
+     {
+      "check": "fact validity",
+      "passed": true,
+      "detail": "every record fact used is in the company records, and every stated fact is one a person may state"
+     },
+     {
+      "check": "authorization",
+      "passed": true,
+      "detail": "all 6 records used are visible to the person asking (support access)"
+     },
+     {
+      "check": "policy applicability",
+      "passed": true,
+      "detail": "every cited clause is from the policy version that governs the case"
+     },
+     {
+      "check": "policy version",
+      "passed": true,
+      "detail": "Returns policy version 1 (in force from 21 Mar 2026 until 16 Nov 2026) applied for 20 Oct 2026"
+     },
+     {
+      "check": "symbolic provenance",
+      "passed": true,
+      "detail": "the result was derived by rule R-RET-A"
+     },
+     {
+      "check": "supported numbers",
+      "passed": true,
+      "detail": "every figure in the answer comes from the reasoning"
+     },
+     {
+      "check": "contradictions",
+      "passed": true,
+      "detail": "no conflicting rules, and no rejected statement was used"
+     },
+     {
+      "check": "answer agreement",
+      "passed": true,
+      "detail": "the reply states the derived decision (yes)"
+     },
+     {
+      "check": "unsupported claims",
+      "passed": true,
+      "detail": "the reply was composed only from the reasoning's conclusion"
+     }
+    ]
+   },
+   "release": {
+    "outcome": "answered",
+    "decision": true,
+    "value": true,
+    "answer": "Yes \u2014 the customer's Brass Table Lamp order can be returned: it was delivered 38 days ago, within the 40-day return window for Home items.\nApplied Returns policy version 1, in force on 20 Oct 2026.",
+    "confidence": 0.93,
+    "latency_ms": 771.0,
+    "sources": [
+     "RET-1",
+     "RET-2",
+     "RET-3",
+     "ORD-84722"
+    ],
+    "pipeline": "Policy reasoning"
+   },
+   "verdict": {
+    "correct": true
+   }
+  },
+  {
+   "case": {
+    "id": "W101-T-paraphrased-1",
+    "world": 101,
+    "category": "paraphrased",
+    "question": "Can I still hand back the things from order ORD-84567?",
+    "user": "arjun.varma@w101.test",
+    "roles": []
+   },
+   "gold": {
+    "kind": "decision",
+    "value": true,
+    "because": "within the return window (RET-1, RET-3)",
+    "clauses": [
+     "RET-1",
+     "RET-3"
+    ],
+    "expected_outcome": "answered",
+    "expected_goal": "return_allowed"
+   },
+   "neural": {
+    "speech_act": "decide",
+    "candidates": [
+     {
+      "kind": "goal",
+      "name": "cancellation_allowed",
+      "subject_type": "order",
+      "goal_kind": "decision",
+      "score": 0.7515
+     },
+     {
+      "kind": "goal",
+      "name": "return_allowed",
+      "subject_type": "order",
+      "goal_kind": "decision",
+      "score": 0.7195
+     },
+     {
+      "kind": "goal",
+      "name": "refund_required",
+      "subject_type": "order",
+      "goal_kind": "decision",
+      "score": 0.7162
+     },
+     {
+      "kind": "goal",
+      "name": "recommended_resolution",
+      "subject_type": "order",
+      "goal_kind": "recommendation",
+      "score": 0.7158
+     },
+     {
+      "kind": "goal",
+      "name": "replacement_available",
+      "subject_type": "order",
+      "goal_kind": "decision",
+      "score": 0.7028
+     }
+    ],
+    "entities": [
+     {
+      "type": "order",
+      "id": "ORD-84567",
+      "text": "ORD-84567",
+      "method": "id"
+     }
+    ],
+    "encoder": "BAAI/bge-small-en-v1.5"
+   },
+   "symbolic": {
+    "goal": "cancellation_allowed",
+    "facts": [
+     {
+      "subject": "ORD-84567",
+      "predicate": "order_status",
+      "value": "delivered",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "ORD-84567",
+      "predicate": "cancellation_allowed",
+      "value": "no",
+      "source": "derived",
+      "rule": "R-CAN-3"
+     }
+    ],
+    "rules": [
+     {
+      "rule": "R-CAN-3",
+      "name": "No cancellation once shipped",
+      "clauses": [
+       "CAN-3"
+      ],
+      "status": "proved",
+      "priority": 200,
+      "value": "no",
+      "because": "the order is already delivered, and orders cannot be cancelled once they have shipped; you can refuse the delivery or return the item after it arrives",
+      "failed": null,
+      "conditions": [
+       {
+        "index": 0,
+        "condition": "order_status(Stride Running Shoes order) = delivered",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 1,
+        "condition": "delivered in ['shipped', 'out for delivery', 'delivered']",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       }
+      ]
+     }
+    ],
+    "steps": [
+     "Goal: cancellation_allowed(ORD-84567) \u2014 whether an order that has been placed can still be cancelled or stopped.",
+     "Rule R-CAN-3 (No cancellation once shipped) proved: the order is already delivered, and orders cannot be cancelled once they have shipped; you can refuse the delivery or return the item after it arrives",
+     "Rule R-CAN-1 (Free cancellation before packing) refuted at `delivered = placed`: the order status is delivered",
+     "Rule R-CAN-2 (Cancellation after packing) refuted at `delivered = packed`: the order status is delivered",
+     "Result: determined, value no.",
+     "Verification passed: every record fact used is in the company records, and every stated fact is one a person may state; all 1 records used are visible to the person asking (customer access); every cited clause is from the policy version that governs the case; the result was derived by rule R-CAN-3; every figure in the answer comes from the reasoning; no conflicting rules, and no rejected statement was used; the reply states the derived decision (no); the reply was composed only from the reasoning's conclusion."
+    ],
+    "policy_versions": [],
+    "authorization": {
+     "access": "customer",
+     "person": "CUST-6508",
+     "visible_records": 43,
+     "withheld_records": 95
+    }
+   },
+   "verification": {
+    "passed": true,
+    "checks": [
+     {
+      "check": "fact validity",
+      "passed": true,
+      "detail": "every record fact used is in the company records, and every stated fact is one a person may state"
+     },
+     {
+      "check": "authorization",
+      "passed": true,
+      "detail": "all 1 records used are visible to the person asking (customer access)"
+     },
+     {
+      "check": "policy applicability",
+      "passed": true,
+      "detail": "every cited clause is from the policy version that governs the case"
+     },
+     {
+      "check": "symbolic provenance",
+      "passed": true,
+      "detail": "the result was derived by rule R-CAN-3"
+     },
+     {
+      "check": "supported numbers",
+      "passed": true,
+      "detail": "every figure in the answer comes from the reasoning"
+     },
+     {
+      "check": "contradictions",
+      "passed": true,
+      "detail": "no conflicting rules, and no rejected statement was used"
+     },
+     {
+      "check": "answer agreement",
+      "passed": true,
+      "detail": "the reply states the derived decision (no)"
+     },
+     {
+      "check": "unsupported claims",
+      "passed": true,
+      "detail": "the reply was composed only from the reasoning's conclusion"
+     }
+    ]
+   },
+   "release": {
+    "outcome": "answered",
+    "decision": false,
+    "value": false,
+    "answer": "No \u2014 your Stride Running Shoes order can no longer be cancelled: the order is already delivered, and orders cannot be cancelled once they have shipped; you can refuse the delivery or return the item after it arrives.",
+    "confidence": 0.97,
+    "latency_ms": 47.4,
+    "sources": [
+     "CAN-3",
+     "ORD-84567"
+    ],
+    "pipeline": "Policy reasoning"
+   },
+   "verdict": {
+    "correct": false
+   }
+  },
+  {
+   "case": {
+    "id": "W101-T-calculation-1",
+    "world": 101,
+    "category": "calculation",
+    "question": "What amount comes back to me if I call off order ORD-85272?",
+    "user": "pooja.das@w101.test",
+    "roles": []
+   },
+   "gold": {
+    "kind": "value",
+    "value": 2456.64,
+    "because": "order total minus the cancellation fee (REF-1, CAN-2)",
+    "clauses": [
+     "REF-1",
+     "CAN-2"
+    ],
+    "expected_outcome": "answered",
+    "expected_goal": "cancellation_refund"
+   },
+   "neural": {
+    "speech_act": "calculate",
+    "candidates": [
+     {
+      "kind": "goal",
+      "name": "cancellation_refund",
+      "subject_type": "order",
+      "goal_kind": "calculation",
+      "score": 0.8031
+     },
+     {
+      "kind": "goal",
+      "name": "cancellation_allowed",
+      "subject_type": "order",
+      "goal_kind": "decision",
+      "score": 0.7279
+     },
+     {
+      "kind": "goal",
+      "name": "refund_required",
+      "subject_type": "order",
+      "goal_kind": "decision",
+      "score": 0.7116
+     },
+     {
+      "kind": "goal",
+      "name": "refund_approved",
+      "subject_type": "return",
+      "goal_kind": "explanation",
+      "score": 0.6892
+     },
+     {
+      "kind": "goal",
+      "name": "free_delivery",
+      "subject_type": "order",
+      "goal_kind": "decision",
+      "score": 0.6824
+     }
+    ],
+    "entities": [
+     {
+      "type": "order",
+      "id": "ORD-85272",
+      "text": "ORD-85272",
+      "method": "id"
+     }
+    ],
+    "encoder": "BAAI/bge-small-en-v1.5"
+   },
+   "symbolic": {
+    "goal": "cancellation_refund",
+    "facts": [
+     {
+      "subject": "ORD-85272",
+      "predicate": "order_status",
+      "value": "packed",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "ORD-85272",
+      "predicate": "cancellation_allowed",
+      "value": "yes",
+      "source": "derived",
+      "rule": "R-CAN-2"
+     },
+     {
+      "subject": "ORD-85272",
+      "predicate": "order_total",
+      "value": "\u20b92,559",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "ORD-85272",
+      "predicate": "placed_by",
+      "value": "Pooja Das",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "CUST-6513",
+      "predicate": "membership_tier",
+      "value": "standard",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "ORD-85272",
+      "predicate": "order_membership",
+      "value": "standard",
+      "source": "derived",
+      "rule": "R-KG-TIER"
+     },
+     {
+      "subject": "meridian",
+      "predicate": "cancellation_fee_rate",
+      "value": "4%",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "meridian",
+      "predicate": "cancellation_fee_cap",
+      "value": "\u20b9750",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "ORD-85272",
+      "predicate": "cancellation_fee",
+      "value": "\u20b9102.36",
+      "source": "derived",
+      "rule": "R-FEE-3"
+     },
+     {
+      "subject": "ORD-85272",
+      "predicate": "cancellation_refund",
+      "value": "\u20b92,456.64",
+      "source": "derived",
+      "rule": "R-REF-C"
+     }
+    ],
+    "rules": [
+     {
+      "rule": "R-REF-C",
+      "name": "Refund on cancellation",
+      "clauses": [
+       "REF-1"
+      ],
+      "status": "proved",
+      "priority": 100,
+      "value": "\u20b92,456.64",
+      "because": "the refund is the order total of \u20b92,559 minus a cancellation fee of \u20b9102.36",
+      "failed": null,
+      "conditions": [
+       {
+        "index": 0,
+        "condition": "cancellation_allowed(Denim Weekend Jeans order) = yes",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 1,
+        "condition": "order_total(Denim Weekend Jeans order) = \u20b92,559",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 2,
+        "condition": "cancellation_fee(Denim Weekend Jeans order) = \u20b9102.36",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       }
+      ]
+     },
+     {
+      "rule": "R-CAN-2",
+      "name": "Cancellation after packing",
+      "clauses": [
+       "CAN-2"
+      ],
+      "status": "proved",
+      "priority": 100,
+      "value": "yes",
+      "because": "the order has been packed but not shipped, so it can still be cancelled",
+      "failed": null,
+      "conditions": [
+       {
+        "index": 0,
+        "condition": "order_status(Denim Weekend Jeans order) = packed",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 1,
+        "condition": "packed = packed",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       }
+      ]
+     },
+     {
+      "rule": "R-FEE-3",
+      "name": "Cancellation fee after packing",
+      "clauses": [
+       "CAN-2"
+      ],
+      "status": "proved",
+      "priority": 100,
+      "value": "\u20b9102.36",
+      "because": "a fee of 4% of the \u20b92,559 order total applies, capped at \u20b9750",
+      "failed": null,
+      "conditions": [
+       {
+        "index": 0,
+        "condition": "order_status(Denim Weekend Jeans order) = packed",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 1,
+        "condition": "order_membership(Denim Weekend Jeans order) = standard",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 2,
+        "condition": "order_total(Denim Weekend Jeans order) = \u20b92,559",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 3,
+        "condition": "cancellation_fee_rate(Meridian Marketplace) = 4%",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 4,
+        "condition": "cancellation_fee_cap(Meridian Marketplace) = \u20b9750",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       }
+      ]
+     },
+     {
+      "rule": "R-KG-TIER",
+      "name": "Membership of the customer who placed an order",
+      "clauses": [
+       "CO-4"
+      ],
+      "status": "proved",
+      "priority": 100,
+      "value": "standard",
+      "because": "",
+      "failed": null,
+      "conditions": [
+       {
+        "index": 0,
+        "condition": "placed_by(Denim Weekend Jeans order) = Pooja Das",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 1,
+        "condition": "membership_tier(Pooja Das) = standard",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       }
+      ]
+     }
+    ],
+    "steps": [
+     "Goal: cancellation_refund(ORD-85272) \u2014 how much money comes back when an order is cancelled, after any cancellation charge.",
+     "Rule R-REF-C (Refund on cancellation) proved: the refund is the order total of \u20b92,559 minus a cancellation fee of \u20b9102.36",
+     "Rule R-CAN-2 (Cancellation after packing) proved: the order has been packed but not shipped, so it can still be cancelled",
+     "Rule R-FEE-3 (Cancellation fee after packing) proved: a fee of 4% of the \u20b92,559 order total applies, capped at \u20b9750",
+     "Rule R-KG-TIER (Membership of the customer who placed an order) proved.",
+     "Result: determined, value \u20b92,456.64.",
+     "Verification passed: every record fact used is in the company records, and every stated fact is one a person may state; all 3 records used are visible to the person asking (customer access); every cited clause is from the policy version that governs the case; the result was derived by rule R-REF-C; cancellation_refund = 2456.64 re-derives to the same value from scratch; every figure in the answer comes from the reasoning; no conflicting rules, and no rejected statement was used; the reply states the derived value \u20b92,456.64; the reply was composed only from the reasoning's conclusion."
+    ],
+    "policy_versions": [],
+    "authorization": {
+     "access": "customer",
+     "person": "CUST-6513",
+     "visible_records": 41,
+     "withheld_records": 97
+    }
+   },
+   "verification": {
+    "passed": true,
+    "checks": [
+     {
+      "check": "fact validity",
+      "passed": true,
+      "detail": "every record fact used is in the company records, and every stated fact is one a person may state"
+     },
+     {
+      "check": "authorization",
+      "passed": true,
+      "detail": "all 3 records used are visible to the person asking (customer access)"
+     },
+     {
+      "check": "policy applicability",
+      "passed": true,
+      "detail": "every cited clause is from the policy version that governs the case"
+     },
+     {
+      "check": "symbolic provenance",
+      "passed": true,
+      "detail": "the result was derived by rule R-REF-C"
+     },
+     {
+      "check": "calculation",
+      "passed": true,
+      "detail": "cancellation_refund = 2456.64 re-derives to the same value from scratch"
+     },
+     {
+      "check": "supported numbers",
+      "passed": true,
+      "detail": "every figure in the answer comes from the reasoning"
+     },
+     {
+      "check": "contradictions",
+      "passed": true,
+      "detail": "no conflicting rules, and no rejected statement was used"
+     },
+     {
+      "check": "answer agreement",
+      "passed": true,
+      "detail": "the reply states the derived value \u20b92,456.64"
+     },
+     {
+      "check": "unsupported claims",
+      "passed": true,
+      "detail": "the reply was composed only from the reasoning's conclusion"
+     }
+    ]
+   },
+   "release": {
+    "outcome": "answered",
+    "decision": 2456.64,
+    "value": 2456.64,
+    "answer": "Cancelling your Denim Weekend Jeans order would refund \u20b92,456.64: the refund is the order total of \u20b92,559 minus a cancellation fee of \u20b9102.36.",
+    "confidence": 1.0,
+    "latency_ms": 94.8,
+    "sources": [
+     "CAN-2",
+     "REF-1",
+     "ORD-85272"
+    ],
+    "pipeline": "Calculation"
+   },
+   "verdict": {
+    "correct": true
+   }
+  },
+  {
+   "case": {
+    "id": "W101-T-multi_hop-1",
+    "world": 101,
+    "category": "multi_hop",
+    "question": "I'd like to call off the Cotton Duvet Cover I ordered. Can I?",
+    "user": "anjali.bose@w101.test",
+    "roles": []
+   },
+   "gold": {
+    "kind": "decision",
+    "value": true,
+    "because": "status placed (CAN-1, CAN-2)",
+    "clauses": [
+     "CAN-1",
+     "CAN-2"
+    ],
+    "expected_outcome": "answered",
+    "expected_goal": "cancellation_allowed"
+   },
+   "neural": {
+    "speech_act": "decide",
+    "candidates": [
+     {
+      "kind": "goal",
+      "name": "cancellation_allowed",
+      "subject_type": "order",
+      "goal_kind": "decision",
+      "score": 0.6231
+     },
+     {
+      "kind": "goal",
+      "name": "return_allowed",
+      "subject_type": "order",
+      "goal_kind": "decision",
+      "score": 0.6066
+     },
+     {
+      "kind": "goal",
+      "name": "refund_required",
+      "subject_type": "order",
+      "goal_kind": "decision",
+      "score": 0.6037
+     },
+     {
+      "kind": "goal",
+      "name": "recommended_resolution",
+      "subject_type": "order",
+      "goal_kind": "recommendation",
+      "score": 0.6018
+     },
+     {
+      "kind": "goal",
+      "name": "replacement_available",
+      "subject_type": "order",
+      "goal_kind": "decision",
+      "score": 0.5902
+     }
+    ],
+    "entities": [
+     {
+      "type": "product",
+      "id": "PRD-207",
+      "text": "cotton cover duvet",
+      "method": "name"
+     }
+    ],
+    "encoder": "BAAI/bge-small-en-v1.5"
+   },
+   "symbolic": {
+    "goal": "cancellation_allowed",
+    "facts": [
+     {
+      "subject": "ORD-84657",
+      "predicate": "order_status",
+      "value": "placed",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "ORD-84657",
+      "predicate": "cancellation_allowed",
+      "value": "yes",
+      "source": "derived",
+      "rule": "R-CAN-1"
+     }
+    ],
+    "rules": [
+     {
+      "rule": "R-CAN-1",
+      "name": "Free cancellation before packing",
+      "clauses": [
+       "CAN-1"
+      ],
+      "status": "proved",
+      "priority": 100,
+      "value": "yes",
+      "because": "the order is still at the placed stage, so it can be cancelled free of charge",
+      "failed": null,
+      "conditions": [
+       {
+        "index": 0,
+        "condition": "order_status(Cotton Duvet Cover order) = placed",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 1,
+        "condition": "placed = placed",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       }
+      ]
+     }
+    ],
+    "steps": [
+     "Goal: cancellation_allowed(ORD-84657) \u2014 whether an order that has been placed can still be cancelled or stopped.",
+     "Rule R-CAN-1 (Free cancellation before packing) proved: the order is still at the placed stage, so it can be cancelled free of charge",
+     "Rule R-CAN-2 (Cancellation after packing) refuted at `placed = packed`: the order status is placed",
+     "Rule R-CAN-3 (No cancellation once shipped) refuted at `placed in ['shipped', 'out for delivery', 'delivered']`.",
+     "Result: determined, value yes.",
+     "Verification passed: every record fact used is in the company records, and every stated fact is one a person may state; all 1 records used are visible to the person asking (customer access); every cited clause is from the policy version that governs the case; the result was derived by rule R-CAN-1; every figure in the answer comes from the reasoning; no conflicting rules, and no rejected statement was used; the reply states the derived decision (yes); the reply was composed only from the reasoning's conclusion."
+    ],
+    "policy_versions": [],
+    "authorization": {
+     "access": "customer",
+     "person": "CUST-6509",
+     "visible_records": 43,
+     "withheld_records": 95
+    }
+   },
+   "verification": {
+    "passed": true,
+    "checks": [
+     {
+      "check": "fact validity",
+      "passed": true,
+      "detail": "every record fact used is in the company records, and every stated fact is one a person may state"
+     },
+     {
+      "check": "authorization",
+      "passed": true,
+      "detail": "all 1 records used are visible to the person asking (customer access)"
+     },
+     {
+      "check": "policy applicability",
+      "passed": true,
+      "detail": "every cited clause is from the policy version that governs the case"
+     },
+     {
+      "check": "symbolic provenance",
+      "passed": true,
+      "detail": "the result was derived by rule R-CAN-1"
+     },
+     {
+      "check": "supported numbers",
+      "passed": true,
+      "detail": "every figure in the answer comes from the reasoning"
+     },
+     {
+      "check": "contradictions",
+      "passed": true,
+      "detail": "no conflicting rules, and no rejected statement was used"
+     },
+     {
+      "check": "answer agreement",
+      "passed": true,
+      "detail": "the reply states the derived decision (yes)"
+     },
+     {
+      "check": "unsupported claims",
+      "passed": true,
+      "detail": "the reply was composed only from the reasoning's conclusion"
+     }
+    ]
+   },
+   "release": {
+    "outcome": "answered",
+    "decision": true,
+    "value": true,
+    "answer": "Yes \u2014 your Cotton Duvet Cover order can still be cancelled: the order is still at the placed stage, so it can be cancelled free of charge.",
+    "confidence": 0.87,
+    "latency_ms": 88.2,
+    "sources": [
+     "CAN-1",
+     "ORD-84657"
+    ],
+    "pipeline": "Policy reasoning"
+   },
+   "verdict": {
+    "correct": true
+   }
+  },
+  {
+   "case": {
+    "id": "W101-T-policy_version-1",
+    "world": 101,
+    "category": "policy_version",
+    "question": "Order ORD-85023 was delivered faulty. Is the customer allowed to send it back?",
+    "user": "support@w101.test",
+    "roles": [
+     "support"
+    ]
+   },
+   "gold": {
+    "kind": "decision",
+    "value": true,
+    "because": "damage window (RET-4)",
+    "clauses": [
+     "RET-4"
+    ],
+    "expected_outcome": "answered",
+    "expected_goal": "return_allowed"
+   },
+   "neural": {
+    "speech_act": "decide",
+    "candidates": [
+     {
+      "kind": "goal",
+      "name": "recommended_resolution",
+      "subject_type": "order",
+      "goal_kind": "recommendation",
+      "score": 0.7475
+     },
+     {
+      "kind": "goal",
+      "name": "replacement_available",
+      "subject_type": "order",
+      "goal_kind": "decision",
+      "score": 0.7237
+     },
+     {
+      "kind": "goal",
+      "name": "return_allowed",
+      "subject_type": "order",
+      "goal_kind": "decision",
+      "score": 0.7151
+     },
+     {
+      "kind": "goal",
+      "name": "free_delivery",
+      "subject_type": "order",
+      "goal_kind": "decision",
+      "score": 0.7085
+     },
+     {
+      "kind": "goal",
+      "name": "cancellation_allowed",
+      "subject_type": "order",
+      "goal_kind": "decision",
+      "score": 0.7008
+     }
+    ],
+    "entities": [
+     {
+      "type": "order",
+      "id": "ORD-85023",
+      "text": "ORD-85023",
+      "method": "id"
+     }
+    ],
+    "encoder": "BAAI/bge-small-en-v1.5"
+   },
+   "symbolic": {
+    "goal": "return_allowed",
+    "facts": [
+     {
+      "subject": "ORD-85023",
+      "predicate": "order_status",
+      "value": "delivered",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "ORD-85023",
+      "predicate": "contains",
+      "value": "Pulse Wireless Earbuds",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "PRD-177",
+      "predicate": "product_category",
+      "value": "Electronics",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "ORD-85023",
+      "predicate": "order_category",
+      "value": "Electronics",
+      "source": "derived",
+      "rule": "R-KG-CAT"
+     },
+     {
+      "subject": "ORD-85023",
+      "predicate": "delivered_on",
+      "value": "18 Nov 2026",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "meridian",
+      "predicate": "today",
+      "value": "27 Nov 2026",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "ORD-85023",
+      "predicate": "days_since_delivery",
+      "value": "9",
+      "source": "derived",
+      "rule": "R-CLK-DEL"
+     },
+     {
+      "subject": "electronics",
+      "predicate": "return_window_days",
+      "value": "7",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "ORD-85023",
+      "predicate": "placed_by",
+      "value": "Vikram Reddy",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "CUST-6511",
+      "predicate": "membership_tier",
+      "value": "standard",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "ORD-85023",
+      "predicate": "order_membership",
+      "value": "standard",
+      "source": "derived",
+      "rule": "R-KG-TIER"
+     },
+     {
+      "subject": "electronics",
+      "predicate": "plus_extension_days",
+      "value": "0",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "ORD-85023",
+      "predicate": "effective_return_window",
+      "value": "7",
+      "source": "derived",
+      "rule": "R-RET-W1"
+     },
+     {
+      "subject": "ORD-85023",
+      "predicate": "return_reason",
+      "value": "wrong item",
+      "source": "stated",
+      "rule": ""
+     },
+     {
+      "subject": "ORD-85023",
+      "predicate": "delivery_date",
+      "value": "18 Nov 2026",
+      "source": "derived",
+      "rule": "R-DATE-REC"
+     },
+     {
+      "subject": "ORD-85023",
+      "predicate": "returns_policy",
+      "value": "Returns policy version 2",
+      "source": "derived",
+      "rule": "version:returns"
+     },
+     {
+      "subject": "RETURNS-v2",
+      "predicate": "damage_report_days",
+      "value": "14",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "ORD-85023",
+      "predicate": "return_allowed",
+      "value": "yes",
+      "source": "derived",
+      "rule": "R-RET-D"
+     },
+     {
+      "subject": "PRD-177",
+      "predicate": "in_stock",
+      "value": "no",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "ORD-85023",
+      "predicate": "cancellation_allowed",
+      "value": "no",
+      "source": "derived",
+      "rule": "R-CAN-3"
+     },
+     {
+      "subject": "ORD-85023",
+      "predicate": "recommended_resolution",
+      "value": "full refund",
+      "source": "derived",
+      "rule": "R-SUP-REFUND"
+     },
+     {
+      "subject": "ORD-85023",
+      "predicate": "order_total",
+      "value": "\u20b93,989",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "meridian",
+      "predicate": "approval_threshold",
+      "value": "\u20b922,000",
+      "source": "record",
+      "rule": ""
+     }
+    ],
+    "rules": [
+     {
+      "rule": "R-RET-D",
+      "name": "Damaged, defective or wrong item",
+      "clauses": [
+       "RET-4"
+      ],
+      "status": "proved",
+      "priority": 200,
+      "value": "yes",
+      "because": "the item was reported as wrong item 9 days after delivery, within the 14-day window for damaged or wrong items",
+      "failed": null,
+      "conditions": [
+       {
+        "index": 0,
+        "condition": "order_status(Pulse Wireless Earbuds order) = delivered",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 1,
+        "condition": "return_reason(Pulse Wireless Earbuds order) = wrong item",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 2,
+        "condition": "wrong item in ['damaged on arrival', 'wrong item']",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 3,
+        "condition": "order_category(Pulse Wireless Earbuds order) = Electronics",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 4,
+        "condition": "not excluded_from_damage_returns(Electronics)",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 5,
+        "condition": "days_since_delivery(Pulse Wireless Earbuds order) = 9",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 6,
+        "condition": "returns_policy(Pulse Wireless Earbuds order) = Returns policy version 2",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 7,
+        "condition": "damage_report_days(Returns policy version 2) = 14",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 8,
+        "condition": "9 \u2264 14",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       }
+      ]
+     },
+     {
+      "rule": "R-KG-CAT",
+      "name": "Category of an ordered item",
+      "clauses": [
+       "RET-1"
+      ],
+      "status": "proved",
+      "priority": 100,
+      "value": "Electronics",
+      "because": "",
+      "failed": null,
+      "conditions": [
+       {
+        "index": 0,
+        "condition": "contains(Pulse Wireless Earbuds order) = Pulse Wireless Earbuds",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 1,
+        "condition": "product_category(Pulse Wireless Earbuds) = Electronics",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       }
+      ]
+     },
+     {
+      "rule": "R-CLK-DEL",
+      "name": "Days since delivery",
+      "clauses": [
+       "RET-1"
+      ],
+      "status": "proved",
+      "priority": 100,
+      "value": "9",
+      "because": "",
+      "failed": null,
+      "conditions": [
+       {
+        "index": 0,
+        "condition": "delivered_on(Pulse Wireless Earbuds order) = 18 Nov 2026",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 1,
+        "condition": "today(Meridian Marketplace) = 27 Nov 2026",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       }
+      ]
+     }
+    ],
+    "steps": [
+     "Goal: return_allowed(ORD-85023) \u2014 whether an item that was bought can be sent back to the seller.",
+     "Resolved the returns policy version: Returns policy version 2 \u2014 the delivery date is 18 Nov 2026.",
+     "Rule R-RET-D (Damaged, defective or wrong item) proved: the item was reported as wrong item 9 days after delivery, within the 14-day window for damaged or wrong items",
+     "Rule R-KG-CAT (Category of an ordered item) proved.",
+     "Rule R-CLK-DEL (Days since delivery) proved.",
+     "Rule R-RET-A (Change-of-mind return within the window) refuted at `9 \u2264 7`: it was delivered 9 days ago, past the 7-day return window for Electronics items",
+     "Result: determined, value yes.",
+     "Verification passed: every record fact used is in the company records, and every stated fact is one a person may state; all 6 records used are visible to the person asking (support access); every cited clause is from the policy version that governs the case; Returns policy version 2 (in force from 16 Nov 2026) applied for 18 Nov 2026; the result was derived by rule R-RET-D; every figure in the answer comes from the reasoning; no conflicting rules, and no rejected statement was used; the reply states the derived decision (yes); the reply was composed only from the reasoning's conclusion."
+    ],
+    "policy_versions": [
+     {
+      "subject": "ORD-85023",
+      "policy": "returns",
+      "version": "RETURNS-v2",
+      "name": "Returns policy version 2",
+      "number": 2,
+      "effective_from": "16 Nov 2026",
+      "effective_ordinal": 739936,
+      "superseded_on": null,
+      "superseded_ordinal": null,
+      "reference_date": "18 Nov 2026",
+      "reference_ordinal": 739938,
+      "basis": "the delivery date is 18 Nov 2026",
+      "assumed": false,
+      "versions_available": [
+       "RETURNS-v1",
+       "RETURNS-v2"
+      ]
+     }
+    ],
+    "authorization": {
+     "access": "support",
+     "person": null,
+     "visible_records": 134,
+     "withheld_records": 4
+    }
+   },
+   "verification": {
+    "passed": true,
+    "checks": [
+     {
+      "check": "fact validity",
+      "passed": true,
+      "detail": "every record fact used is in the company records, and every stated fact is one a person may state"
+     },
+     {
+      "check": "authorization",
+      "passed": true,
+      "detail": "all 6 records used are visible to the person asking (support access)"
+     },
+     {
+      "check": "policy applicability",
+      "passed": true,
+      "detail": "every cited clause is from the policy version that governs the case"
+     },
+     {
+      "check": "policy version",
+      "passed": true,
+      "detail": "Returns policy version 2 (in force from 16 Nov 2026) applied for 18 Nov 2026"
+     },
+     {
+      "check": "symbolic provenance",
+      "passed": true,
+      "detail": "the result was derived by rule R-RET-D"
+     },
+     {
+      "check": "supported numbers",
+      "passed": true,
+      "detail": "every figure in the answer comes from the reasoning"
+     },
+     {
+      "check": "contradictions",
+      "passed": true,
+      "detail": "no conflicting rules, and no rejected statement was used"
+     },
+     {
+      "check": "answer agreement",
+      "passed": true,
+      "detail": "the reply states the derived decision (yes)"
+     },
+     {
+      "check": "unsupported claims",
+      "passed": true,
+      "detail": "the reply was composed only from the reasoning's conclusion"
+     }
+    ]
+   },
+   "release": {
+    "outcome": "answered",
+    "decision": true,
+    "value": true,
+    "answer": "Yes \u2014 the customer's Pulse Wireless Earbuds order can be returned: the item was reported as wrong item 9 days after delivery, within the 14-day window for damaged or wrong items.\nThis relies on what the customer said: return reason = wrong item. Applied Returns policy version 2, in force on 18 Nov 2026.",
+    "confidence": 0.89,
+    "latency_ms": 65.1,
+    "sources": [
+     "RET-1",
+     "RET-4",
+     "ORD-85023"
+    ],
+    "pipeline": "Policy reasoning"
+   },
+   "verdict": {
+    "correct": true
+   }
+  },
+  {
+   "case": {
+    "id": "W101-T-false_premise-1",
+    "world": 101,
+    "category": "false_premise",
+    "question": "Since you allow 51 days for home returns, order ORD-85330 can go back, yes?",
+    "user": "pooja.das@w101.test",
+    "roles": []
+   },
+   "gold": {
+    "kind": "decision",
+    "value": false,
+    "because": "outside every window (RET-1, RET-2, RET-4)",
+    "clauses": [
+     "RET-1",
+     "RET-2",
+     "RET-4"
+    ],
+    "expected_outcome": "answered",
+    "expected_goal": "return_allowed"
+   },
+   "neural": {
+    "speech_act": "calculate",
+    "candidates": [
+     {
+      "kind": "goal",
+      "name": "travel_claim_eligible",
+      "subject_type": "claim",
+      "goal_kind": "decision",
+      "score": 0.6841
+     },
+     {
+      "kind": "goal",
+      "name": "return_allowed",
+      "subject_type": "order",
+      "goal_kind": "decision",
+      "score": 0.677
+     },
+     {
+      "kind": "goal",
+      "name": "approval_required",
+      "subject_type": "order",
+      "goal_kind": "decision",
+      "score": 0.6741
+     },
+     {
+      "kind": "goal",
+      "name": "refund_required",
+      "subject_type": "order",
+      "goal_kind": "decision",
+      "score": 0.6668
+     },
+     {
+      "kind": "goal",
+      "name": "replacement_available",
+      "subject_type": "order",
+      "goal_kind": "decision",
+      "score": 0.6614
+     }
+    ],
+    "entities": [
+     {
+      "type": "order",
+      "id": "ORD-85330",
+      "text": "ORD-85330",
+      "method": "id"
+     },
+     {
+      "type": "category",
+      "id": "home",
+      "text": "Home",
+      "method": "name"
+     },
+     {
+      "type": "days",
+      "value": 51.0,
+      "text": "51 days",
+      "method": "pattern"
+     }
+    ],
+    "encoder": "BAAI/bge-small-en-v1.5"
+   },
+   "symbolic": {
+    "goal": "travel_claim_eligible",
+    "facts": [
+     {
+      "subject": "meridian",
+      "predicate": "min_trip_km",
+      "value": "60",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "meridian",
+      "predicate": "receipt_threshold",
+      "value": "\u20b93,000",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "meridian",
+      "predicate": "claim_deadline_days",
+      "value": "60",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "case:claim",
+      "predicate": "receipts_attached",
+      "value": "yes",
+      "source": "stated",
+      "rule": ""
+     }
+    ],
+    "rules": [
+     {
+      "rule": "R-TRV-E1",
+      "name": "Eligible trip without receipts",
+      "clauses": [
+       "TRV-2",
+       "TRV-4",
+       "TRV-5"
+      ],
+      "status": "conditional",
+      "priority": 100,
+      "value": "yes",
+      "because": "the trip is at least 60 km and the claim is small enough not to need receipts",
+      "failed": null,
+      "conditions": [
+       {
+        "index": 0,
+        "condition": "travel_distance_km(case:claim) = ?",
+        "status": "unknown",
+        "note": "",
+        "missing": [
+         {
+          "predicate": "travel_distance_km",
+          "subject": "case:claim"
+         }
+        ]
+       },
+       {
+        "index": 1,
+        "condition": "min_trip_km(Meridian Marketplace) = 60",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 2,
+        "condition": "?travel_distance_km \u2265 60",
+        "status": "unknown",
+        "note": "",
+        "missing": [
+         {
+          "predicate": "travel_distance_km",
+          "subject": "case:claim"
+         }
+        ]
+       },
+       {
+        "index": 3,
+        "condition": "claimed_amount(case:claim) = ?",
+        "status": "unknown",
+        "note": "",
+        "missing": [
+         {
+          "predicate": "claimed_amount",
+          "subject": "case:claim"
+         }
+        ]
+       },
+       {
+        "index": 4,
+        "condition": "receipt_threshold(Meridian Marketplace) = \u20b93,000",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 5,
+        "condition": "?claimed_amount \u2264 \u20b93,000",
+        "status": "unknown",
+        "note": "",
+        "missing": [
+         {
+          "predicate": "claimed_amount",
+          "subject": "case:claim"
+         }
+        ]
+       },
+       {
+        "index": 6,
+        "condition": "claim_submitted_after_days(case:claim) = ?",
+        "status": "unknown",
+        "note": "",
+        "missing": [
+         {
+          "predicate": "claim_submitted_after_days",
+          "subject": "case:claim"
+         }
+        ]
+       },
+       {
+        "index": 7,
+        "condition": "claim_deadline_days(Meridian Marketplace) = 60",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 8,
+        "condition": "?claim_submitted_after_days \u2264 60",
+        "status": "unknown",
+        "note": "",
+        "missing": [
+         {
+          "predicate": "claim_submitted_after_days",
+          "subject": "case:claim"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "rule": "R-TRV-E2",
+      "name": "Eligible trip with receipts",
+      "clauses": [
+       "TRV-2",
+       "TRV-4",
+       "TRV-5"
+      ],
+      "status": "conditional",
+      "priority": 100,
+      "value": "yes",
+      "because": "the trip is at least 60 km, receipts are attached for a claim above \u20b93,000, and it was submitted within 60 days",
+      "failed": null,
+      "conditions": [
+       {
+        "index": 0,
+        "condition": "travel_distance_km(case:claim) = ?",
+        "status": "unknown",
+        "note": "",
+        "missing": [
+         {
+          "predicate": "travel_distance_km",
+          "subject": "case:claim"
+         }
+        ]
+       },
+       {
+        "index": 1,
+        "condition": "min_trip_km(Meridian Marketplace) = 60",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 2,
+        "condition": "?travel_distance_km \u2265 60",
+        "status": "unknown",
+        "note": "",
+        "missing": [
+         {
+          "predicate": "travel_distance_km",
+          "subject": "case:claim"
+         }
+        ]
+       },
+       {
+        "index": 3,
+        "condition": "claimed_amount(case:claim) = ?",
+        "status": "unknown",
+        "note": "",
+        "missing": [
+         {
+          "predicate": "claimed_amount",
+          "subject": "case:claim"
+         }
+        ]
+       },
+       {
+        "index": 4,
+        "condition": "receipt_threshold(Meridian Marketplace) = \u20b93,000",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 5,
+        "condition": "?claimed_amount > \u20b93,000",
+        "status": "unknown",
+        "note": "",
+        "missing": [
+         {
+          "predicate": "claimed_amount",
+          "subject": "case:claim"
+         }
+        ]
+       },
+       {
+        "index": 6,
+        "condition": "receipts_attached(case:claim) = yes",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 7,
+        "condition": "yes = yes",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 8,
+        "condition": "claim_submitted_after_days(case:claim) = ?",
+        "status": "unknown",
+        "note": "",
+        "missing": [
+         {
+          "predicate": "claim_submitted_after_days",
+          "subject": "case:claim"
+         }
+        ]
+       },
+       {
+        "index": 9,
+        "condition": "claim_deadline_days(Meridian Marketplace) = 60",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 10,
+        "condition": "?claim_submitted_after_days \u2264 60",
+        "status": "unknown",
+        "note": "",
+        "missing": [
+         {
+          "predicate": "claim_submitted_after_days",
+          "subject": "case:claim"
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    "steps": [
+     "Goal: travel_claim_eligible(case:claim) \u2014 whether a business trip expense qualifies to be paid back by the company.",
+     "No record was named; evaluated an open-world case linked to the person asking.",
+     "Rejected the unverified claim exception_approved = yes: it can only be confirmed by a company record, and there is no order record to check it against.",
+     "Rejected the policy claim claim_deadline_days = 51 days: the Meridian Marketplace policy sets the claim deadline days at 60, so the policy as written was applied.",
+     "Rule R-TRV-E1 (Eligible trip without receipts) conditional: the trip is at least 60 km and the claim is small enough not to need receipts",
+     "Rule R-TRV-E2 (Eligible trip with receipts) conditional: the trip is at least 60 km, receipts are attached for a claim above \u20b93,000, and it was submitted within 60 days",
+     "Result: conditional, value yes.",
+     "Verification passed: every record fact used is in the company records, and every stated fact is one a person may state; all 1 records used are visible to the person asking (customer access); every cited clause is from the policy version that governs the case; the result was derived by rule R-TRV-E1; every figure in the answer comes from the reasoning; no conflicting rules, and no rejected statement was used; the reply was composed only from the reasoning's conclusion."
+    ],
+    "policy_versions": [],
+    "authorization": {
+     "access": "customer",
+     "person": "CUST-6513",
+     "visible_records": 41,
+     "withheld_records": 97
+    }
+   },
+   "verification": {
+    "passed": true,
+    "checks": [
+     {
+      "check": "fact validity",
+      "passed": true,
+      "detail": "every record fact used is in the company records, and every stated fact is one a person may state"
+     },
+     {
+      "check": "authorization",
+      "passed": true,
+      "detail": "all 1 records used are visible to the person asking (customer access)"
+     },
+     {
+      "check": "policy applicability",
+      "passed": true,
+      "detail": "every cited clause is from the policy version that governs the case"
+     },
+     {
+      "check": "symbolic provenance",
+      "passed": true,
+      "detail": "the result was derived by rule R-TRV-E1"
+     },
+     {
+      "check": "supported numbers",
+      "passed": true,
+      "detail": "every figure in the answer comes from the reasoning"
+     },
+     {
+      "check": "contradictions",
+      "passed": true,
+      "detail": "no conflicting rules, and no rejected statement was used"
+     },
+     {
+      "check": "unsupported claims",
+      "passed": true,
+      "detail": "the reply was composed only from the reasoning's conclusion"
+     }
+    ]
+   },
+   "release": {
+    "outcome": "conditional",
+    "decision": null,
+    "value": true,
+    "answer": "You mentioned that a manager, supervisor or team lead has already approved an exception or special refund for this order, but there is no order record to check it against, so it hasn't been treated as approved. You said the policy allows 51 days, but the Meridian Marketplace policy sets the claim deadline days at 60, so I've applied the policy as written.\nProvisionally, this trip qualifies for reimbursement.\nThat holds as long as the trip was at least 60 km, claimed amount \u2264 \u20b93,000 and you submit the claim within 60 days of the trip.\nNo specific claim was named, so this is evaluated as a general case using what you said and the policies that apply to you.",
+    "confidence": 0.74,
+    "latency_ms": 195.5,
+    "sources": [
+     "TRV-2",
+     "TRV-4",
+     "TRV-5"
+    ],
+    "pipeline": "Policy reasoning"
+   },
+   "verdict": {
+    "correct": false
+   }
+  },
+  {
+   "case": {
+    "id": "W101-T-missing_info-1",
+    "world": 101,
+    "category": "missing_info",
+    "question": "Is an exchange for the same product possible on order ORD-84871?",
+    "user": "support@w101.test",
+    "roles": [
+     "support"
+    ]
+   },
+   "gold": {
+    "kind": "conditional",
+    "value": null,
+    "because": "needs the item to have arrived damaged or wrong (RET-5)",
+    "clauses": [
+     "RET-5"
+    ],
+    "expected_outcome": [
+     "conditional",
+     "clarification"
+    ],
+    "expected_goal": "replacement_available"
+   },
+   "neural": {
+    "speech_act": "decide",
+    "candidates": [
+     {
+      "kind": "goal",
+      "name": "replacement_available",
+      "subject_type": "order",
+      "goal_kind": "decision",
+      "score": 0.8005
+     },
+     {
+      "kind": "goal",
+      "name": "same_day_product",
+      "subject_type": "product",
+      "goal_kind": "enumeration",
+      "score": 0.728
+     },
+     {
+      "kind": "goal",
+      "name": "return_allowed",
+      "subject_type": "order",
+      "goal_kind": "decision",
+      "score": 0.7228
+     },
+     {
+      "kind": "goal",
+      "name": "recommended_resolution",
+      "subject_type": "order",
+      "goal_kind": "recommendation",
+      "score": 0.6893
+     },
+     {
+      "kind": "goal",
+      "name": "cancellation_allowed",
+      "subject_type": "order",
+      "goal_kind": "decision",
+      "score": 0.6879
+     }
+    ],
+    "entities": [
+     {
+      "type": "order",
+      "id": "ORD-84871",
+      "text": "ORD-84871",
+      "method": "id"
+     }
+    ],
+    "encoder": "BAAI/bge-small-en-v1.5"
+   },
+   "symbolic": {
+    "goal": "replacement_available",
+    "facts": [
+     {
+      "subject": "ORD-84871",
+      "predicate": "order_status",
+      "value": "delivered",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "ORD-84871",
+      "predicate": "contains",
+      "value": "Orbit Smartwatch",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "PRD-184",
+      "predicate": "product_category",
+      "value": "Electronics",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "ORD-84871",
+      "predicate": "order_category",
+      "value": "Electronics",
+      "source": "derived",
+      "rule": "R-KG-CAT"
+     },
+     {
+      "subject": "ORD-84871",
+      "predicate": "delivered_on",
+      "value": "18 Nov 2026",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "meridian",
+      "predicate": "today",
+      "value": "27 Nov 2026",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "ORD-84871",
+      "predicate": "days_since_delivery",
+      "value": "9",
+      "source": "derived",
+      "rule": "R-CLK-DEL"
+     },
+     {
+      "subject": "electronics",
+      "predicate": "return_window_days",
+      "value": "7",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "ORD-84871",
+      "predicate": "placed_by",
+      "value": "Karthik Gupta",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "CUST-6510",
+      "predicate": "membership_tier",
+      "value": "plus",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "ORD-84871",
+      "predicate": "order_membership",
+      "value": "plus",
+      "source": "derived",
+      "rule": "R-KG-TIER"
+     },
+     {
+      "subject": "electronics",
+      "predicate": "plus_extension_days",
+      "value": "0",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "ORD-84871",
+      "predicate": "effective_return_window",
+      "value": "7",
+      "source": "derived",
+      "rule": "R-RET-W2"
+     },
+     {
+      "subject": "ORD-84871",
+      "predicate": "delivery_date",
+      "value": "18 Nov 2026",
+      "source": "derived",
+      "rule": "R-DATE-REC"
+     },
+     {
+      "subject": "ORD-84871",
+      "predicate": "returns_policy",
+      "value": "Returns policy version 2",
+      "source": "derived",
+      "rule": "version:returns"
+     },
+     {
+      "subject": "RETURNS-v2",
+      "predicate": "damage_report_days",
+      "value": "14",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "PRD-184",
+      "predicate": "in_stock",
+      "value": "yes",
+      "source": "record",
+      "rule": ""
+     }
+    ],
+    "rules": [
+     {
+      "rule": "R-RET-R",
+      "name": "Replacement for a damaged or wrong item",
+      "clauses": [
+       "RET-5"
+      ],
+      "status": "conditional",
+      "priority": 100,
+      "value": "yes",
+      "because": "the item arrived return reason, it is within the return rules, and the same product is in stock",
+      "failed": null,
+      "conditions": [
+       {
+        "index": 0,
+        "condition": "return_allowed(Orbit Smartwatch order) = yes",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 1,
+        "condition": "return_reason(Orbit Smartwatch order) = ?",
+        "status": "unknown",
+        "note": "",
+        "missing": [
+         {
+          "predicate": "return_reason",
+          "subject": "ORD-84871"
+         }
+        ]
+       },
+       {
+        "index": 2,
+        "condition": "?return_reason in ['damaged on arrival', 'wrong item']",
+        "status": "unknown",
+        "note": "",
+        "missing": [
+         {
+          "predicate": "return_reason",
+          "subject": "ORD-84871"
+         }
+        ]
+       },
+       {
+        "index": 3,
+        "condition": "days_since_delivery(Orbit Smartwatch order) = 9",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 4,
+        "condition": "returns_policy(Orbit Smartwatch order) = Returns policy version 2",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 5,
+        "condition": "damage_report_days(Returns policy version 2) = 14",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 6,
+        "condition": "9 \u2264 14",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 7,
+        "condition": "contains(Orbit Smartwatch order) = Orbit Smartwatch",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 8,
+        "condition": "in_stock(Orbit Smartwatch) = yes",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       }
+      ]
+     },
+     {
+      "rule": "R-RET-D",
+      "name": "Damaged, defective or wrong item",
+      "clauses": [
+       "RET-4"
+      ],
+      "status": "conditional",
+      "priority": 200,
+      "value": "yes",
+      "because": "the item was reported as return reason 9 days after delivery, within the 14-day window for damaged or wrong items",
+      "failed": null,
+      "conditions": [
+       {
+        "index": 0,
+        "condition": "order_status(Orbit Smartwatch order) = delivered",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 1,
+        "condition": "return_reason(Orbit Smartwatch order) = ?",
+        "status": "unknown",
+        "note": "",
+        "missing": [
+         {
+          "predicate": "return_reason",
+          "subject": "ORD-84871"
+         }
+        ]
+       },
+       {
+        "index": 2,
+        "condition": "?return_reason in ['damaged on arrival', 'wrong item']",
+        "status": "unknown",
+        "note": "",
+        "missing": [
+         {
+          "predicate": "return_reason",
+          "subject": "ORD-84871"
+         }
+        ]
+       },
+       {
+        "index": 3,
+        "condition": "order_category(Orbit Smartwatch order) = Electronics",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 4,
+        "condition": "not excluded_from_damage_returns(Electronics)",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 5,
+        "condition": "days_since_delivery(Orbit Smartwatch order) = 9",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 6,
+        "condition": "returns_policy(Orbit Smartwatch order) = Returns policy version 2",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 7,
+        "condition": "damage_report_days(Returns policy version 2) = 14",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 8,
+        "condition": "9 \u2264 14",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       }
+      ]
+     },
+     {
+      "rule": "R-KG-CAT",
+      "name": "Category of an ordered item",
+      "clauses": [
+       "RET-1"
+      ],
+      "status": "proved",
+      "priority": 100,
+      "value": "Electronics",
+      "because": "",
+      "failed": null,
+      "conditions": [
+       {
+        "index": 0,
+        "condition": "contains(Orbit Smartwatch order) = Orbit Smartwatch",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 1,
+        "condition": "product_category(Orbit Smartwatch) = Electronics",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       }
+      ]
+     },
+     {
+      "rule": "R-CLK-DEL",
+      "name": "Days since delivery",
+      "clauses": [
+       "RET-1"
+      ],
+      "status": "proved",
+      "priority": 100,
+      "value": "9",
+      "because": "",
+      "failed": null,
+      "conditions": [
+       {
+        "index": 0,
+        "condition": "delivered_on(Orbit Smartwatch order) = 18 Nov 2026",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       },
+       {
+        "index": 1,
+        "condition": "today(Meridian Marketplace) = 27 Nov 2026",
+        "status": "satisfied",
+        "note": "",
+        "missing": []
+       }
+      ]
+     }
+    ],
+    "steps": [
+     "Goal: replacement_available(ORD-84871) \u2014 whether a faulty, damaged or wrong item can be exchanged for a new one of the same product instead of money back.",
+     "Resolved the returns policy version: Returns policy version 2 \u2014 the delivery date is 18 Nov 2026.",
+     "Rule R-RET-R (Replacement for a damaged or wrong item) conditional: the item arrived return reason, it is within the return rules, and the same product is in stock",
+     "Rule R-RET-D (Damaged, defective or wrong item) conditional: the item was reported as return reason 9 days after delivery, within the 14-day window for damaged or wrong items",
+     "Rule R-KG-CAT (Category of an ordered item) proved.",
+     "Rule R-CLK-DEL (Days since delivery) proved.",
+     "Result: conditional, value yes.",
+     "Verification passed: every record fact used is in the company records, and every stated fact is one a person may state; all 6 records used are visible to the person asking (support access); every cited clause is from the policy version that governs the case; Returns policy version 2 (in force from 16 Nov 2026) applied for 18 Nov 2026; the result was derived by rule R-RET-R; every figure in the answer comes from the reasoning; no conflicting rules, and no rejected statement was used; the reply was composed only from the reasoning's conclusion."
+    ],
+    "policy_versions": [
+     {
+      "subject": "ORD-84871",
+      "policy": "returns",
+      "version": "RETURNS-v2",
+      "name": "Returns policy version 2",
+      "number": 2,
+      "effective_from": "16 Nov 2026",
+      "effective_ordinal": 739936,
+      "superseded_on": null,
+      "superseded_ordinal": null,
+      "reference_date": "18 Nov 2026",
+      "reference_ordinal": 739938,
+      "basis": "the delivery date is 18 Nov 2026",
+      "assumed": false,
+      "versions_available": [
+       "RETURNS-v1",
+       "RETURNS-v2"
+      ]
+     }
+    ],
+    "authorization": {
+     "access": "support",
+     "person": null,
+     "visible_records": 134,
+     "withheld_records": 4
+    }
+   },
+   "verification": {
+    "passed": true,
+    "checks": [
+     {
+      "check": "fact validity",
+      "passed": true,
+      "detail": "every record fact used is in the company records, and every stated fact is one a person may state"
+     },
+     {
+      "check": "authorization",
+      "passed": true,
+      "detail": "all 6 records used are visible to the person asking (support access)"
+     },
+     {
+      "check": "policy applicability",
+      "passed": true,
+      "detail": "every cited clause is from the policy version that governs the case"
+     },
+     {
+      "check": "policy version",
+      "passed": true,
+      "detail": "Returns policy version 2 (in force from 16 Nov 2026) applied for 18 Nov 2026"
+     },
+     {
+      "check": "symbolic provenance",
+      "passed": true,
+      "detail": "the result was derived by rule R-RET-R"
+     },
+     {
+      "check": "supported numbers",
+      "passed": true,
+      "detail": "every figure in the answer comes from the reasoning"
+     },
+     {
+      "check": "contradictions",
+      "passed": true,
+      "detail": "no conflicting rules, and no rejected statement was used"
+     },
+     {
+      "check": "unsupported claims",
+      "passed": true,
+      "detail": "the reply was composed only from the reasoning's conclusion"
+     }
+    ]
+   },
+   "release": {
+    "outcome": "conditional",
+    "decision": null,
+    "value": true,
+    "answer": "Provisionally, a replacement can be sent for the customer's Orbit Smartwatch order.\nThat holds as long as the item arrived damaged, defective or wrong.\nApplied Returns policy version 2, in force on 18 Nov 2026.",
+    "confidence": 0.9,
+    "latency_ms": 62.8,
+    "sources": [
+     "RET-1",
+     "RET-4",
+     "RET-5",
+     "ORD-84871"
+    ],
+    "pipeline": "Policy reasoning"
+   },
+   "verdict": {
+    "correct": true
+   }
+  },
+  {
+   "case": {
+    "id": "W101-T-recommendation-1",
+    "world": 101,
+    "category": "recommendation",
+    "question": "Ticket for ORD-85334: the product arrived defective. Which remedy do we offer the customer?",
+    "user": "support@w101.test",
+    "roles": [
+     "support"
+    ]
+   },
+   "gold": {
+    "kind": "result",
+    "value": "no_standard_remedy",
+    "because": "SUP-1: none applies",
+    "clauses": [
+     "SUP-1"
+    ],
+    "expected_outcome": "answered",
+    "expected_goal": "recommended_resolution"
+   },
+   "neural": {
+    "speech_act": "enumerate",
+    "candidates": [
+     {
+      "kind": "goal",
+      "name": "recommended_resolution",
+      "subject_type": "order",
+      "goal_kind": "recommendation",
+      "score": 0.7252
+     },
+     {
+      "kind": "goal",
+      "name": "replacement_available",
+      "subject_type": "order",
+      "goal_kind": "decision",
+      "score": 0.6703
+     },
+     {
+      "kind": "goal",
+      "name": "delay_compensation",
+      "subject_type": "order",
+      "goal_kind": "calculation",
+      "score": 0.6648
+     },
+     {
+      "kind": "goal",
+      "name": "handling_team",
+      "subject_type": "ticket",
+      "goal_kind": "recommendation",
+      "score": 0.6377
+     },
+     {
+      "kind": "goal",
+      "name": "free_delivery",
+      "subject_type": "order",
+      "goal_kind": "decision",
+      "score": 0.6067
+     }
+    ],
+    "entities": [
+     {
+      "type": "order",
+      "id": "ORD-85334",
+      "text": "ORD-85334",
+      "method": "id"
+     }
+    ],
+    "encoder": "BAAI/bge-small-en-v1.5"
+   },
+   "symbolic": {
+    "goal": "recommended_resolution",
+    "facts": [
+     {
+      "subject": "ORD-85334",
+      "predicate": "order_status",
+      "value": "delivered",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "ORD-85334",
+      "predicate": "contains",
+      "value": "Vertex 15 Laptop",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "PRD-171",
+      "predicate": "product_category",
+      "value": "Electronics",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "ORD-85334",
+      "predicate": "order_category",
+      "value": "Electronics",
+      "source": "derived",
+      "rule": "R-KG-CAT"
+     },
+     {
+      "subject": "ORD-85334",
+      "predicate": "delivered_on",
+      "value": "14 Nov 2026",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "meridian",
+      "predicate": "today",
+      "value": "27 Nov 2026",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "ORD-85334",
+      "predicate": "days_since_delivery",
+      "value": "13",
+      "source": "derived",
+      "rule": "R-CLK-DEL"
+     },
+     {
+      "subject": "electronics",
+      "predicate": "return_window_days",
+      "value": "7",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "ORD-85334",
+      "predicate": "placed_by",
+      "value": "Pooja Das",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "CUST-6513",
+      "predicate": "membership_tier",
+      "value": "standard",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "ORD-85334",
+      "predicate": "order_membership",
+      "value": "standard",
+      "source": "derived",
+      "rule": "R-KG-TIER"
+     },
+     {
+      "subject": "electronics",
+      "predicate": "plus_extension_days",
+      "value": "0",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "ORD-85334",
+      "predicate": "effective_return_window",
+      "value": "7",
+      "source": "derived",
+      "rule": "R-RET-W1"
+     },
+     {
+      "subject": "ORD-85334",
+      "predicate": "return_reason",
+      "value": "damaged on arrival",
+      "source": "stated",
+      "rule": ""
+     },
+     {
+      "subject": "ORD-85334",
+      "predicate": "delivery_date",
+      "value": "14 Nov 2026",
+      "source": "derived",
+      "rule": "R-DATE-REC"
+     },
+     {
+      "subject": "ORD-85334",
+      "predicate": "returns_policy",
+      "value": "Returns policy version 1",
+      "source": "derived",
+      "rule": "version:returns"
+     },
+     {
+      "subject": "RETURNS-v1",
+      "predicate": "damage_report_days",
+      "value": "8",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "ORD-85334",
+      "predicate": "cancellation_allowed",
+      "value": "no",
+      "source": "derived",
+      "rule": "R-CAN-3"
+     }
+    ],
+    "rules": [],
+    "steps": [
+     "Goal: recommended_resolution(ORD-85334) \u2014 what remedy or resolution can be offered to a customer with a problem order: a replacement, a refund, a cancellation, a return or nothing.",
+     "Resolved the returns policy version: Returns policy version 1 \u2014 the delivery date is 14 Nov 2026.",
+     "Rule R-SUP-REPL (Offer a replacement) refuted at `replacement_available(Vertex 15 Laptop order) = no (needs yes)`: a replacement isn't available for this order",
+     "Rule R-SUP-REFUND (Full refund when a damaged item can't be replaced) refuted at `return_allowed(Vertex 15 Laptop order) = no (needs yes)`: the item isn't eligible for return",
+     "Rule R-SUP-CANCEL (Cancel an order that hasn't shipped) refuted at `cancellation_allowed(Vertex 15 Laptop order) = no (needs yes)`: the order can no longer be cancelled",
+     "Rule R-SUP-RETURN (Accept a standard return) refuted at `return_allowed(Vertex 15 Laptop order) = no (needs yes)`: the item isn't eligible for return under the returns policy",
+     "Rule R-SUP-GOODWILL (Goodwill credit with a recorded supervisor approval) refuted at `exception_approved(Vertex 15 Laptop order) is not recorded`: there is no supervisor approval recorded on the order for an exception",
+     "Result: default, value no standard remedy.",
+     "Verification passed: every record fact used is in the company records, and every stated fact is one a person may state; all 6 records used are visible to the person asking (support access); every cited clause is from the policy version that governs the case; Returns policy version 1 (in force from 21 Mar 2026 until 16 Nov 2026) applied for 14 Nov 2026; no rule concluded recommended_resolution, so the policy default applies, with 5 rule(s) refuted; every figure in the answer comes from the reasoning; no conflicting rules, and no rejected statement was used; the reply was composed only from the reasoning's conclusion."
+    ],
+    "policy_versions": [
+     {
+      "subject": "ORD-85334",
+      "policy": "returns",
+      "version": "RETURNS-v1",
+      "name": "Returns policy version 1",
+      "number": 1,
+      "effective_from": "21 Mar 2026",
+      "effective_ordinal": 739696,
+      "superseded_on": "16 Nov 2026",
+      "superseded_ordinal": 739936,
+      "reference_date": "14 Nov 2026",
+      "reference_ordinal": 739934,
+      "basis": "the delivery date is 14 Nov 2026",
+      "assumed": false,
+      "versions_available": [
+       "RETURNS-v1",
+       "RETURNS-v2"
+      ]
+     }
+    ],
+    "authorization": {
+     "access": "support",
+     "person": null,
+     "visible_records": 134,
+     "withheld_records": 4
+    }
+   },
+   "verification": {
+    "passed": true,
+    "checks": [
+     {
+      "check": "fact validity",
+      "passed": true,
+      "detail": "every record fact used is in the company records, and every stated fact is one a person may state"
+     },
+     {
+      "check": "authorization",
+      "passed": true,
+      "detail": "all 6 records used are visible to the person asking (support access)"
+     },
+     {
+      "check": "policy applicability",
+      "passed": true,
+      "detail": "every cited clause is from the policy version that governs the case"
+     },
+     {
+      "check": "policy version",
+      "passed": true,
+      "detail": "Returns policy version 1 (in force from 21 Mar 2026 until 16 Nov 2026) applied for 14 Nov 2026"
+     },
+     {
+      "check": "symbolic provenance",
+      "passed": true,
+      "detail": "no rule concluded recommended_resolution, so the policy default applies, with 5 rule(s) refuted"
+     },
+     {
+      "check": "supported numbers",
+      "passed": true,
+      "detail": "every figure in the answer comes from the reasoning"
+     },
+     {
+      "check": "contradictions",
+      "passed": true,
+      "detail": "no conflicting rules, and no rejected statement was used"
+     },
+     {
+      "check": "unsupported claims",
+      "passed": true,
+      "detail": "the reply was composed only from the reasoning's conclusion"
+     }
+    ]
+   },
+   "release": {
+    "outcome": "answered",
+    "decision": "no_standard_remedy",
+    "value": "no_standard_remedy",
+    "answer": "The recommended resolution for the customer's Vertex 15 Laptop order is to decline, because no standard remedy applies: a replacement isn't available for this order and the item isn't eligible for return.\nThis relies on what the customer said: return reason = damaged on arrival. Applied Returns policy version 1, in force on 14 Nov 2026.",
+    "confidence": 0.88,
+    "latency_ms": 71.7,
+    "sources": [
+     "CAN-1",
+     "CAN-2",
+     "RET-1",
+     "RET-5",
+     "SUP-1",
+     "SUP-3",
+     "ORD-85334"
+    ],
+    "pipeline": "Multi-hop reasoning"
+   },
+   "verdict": {
+    "correct": true
+   }
+  },
+  {
+   "case": {
+    "id": "W101-T-unauthorized-1",
+    "world": 101,
+    "category": "unauthorized",
+    "question": "How much was order ORD-84978 and can I cancel it?",
+    "user": "arjun.varma@w101.test",
+    "roles": []
+   },
+   "gold": {
+    "kind": "denied",
+    "value": null,
+    "because": "",
+    "clauses": [],
+    "expected_outcome": "denied",
+    "expected_goal": "cancellation_allowed"
+   },
+   "neural": {
+    "speech_act": "calculate",
+    "candidates": [
+     {
+      "kind": "goal",
+      "name": "cancellation_refund",
+      "subject_type": "order",
+      "goal_kind": "calculation",
+      "score": 0.7797
+     },
+     {
+      "kind": "goal",
+      "name": "cancellation_allowed",
+      "subject_type": "order",
+      "goal_kind": "decision",
+      "score": 0.7314
+     },
+     {
+      "kind": "goal",
+      "name": "free_delivery",
+      "subject_type": "order",
+      "goal_kind": "decision",
+      "score": 0.7035
+     },
+     {
+      "kind": "goal",
+      "name": "recommended_resolution",
+      "subject_type": "order",
+      "goal_kind": "recommendation",
+      "score": 0.684
+     },
+     {
+      "kind": "goal",
+      "name": "refund_required",
+      "subject_type": "order",
+      "goal_kind": "decision",
+      "score": 0.6818
+     }
+    ],
+    "entities": [
+     {
+      "type": "order",
+      "id": "ORD-84978",
+      "text": "ORD-84978",
+      "method": "id"
+     }
+    ],
+    "encoder": "BAAI/bge-small-en-v1.5"
+   },
+   "symbolic": {
+    "goal": null,
+    "facts": [],
+    "rules": [],
+    "steps": [
+     "The referenced record is outside the person's access; access was refused before any reasoning."
+    ],
+    "policy_versions": [],
+    "authorization": {
+     "access": "customer",
+     "person": "CUST-6508",
+     "visible_records": 43,
+     "withheld_records": 95
+    }
+   },
+   "verification": {
+    "passed": null,
+    "checks": []
+   },
+   "release": {
+    "outcome": "denied",
+    "decision": null,
+    "value": null,
+    "answer": "That record belongs to a different account, so I can't look at it or reason about it for you.",
+    "confidence": 0.0,
+    "latency_ms": 42.6,
+    "sources": [],
+    "pipeline": "Access refused"
+   },
+   "verdict": {
+    "correct": true
+   }
+  },
+  {
+   "case": {
+    "id": "W101-T-not_covered-1",
+    "world": 101,
+    "category": "not_covered",
+    "question": "What is the warranty period on the Lumen Tablet?",
+    "user": "vikram.reddy@w101.test",
+    "roles": []
+   },
+   "gold": {
+    "kind": "not_covered",
+    "value": null,
+    "because": "no policy clause covers it",
+    "clauses": [],
+    "expected_outcome": "insufficient",
+    "expected_goal": null
+   },
+   "neural": {
+    "speech_act": "inform",
+    "candidates": [
+     {
+      "kind": "goal",
+      "name": "replacement_available",
+      "subject_type": "order",
+      "goal_kind": "decision",
+      "score": 0.5561
+     },
+     {
+      "kind": "goal",
+      "name": "recommended_resolution",
+      "subject_type": "order",
+      "goal_kind": "recommendation",
+      "score": 0.5394
+     },
+     {
+      "kind": "goal",
+      "name": "delay_compensation",
+      "subject_type": "order",
+      "goal_kind": "calculation",
+      "score": 0.5348
+     },
+     {
+      "kind": "lookup",
+      "name": "order_tracking",
+      "subject_type": "order",
+      "goal_kind": "lookup",
+      "score": 0.5329
+     },
+     {
+      "kind": "goal",
+      "name": "same_day_product",
+      "subject_type": "product",
+      "goal_kind": "enumeration",
+      "score": 0.5297
+     }
+    ],
+    "entities": [
+     {
+      "type": "product",
+      "id": "PRD-185",
+      "text": "lumen tablet",
+      "method": "name"
+     }
+    ],
+    "encoder": "BAAI/bge-small-en-v1.5"
+   },
+   "symbolic": {
+    "goal": "replacement_available",
+    "facts": [
+     {
+      "subject": "ORD-84970",
+      "predicate": "order_status",
+      "value": "placed",
+      "source": "record",
+      "rule": ""
+     },
+     {
+      "subject": "ORD-84970",
+      "predicate": "cancellation_allowed",
+      "value": "yes",
+      "source": "derived",
+      "rule": "R-CAN-1"
+     },
+     {
+      "subject": "ORD-84970",
+      "predicate": "recommended_resolution",
+      "value": "cancel order",
+      "source": "derived",
+      "rule": "R-SUP-CANCEL"
+     }
+    ],
+    "rules": [],
+    "steps": [
+     "Goal: replacement_available(ORD-84970) \u2014 whether a faulty, damaged or wrong item can be exchanged for a new one of the same product instead of money back.",
+     "Rule R-RET-R (Replacement for a damaged or wrong item) refuted at `return_allowed(Lumen Tablet order) = no (needs yes)`: the item is not eligible for return",
+     "Result: default, value no.",
+     "Verification passed: every record fact used is in the company records, and every stated fact is one a person may state; all 1 records used are visible to the person asking (customer access); every cited clause is from the policy version that governs the case; no rule concluded replacement_available, so the policy default applies, with 1 rule(s) refuted; every figure in the answer comes from the reasoning; no conflicting rules, and no rejected statement was used; the reply was composed only from the reasoning's conclusion."
+    ],
+    "policy_versions": [],
+    "authorization": {
+     "access": "customer",
+     "person": "CUST-6511",
+     "visible_records": 43,
+     "withheld_records": 95
+    }
+   },
+   "verification": {
+    "passed": true,
+    "checks": [
+     {
+      "check": "fact validity",
+      "passed": true,
+      "detail": "every record fact used is in the company records, and every stated fact is one a person may state"
+     },
+     {
+      "check": "authorization",
+      "passed": true,
+      "detail": "all 1 records used are visible to the person asking (customer access)"
+     },
+     {
+      "check": "policy applicability",
+      "passed": true,
+      "detail": "every cited clause is from the policy version that governs the case"
+     },
+     {
+      "check": "symbolic provenance",
+      "passed": true,
+      "detail": "no rule concluded replacement_available, so the policy default applies, with 1 rule(s) refuted"
+     },
+     {
+      "check": "supported numbers",
+      "passed": true,
+      "detail": "every figure in the answer comes from the reasoning"
+     },
+     {
+      "check": "contradictions",
+      "passed": true,
+      "detail": "no conflicting rules, and no rejected statement was used"
+     },
+     {
+      "check": "unsupported claims",
+      "passed": true,
+      "detail": "the reply was composed only from the reasoning's conclusion"
+     }
+    ]
+   },
+   "release": {
+    "outcome": "answered",
+    "decision": false,
+    "value": false,
+    "answer": "No \u2014 a replacement isn't available for your Lumen Tablet order: the item is not eligible for return.",
+    "confidence": 0.81,
+    "latency_ms": 22.6,
+    "sources": [
+     "RET-5",
+     "ORD-84970"
+    ],
+    "pipeline": "Policy reasoning"
+   },
+   "verdict": {
+    "correct": false
+   }
+  }
+ ],
+ "timing": {
+  "protocol": "One cold process. The controller is built first, so pack and model loading are excluded. elapsed_ms and each case's latency_ms are the first time this process answers that question, which is what the benchmark's mean latency measures. The first case also builds the goal catalogue and the policy index.",
+  "first_pass_ms": 1462.1,
+  "first_pass_mean_ms": 146.2,
+  "first_case_ms": 771.0,
+  "repeat_pass_ms": 32.3,
+  "repeat_mean_ms": 3.2
+ }
+}

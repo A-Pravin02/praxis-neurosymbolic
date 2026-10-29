@@ -453,9 +453,9 @@ def build(doc: Doc, test: dict, confirm: dict, scale: dict,
         f"for a decision: a neural encoder interprets the question, a three-valued "
         f"symbolic reasoner applies versioned business rules to authorized records, and "
         f"a suite of {checks()['distinct_checks']} deterministic checks gates the answer "
-        f"before release. The decision path "
-        f"contains no language model at all. On 255 held-out questions over five "
-        f"generated enterprise worlds it answers {num(ns_acc)} correctly at a "
+        f"before release. The decision path contains no language model. "
+        f"On 255 held-out questions over five generated enterprise worlds this default "
+        f"configuration answers {num(ns_acc)} correctly at a "
         f"hallucination rate of {num(ns_hal)} with {num(ns_cov)} coverage, against "
         f"{num(rag_acc)} and {num(rag_hal)} for the same corpus retrieved and answered "
         f"by a 7B instruction-tuned model, and {num(sc_acc)} and {num(sc_hal)} when that "
@@ -464,16 +464,15 @@ def build(doc: Doc, test: dict, confirm: dict, scale: dict,
         f"transfers: on a frozen split of unseen companies accuracy falls to "
         f"{num(cpa_acc)} and selective accuracy to {num(cpa_sel)}. "
         + (f"A secondary study gates a {fb['model_parameters']/1e6:.1f}M decoder "
-           f"trained from random initialization: the graph refutes "
+           f"trained from scratch: the graph refutes "
            f"{football_stats(FOOTBALL_CLAIMS)['refuted_rate']:.3f} of its claims, and "
            f"gating leaves {football_stats(FOOTBALL_CLAIMS)['coverage']:.3f} "
            f"coverage. " if fb else "")
-        + f"We report coverage beside every accuracy so abstention is never mistaken for "
-          f"reliability, argue that the resulting zero refuted rate is "
+        + f"We report coverage beside every accuracy, argue the zero refuted rate is "
           f"near-tautological, and document a failure the aggregate hides: on questions "
-          f"no policy covers the system abstains in 0 of 15 cases, because verification "
-          f"establishes that a claim is supported by evidence, not that it answers the "
-          f"question asked.",
+          f"no policy covers the default configuration abstains in 0 of 15 cases, "
+          f"because verification establishes that a claim is supported by evidence, not "
+          f"that it answers the question asked.",
         "Abstract")
     doc.p("Keywords—neuro-symbolic AI, hallucination, retrieval-augmented generation, "
           "three-valued logic, abstention, selective prediction, enterprise decision "
@@ -638,6 +637,10 @@ def build(doc: Doc, test: dict, confirm: dict, scale: dict,
           "system was final and scored once. All systems see the same questions, corpus "
           "and authorization context, every language-model system in a run uses the same "
           "model, and decoding is greedy so a run repeats exactly on one machine.")
+    # The latency protocol and the per-configuration model/inference inventory belong
+    # here and do not fit: the paper is exactly six pages and this column has no slack,
+    # measured - one line anywhere in it pushes the references onto a seventh page.
+    # Both are stated in docs/paper/REPRODUCING.md instead, and in the project report.
 
     doc.h1("Evaluation Metrics")
     doc.p("Denominators differ between metrics, which is why the figures can look "
@@ -704,8 +707,8 @@ def build(doc: Doc, test: dict, confirm: dict, scale: dict,
                "Latency (ms)"], rows,
               f"TABLE II. Test split, {test['cases']} questions: the quantities not "
               f"shown in Fig. 2. Coverage is definite answers over answerable "
-              f"questions; selective accuracy is correctness among definite "
-              f"answers; over-abstention is the share of answerable questions refused.")
+              f"questions; selective accuracy is correctness among them; "
+              f"over-abstention is the answerable questions refused.")
 
     doc.figure(FIGURES / "main_results.png",
                "Fig. 2. Main comparison on the test split. Accuracy and hallucination "

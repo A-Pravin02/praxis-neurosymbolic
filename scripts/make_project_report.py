@@ -403,11 +403,32 @@ def main() -> None:
 
     # ---- 7 sample test cases
     r.h("7. Sample Test Cases and Results", 1)
+    timing = suite.get("timing", {})
     r.p(f"Ten cases were run through the interface, one per question category, taken "
         f"from world 101 of the frozen test split. The selection is the first case of "
         f"each category, so it is reproducible and not chosen for effect. "
-        f"**{suite['correct']} of {suite['total']} were answered correctly** in "
-        f"{suite['elapsed_ms']:.0f} ms for the set.")
+        f"**{suite['correct']} of {suite['total']} were answered correctly.** The "
+        f"PASS and FAIL labels in Table 4 are not written by hand: each is computed by "
+        f"the same per-gold-kind rule the benchmark scorer uses, so a conditional gold "
+        f"passes only on a hedged answer and a denied gold only on a refusal that "
+        f"leaks nothing.")
+    if timing:
+        r.p(f"**Timing, and what it measures.** The set took "
+            f"{timing['first_pass_ms']:.0f} ms, a mean of "
+            f"{timing['first_pass_mean_ms']:.0f} ms per question, in one cold process "
+            f"with the knowledge pack already loaded. Of that, the first case alone is "
+            f"{timing['first_case_ms']:.0f} ms, because answering it also builds the "
+            f"goal catalogue and the policy index; every later case is a fraction of "
+            f"that. Asking the same ten questions again in the same process takes "
+            f"{timing['repeat_pass_ms']:.0f} ms, "
+            f"{timing['repeat_mean_ms']:.1f} ms per question, because the encoder "
+            f"memoises embeddings by text. Both figures are real and they answer "
+            f"different questions; this table reports the first, which is the cost of "
+            f"answering a question the process has not seen before, and therefore the "
+            f"only one comparable to the benchmark's mean latency in Table 2. An "
+            f"earlier version of this report quoted the repeat figure as though it "
+            f"were the cost of answering, which understated it by a factor of "
+            f"{timing['first_pass_ms'] / max(timing['repeat_pass_ms'], 1e-9):.0f}.")
 
     rows = []
     for x in suite["results"]:
@@ -451,10 +472,28 @@ def main() -> None:
             "check passed, because every claim it made was supported.")
     r.p("**The gate cannot intervene, and that is the finding.** Verification "
         "establishes that a claim follows from the evidence, not that it answers the "
-        "question asked. Across the fifteen not-covered questions in the test split "
-        "the system abstained in none. A relevance check between the resolved goal and "
-        "the question - the dashed panel in Figure 1 - is the remedy, and it is not "
-        "implemented.")
+        "question asked. These are two different properties, and the whole architecture "
+        "secures only the first. Across the fifteen not-covered questions in the test "
+        "split this configuration abstained in none. The remedy is a relevance check "
+        "between the resolved goal and the question - the dashed panel in Figure 1.")
+    r.p("**That check now exists, on one of the two configurations.** Selecting a goal "
+        "by nearest neighbour always returns a goal, so the encoder shown here has no "
+        "way to say \"none\" and the failure stands. The language-model parser does "
+        "have that option, and it was already using it: it names no goal on all "
+        "fifteen. It was being overruled downstream, where any policy clause scoring "
+        "above the retrieval floor was recited anyway - so text similarity overturned "
+        "a correct judgement. The nine questions answered are exactly the nine whose "
+        "nearest clause clears that floor. Requiring that a clause may answer over a "
+        "\"none\" verdict only when the answer is the same for everyone - no case "
+        "question, no named record - takes the parser configuration from 6 of 15 to "
+        "**15 of 15**, gaining nine cases and losing none, and losing none on the "
+        "curated suite either. Nine earlier attempts to detect out-of-scope questions "
+        "by a similarity score were refuted first; `docs/audit/RELEVANCE_GATE.md` "
+        "records each with the measurement that killed it. The gate inherits the "
+        "parser's errors, which is its real limit: a 1.5B model misreads 29 of 86 "
+        "covered questions as out of scope, and while none of those was being answered "
+        "correctly before, a weak parser would turn the gate into an abstention "
+        "machine.")
     r.image(SHOTS / "04-sample-suite.jpg",
             "Figure 6. The full sample set run in one pass, with per-case verdicts and "
             "latencies.")
@@ -568,9 +607,13 @@ def main() -> None:
         "**Scope.** Results come from generated worlds with oracle gold answers, not "
         "real customer traffic, in a single domain whose governing rules can be "
         "written down. English only.",
-        "**Question relevance is not implemented.** On the fifteen not-covered "
-        "questions the system abstained in none. This is the architecture's sharpest "
-        "limitation and is demonstrated in Section 7.2.",
+        "**Question relevance is implemented only where understanding can decline.** "
+        "The default encoder configuration abstains on none of the fifteen not-covered "
+        "questions, because nearest-neighbour goal selection always returns a goal. "
+        "The parser configuration now abstains on all fifteen. Carrying the fix to the "
+        "default would mean giving the encoder negative catalogue entries - "
+        "enumerating what the company does not do - which is open-ended. "
+        "Section 7.2 demonstrates both halves.",
         "**Verifier correctness is unmeasured.** The verifier is correct by "
         "construction with respect to its own rule base; independent ground-truth "
         "labels would be needed to measure its precision and recall.",
@@ -594,11 +637,14 @@ def main() -> None:
         f"orders of magnitude. The reduction is not an artefact of refusing difficult "
         f"questions.")
     r.p("Two findings temper this. The parser configuration's perfect selective "
-        "accuracy on the test split does not transfer to unseen worlds, and the system "
-        "does not recognise questions its rule base does not cover - a failure "
-        "verification is structurally unable to catch, because relevance is not "
-        "support.")
-    r.p("Future work is a relevance gate separate from the evidence gate, an "
+        "accuracy on the test split does not transfer to unseen worlds, and the "
+        "default configuration does not recognise questions its rule base does not "
+        "cover - a failure verification is structurally unable to catch, because "
+        "relevance is not support. Support and relevance are separate properties "
+        "throughout this report: the architecture secures the first by construction, "
+        "and the second only where understanding is able to decline.")
+    r.p("Future work is carrying the relevance gate to the default configuration, "
+        "which needs goal selection to have a null option it currently lacks, an "
         "independently authored evaluation, and raising coverage in the secondary "
         "study without reintroducing unsupported claims.")
 
@@ -632,7 +678,10 @@ def main() -> None:
     # ---- 12 appendix
     r.h("12. Appendix: Source Code and Reproduction", 1)
     r.p(f"**Repository:** {REPO_PLACEHOLDER}")
-    r.p(f"**Commit reported here:** {commit}")
+    r.p(f"**Commit reported here:** {commit} — the state of the code that produced "
+        f"every number in this report. The commit that carries this document is its "
+        f"child, since the document is written after the code it describes; both are on "
+        f"`master`.")
     r.p("Running the demo interface:")
     r.code(["python -m venv backend/.venv",
             "backend/.venv/Scripts/pip install -r backend/requirements.txt",

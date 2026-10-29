@@ -225,3 +225,67 @@ LLM_PROVIDER=local LOCAL_LLM_MODEL=Qwen/Qwen2.5-1.5B-Instruct \
 cd backend && python -m pytest tests/ -m no_db -q
 powershell -File scripts/export_pdf.ps1 docs/paper/PRAXIS_IEEE.docx
 ```
+
+## Pass 7 — a latency claim that was measuring the wrong thing
+
+A second external review asked how the report's "40 ms for ten cases" squared with the
+paper's 78 ms per question. Checking it found a real defect, not a presentational one.
+
+- **The report's headline timing was a cache-warm repeat.** `app/neural/encoder.py`
+  memoises embeddings by text, so a demo server that had already answered these ten
+  questions answered them again about forty times faster. Measured in one cold process:
+  **first pass 1462 ms for the set, 146 ms per question**; repeat pass 32 ms, 3.2 ms per
+  question. The recorded artifact held the repeat figure. The report now states the
+  first-pass number, gives both, says which is comparable to the benchmark, and says
+  plainly that the earlier figure understated the cost by a factor of 45.
+- `scripts/record_demo_suite.py` makes that artifact reproducible instead of being
+  whatever a running server last returned, and records both passes with a protocol note.
+- **Also found while checking it:** the paper's 77.9 ms was measured during a run of all
+  14 systems. Re-run alone with one worker, the same system reproduces accuracy 0.796 and
+  hallucination 0.149 exactly, and latency falls to **46.6 ms**
+  (`eval_reports/research/latency-protocol/`). The published figure is the conservative
+  one, so it stands; the reason it is higher is now written down.
+- The first question of every world is that world's slowest — 1421, 342, 351, 258, 224 ms
+  — because it builds the goal catalogue and the policy index. Median 61.3 ms against a
+  mean of 77.9.
+- **PASS/FAIL labels verified as computed, not written.** Each comes from the same
+  per-gold-kind rule the benchmark scorer uses; the report now says so.
+
+### Paper
+
+- The abstract asserted that "the system abstains in 0 of 15 cases", which the relevance
+  gate made false. Scoped to the default configuration, and the headline 0.796 is now
+  labelled as that configuration's so it cannot be read as the system's best result.
+- Abstract trimmed where the review found it dense; net shorter than before.
+- **The latency protocol and the per-configuration model inventory do not fit.** The
+  paper is exactly six pages and the relevant column has no slack: one added line
+  anywhere in it pushes references [13]–[15] onto a seventh page. Measured for the
+  Table II caption, for the experimental-design paragraph, and at one line. Both are
+  documented in `docs/paper/REPRODUCING.md` instead, with the three latency figures
+  distinguished and every configuration's model, role and inference stack named.
+
+### Report
+
+- Relevance is now treated consistently in Section 7.2, the limitations, the conclusion
+  and future work: support and relevance are separate properties, the architecture
+  secures the first by construction and the second only where understanding can decline.
+  Section 7.2 reports the gate's result and its dependence on parser quality.
+- The cited commit is identified as the state of the code that produced the numbers, the
+  parent of the commit carrying the document.
+- `scripts/export_pdf.ps1` no longer applies the paper's six-page limit to every
+  document; the limit is opt-in via `-MaxPages`.
+
+### Checked and found correct, or still open
+
+- Items the review raised that were already fixed in the current PDF: the 255-case
+  accuracy breakdown (`205 + 15 + 15 + 6`), the check count (**11**, not ten), and the
+  four-to-six unsupported-figure result, which is in Section VIII-A's own results text.
+- Table IV sums to **255** across ten categories, not 240 across nine; the review's
+  count omits the `unauthorized` row.
+- Table V already states that the zero refuted rate is near-tautological and true by
+  construction.
+- **Still open:** every reference's bibliographic detail. `references.bib` was entered
+  from memory, three OpenReview entries have no page numbers, and one NeurIPS page range
+  is unconfirmed. Whether each cited work supports the exact limitation attributed to it
+  in the related-work table is also unverified. Both are recorded in UNRESOLVED.md and
+  neither is claimed as done.
