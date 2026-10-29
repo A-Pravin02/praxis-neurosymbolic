@@ -95,10 +95,20 @@ cd docs/paper && pdflatex main && bibtex main && pdflatex main && pdflatex main
 
 The paper is exactly six pages and the column holding the experimental design has no
 slack, so the protocol is stated here. Table II's latency column is the **per-question
-mean of wall-clock time inside `NeuroSymbolicController.answer`**, on CPU, with no GPU.
-It excludes process start-up, model download and knowledge-pack loading. It *includes*
-the first question of each world, which also builds that world's goal catalogue and
-policy index, and that question costs several times any other.
+mean of wall-clock time inside the system under test**. It excludes process start-up,
+model download and knowledge-pack loading. It *includes* the first question of each
+world, which also builds that world's goal catalogue and policy index, and that question
+costs several times any other.
+
+The PRAXIS rows run entirely on CPU: the encoder is bge-small through ONNX Runtime and
+nothing else in the decision path is a model. The language-model rows are not
+comparable hardware: their time is spent waiting on `local_llm_server.py`, which
+generates on whatever device it was started with. **That device, and whether the 7B was
+loaded in 4-bit, are not recorded in the run metadata**, so the LLM latencies should be
+read as "seconds, not milliseconds" rather than as a hardware-controlled measurement.
+The two-orders-of-magnitude gap the paper claims does not depend on the difference:
+the PRAXIS figures are CPU-only, so a faster device for the baselines would narrow it
+but the CPU-only path would still be the cheap one.
 
 Three figures in the artifacts measure three different things, and they are easy to
 mistake for each other:
@@ -121,11 +131,11 @@ difference of model size.
 | Configuration | Model | Role | Inference stack |
 |---|---|---|---|
 | PRAXIS (default, "LLM-free") | none on the decision path | — | deterministic realizer; bge-small 33M encoder via ONNX, CPU |
-| PRAXIS + parser | Qwen2.5-7B-Instruct | semantic parser only; decisions stay symbolic | OpenAI-compatible local endpoint (`scripts/local_llm_server.py`) |
-| `llm_only`, `llm_rag`, `llm_rag_rules`, `llm_rag_selfcheck` | Qwen2.5-7B-Instruct | answers the question | same endpoint as above |
+| PRAXIS + parser | Qwen2.5-7B-Instruct | semantic parser only; decisions stay symbolic | `scripts/local_llm_server.py`: torch + transformers behind an OpenAI-compatible HTTP API, greedy, with an SQLite completion cache keyed by (model, messages, max_tokens) |
+| `llm_only`, `llm_rag`, `llm_rag_rules`, `llm_rag_selfcheck` | Qwen2.5-7B-Instruct | answers the question | same server as above, so every system reaches the model through one API |
 | Scale comparison, Section XII | Qwen2.5-1.5B-Instruct | same roles as the 7B | Hugging Face `transformers`, greedy, CPU/CUDA (`LocalTransformersProvider`) |
 | Relevance-gate measurement | Qwen2.5-1.5B-Instruct | semantic parser | `transformers`, as above |
-| Study II | 19.9M decoder trained from scratch | generator under the gate | project code, see Section XI |
+| Study II | nanoGPT, 4.3M parameters (4 layers, 4 heads, width 256, vocabulary 4096), trained from scratch on 292,948 tokens | generator under the gate | project code, see Section XI |
 
 Decoding is greedy everywhere and temperature is 0.
 

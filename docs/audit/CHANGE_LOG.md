@@ -289,3 +289,65 @@ paper's 78 ms per question. Checking it found a real defect, not a presentationa
   is unconfirmed. Whether each cited work supports the exact limitation attributed to it
   in the related-work table is also unverified. Both are recorded in UNRESOLVED.md and
   neither is claimed as done.
+
+## Pass 8 — submission check on the project report
+
+`scripts/check_report.py` is new: 60 checks on the exported PDF, covering section and
+figure numbering, citation completeness, repository and commit provenance, and every
+metric in Tables 5 and 6 re-read from `eval_reports/` and compared with what the PDF
+prints. It found three real defects.
+
+- **Table 5 printed 0.000 for extractive retrieval's selective accuracy, which is
+  undefined.** That system gives no definite answer on any of the 255 questions, so
+  correctness over its answer set does not exist and the harness records null. The
+  builder had `or 0`, which turned "no measurement" into "the worst possible score" — in
+  the direction that flatters this project. It now prints `n/a`, and the checker asserts
+  that an undefined metric is never shown as a number.
+- **Thirteen references, none of them cited.** The literature survey named works by
+  author and year while the reference list numbered them, so no citation in the body
+  pointed at any entry. Citations [1]–[11] are now in the survey table, [13] at the
+  Kleene three-valued logic it refers to, and [12] in the introduction, where the point
+  it supports — that combining neural and symbolic parts is long-standing, and what
+  changed here is which part holds the authority — is actually made. The checker fails
+  if any listed reference is uncited or any citation dangles.
+- **Table 6's caption said "each row disables exactly one mechanism"** while its first
+  row disables nothing. Reworded, and it now says the columns score decisions and so
+  cannot measure the verification gate.
+
+Also corrected, and also mine:
+
+- `docs/paper/REPRODUCING.md` gave Study II's model as **19.9M parameters**. The artifact
+  says 4,262,144 — **4.3M** — which is what the paper and the report both already said.
+  Corrected, with the architecture (4 layers, 4 heads, width 256, vocabulary 4096) and
+  the 292,948 training tokens.
+- The same file claimed the latency figures were measured "on CPU, with no GPU". True of
+  the PRAXIS rows, whose decision path is an ONNX encoder and no model; false of the
+  language-model rows, which wait on `local_llm_server.py` generating on a device the run
+  metadata does not record. Scoped, and the unrecorded device and quantization are now
+  stated as unknown rather than implied.
+- The 7B's inference stack is `scripts/local_llm_server.py`: torch and transformers
+  behind an OpenAI-compatible HTTP API with a greedy completion cache. The report's stack
+  table said "via transformers" and REPRODUCING.md said "OpenAI-compatible endpoint";
+  both were half the answer.
+- The report's conclusion claimed latency cut "by roughly two orders of magnitude"
+  without saying the comparison is not hardware-controlled. It now does.
+
+### Checked and found correct
+
+- All four reproduction commands the report gives a marker were run exactly as printed:
+  `independent_metrics.py` (151 values, 0 mismatched), `verify_claims.py` (25 claims),
+  `count_checks.py`, and `cd backend && python -m pytest -q -m no_db` (**143 passed**).
+- The named source commit exists in the history, and the repository link matches the
+  configured remote.
+- All seven figure files exist with content; sections run 1–12 with no gap; Figures 1–7
+  and Tables 1–6 are each captioned exactly once.
+- The verification-check census is byte-identical to before the relevance gate,
+  confirming the gate did not touch the encoder path, and matches the report's 11 checks,
+  0–9 per case, 17 running none.
+- Every value in Tables 5 and 6 and in Section 8.3 matches the stored records.
+- Figures 2 and 6 are not cross-referenced in prose. They are screenshots sitting under
+  the text they illustrate, so this is reported as a note, not a defect.
+
+```
+python scripts/check_report.py
+```

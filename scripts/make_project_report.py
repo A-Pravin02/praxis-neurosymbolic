@@ -183,6 +183,19 @@ def main() -> None:
         entry = report["systems"][system]["overall"].get(field)
         return entry["value"] if isinstance(entry, dict) else entry
 
+    def F(report, system, field, places: int = 3) -> str:
+        """Format a metric, keeping an undefined one undefined.
+
+        Selective accuracy is correctness over the definite answers, so a system that
+        commits to nothing has no selective accuracy at all - the harness records null.
+        Printing that as 0.000 claims a measured zero where the quantity does not exist,
+        and it does so in the direction that flatters this project: extractive retrieval
+        gives no definite answer on any of the 255 questions, and its selective accuracy
+        is undefined rather than the worst possible score.
+        """
+        value = M(report, system, field)
+        return "n/a" if value is None else f"{value:.{places}f}"
+
     r = Report()
 
     # ---- title page
@@ -240,7 +253,10 @@ def main() -> None:
     r.p("The common remedies keep the model as the authority. Self-consistency "
         "sampling, self-critique and chain-of-verification all ask the model to audit "
         "its own output - auditor and author are the same model, so a confident "
-        "systematic error is invisible to both. Our own measurement bears this out: "
+        "systematic error is invisible to both. Combining neural and symbolic "
+        "components is a long-standing programme [12]; what this project changes is "
+        "not that they are combined but which of them holds the authority for the "
+        "decision. Our own measurement bears this out: "
         f"asking a 7B model to check its own retrieval-grounded draft moved accuracy "
         f"from {M(test,'llm_rag','accuracy'):.3f} to "
         f"{M(test,'llm_rag_selfcheck','accuracy'):.3f} and hallucination from "
@@ -275,22 +291,27 @@ def main() -> None:
 
     # ---- 3 literature
     r.h("3. Literature Survey", 1)
+    r.p("Table 1 groups the work this project builds on by what it leaves open. "
+        "The gap is narrow and deliberate: each line addresses a system that "
+        "supplies evidence, or scores text after the fact, or asks a model to "
+        "check itself, rather than one that refuses to release an answer its own "
+        "rules do not entail.")
     r.table(["Area", "Representative work", "Limitation this project addresses"], [
-        ["Hallucination surveys", "Ji et al. (2023); Huang et al. (2025)",
+        ["Hallucination surveys", "Ji et al. (2023) [1]; Huang et al. (2025) [2]",
          "Separate faithfulness from factuality; our target is narrower - a decision "
          "stated without entailment from the governing rule."],
-        ["Retrieval-augmented generation", "Lewis et al. (2020)",
+        ["Retrieval-augmented generation", "Lewis et al. (2020) [3]",
          "Supplies evidence but leaves inference to the model, so a grounded answer "
          "can still be unlicensed."],
         ["Self-critique and resampling",
-         "Chain-of-verification (2024); SelfCheckGPT (2023); Self-RAG (2024)",
+         "Chain-of-verification (2024) [5]; SelfCheckGPT (2023) [6]; Self-RAG (2024) [4]",
          "Auditor and author are the same model; a confident systematic error is "
          "invisible to both."],
-        ["Claim-level scoring", "FActScore (2023)",
+        ["Claim-level scoring", "FActScore (2023) [7]",
          "An evaluation method, not a release gate - it scores text after the fact "
          "rather than withholding it."],
         ["Neuro-symbolic solvers",
-         "Logic-LM (2023); LINC (2023); PAL (2023); Binder (2023)",
+         "Logic-LM (2023) [8]; LINC (2023) [9]; PAL (2023) [10]; Binder (2023) [11]",
          "Formalise a reasoning chain for a puzzle. PRAXIS formalises the "
          "enterprise's own rule base, versioned over time and filtered by an "
          "authorization view."],
@@ -317,7 +338,7 @@ def main() -> None:
         "carried forward. The encoder proposes; it never asserts the answer.")
 
     r.h("4.2 Three-valued symbolic reasoning", 2)
-    r.p("Rules are evaluated under Kleene strong three-valued logic: a fact the company "
+    r.p("Rules are evaluated under Kleene strong three-valued logic [13]: a fact the company "
         "has no record of is unknown, not false. A two-valued engine answers 'no, you "
         "are not eligible' when the truthful answer is 'nobody recorded whether you "
         "are'. The reasoner resolves the policy version in force on the case's own date "
@@ -389,7 +410,7 @@ def main() -> None:
         ["Total corpus", "13", "663", "All generated cases."],
     ], [1.3, 0.9, 1.1, 2.9],
         "Table 3. Dataset splits. The three share no case identifier and no world.")
-    r.p("Cases are generated over synthetic enterprise worlds, each with its own "
+    r.p("Table 3 gives the splits. Cases are generated over synthetic enterprise worlds, each with its own "
         "catalogue, staff, policy history and records, with gold answers from an "
         "independent oracle rather than the system under test. All systems see the "
         "same questions, corpus and authorization context; decoding is greedy, so a "
@@ -450,7 +471,8 @@ def main() -> None:
     r.p("Case W101-T-known-1 asks whether an order can be returned. The encoder ranks "
         "candidate goals and carries forward the highest; the reasoner gathers the "
         "order's status, category and delivery date, applies the returns rules under "
-        "three-valued logic, and establishes the conclusion before any text is written.")
+        "three-valued logic, and establishes the conclusion before any text is written. "
+        "Figures 3 and 4 follow this case through all four stages.")
     r.image(SHOTS / "02-case-neural-symbolic.jpg",
             "Figure 3. Stages 1 and 2. The encoder's candidate goals with similarity "
             "scores, and the symbolic facts and rules. R-RET-A is proved; R-RET-D is "
@@ -465,7 +487,7 @@ def main() -> None:
         "clause in the rule base covers warranties. The correct behaviour is to report "
         "insufficient evidence. Instead the encoder maps the question onto the nearest "
         "in-scope goal - replacement availability - and the system answers that "
-        "question correctly, citing real clauses and real records.")
+        "question correctly, citing real clauses and real records, as Figure 5 shows.")
     r.image(SHOTS / "05-not-covered-failure.jpg",
             "Figure 5. The documented failure. Asked about warranty, the system "
             "resolved replacement_available and answered confidently. Every applicable "
@@ -511,10 +533,10 @@ def main() -> None:
     for key, label in order:
         if key not in test["systems"]:
             continue
-        rows.append([label, f"{M(test,key,'accuracy'):.3f}",
-                     f"{M(test,key,'hallucination_rate'):.3f}",
-                     f"{M(test,key,'coverage'):.3f}",
-                     f"{(M(test,key,'selective_accuracy') or 0):.3f}"])
+        rows.append([label, F(test, key, "accuracy"),
+                     F(test, key, "hallucination_rate"),
+                     F(test, key, "coverage"),
+                     F(test, key, "selective_accuracy")])
     r.table(["System", "Accuracy", "Hallucination", "Coverage", "Selective acc."],
             rows, [2.0, 1.0, 1.1, 0.95, 1.1],
             f"Table 5. Test split, {test['cases']} questions. Accuracy and "
@@ -523,7 +545,7 @@ def main() -> None:
     r.image(FIGURES / "main_results.png",
             "Figure 7. Accuracy and hallucination on the test split, with 95% "
             "bootstrap intervals.", width=6.2)
-    r.p(f"The LLM-free configuration answers {M(test,'neurosymbolic','accuracy'):.3f} "
+    r.p(f"Table 5 sets the systems side by side. The LLM-free configuration answers {M(test,'neurosymbolic','accuracy'):.3f} "
         f"of all questions correctly at "
         f"{M(test,'neurosymbolic','hallucination_rate'):.3f} hallucination, against "
         f"{M(test,'llm_rag','accuracy'):.3f} and "
@@ -531,27 +553,26 @@ def main() -> None:
         f"retrieval over the same corpus. The reduction is not bought with abstention: "
         f"it covers {M(test,'neurosymbolic','coverage'):.3f} of answerable questions "
         f"while retrieval covers {M(test,'llm_rag','coverage'):.3f} - it answers more "
-        f"questions and more of them correctly.")
+        f"questions and more of them correctly. Figure 7 plots both quantities with "
+        f"their 95% bootstrap intervals.")
 
     r.h("8.2 Ablations", 2)
     abl = [("ns_two_valued", "Unknown treated as false"),
            ("ns_latest_version", "Newest policy applied to every case"),
            ("ns_trust_statements", "Asker's statements override records"),
            ("ns_no_authorization", "Reasoning sees every record")]
-    rows = [["PRAXIS (full)", f"{M(test,'neurosymbolic','accuracy'):.3f}",
-             f"{M(test,'neurosymbolic','hallucination_rate'):.3f}",
-             f"{M(test,'neurosymbolic','coverage'):.3f}",
-             f"{M(test,'neurosymbolic','leak_rate'):.3f}"]]
+    cells = ("accuracy", "hallucination_rate", "coverage", "leak_rate")
+    rows = [["PRAXIS (full), nothing disabled"]
+            + [F(test, "neurosymbolic", c) for c in cells]]
     for key, label in abl:
         if key in test["systems"]:
-            rows.append([label, f"{M(test,key,'accuracy'):.3f}",
-                         f"{M(test,key,'hallucination_rate'):.3f}",
-                         f"{M(test,key,'coverage'):.3f}",
-                         f"{M(test,key,'leak_rate'):.3f}"])
+            rows.append([label] + [F(test, key, c) for c in cells])
     r.table(["Configuration", "Accuracy", "Hallucination", "Coverage", "Disclosure"],
             rows, [2.2, 0.95, 1.05, 0.9, 1.05],
-            "Table 6. Each row disables exactly one mechanism.")
-    r.p(f"Three-valued reasoning carries real weight: treating unknown as false costs "
+            "Table 6. Each row below the first disables exactly one mechanism. "
+            "Scored on the structured decision, so these columns cannot measure the "
+            "verification gate, which acts on released wording.")
+    r.p(f"Table 6 isolates each mechanism. Three-valued reasoning carries real weight: treating unknown as false costs "
         f"{M(test,'neurosymbolic','accuracy') - M(test,'ns_two_valued','accuracy'):.3f} "
         f"accuracy, because the system starts denying entitlements that were merely "
         f"unrecorded. Authorization is the sharpest: removing it leaves accuracy "
@@ -635,7 +656,10 @@ def main() -> None:
         f"from {M(test,'llm_rag','coverage'):.3f} to "
         f"{M(test,'neurosymbolic','coverage'):.3f} and cutting latency by roughly two "
         f"orders of magnitude. The reduction is not an artefact of refusing difficult "
-        f"questions.")
+        f"questions. The latency comparison is not hardware-controlled: PRAXIS runs "
+        f"entirely on CPU, while the baselines wait on a served language model, so the "
+        f"gap measures the cost of needing a generator at all rather than two "
+        f"implementations on equal footing.")
     r.p("Two findings temper this. The parser configuration's perfect selective "
         "accuracy on the test split does not transfer to unseen worlds, and the "
         "default configuration does not recognise questions its rule base does not "
