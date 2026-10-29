@@ -158,6 +158,8 @@ class LLMSemanticParser:
         interpretation.selected_clause = clause if isinstance(clause, str) and \
             clause in {c.id for c in self.policies.clauses} else None
         interpretation.parsed = True
+        # Reached only when the name validated: either a declared goal, or "none".
+        interpretation.out_of_scope = not candidates
         return interpretation
 
     def _personal_request(self, question: str, request: str, goal: str,

@@ -156,3 +156,72 @@ python scripts/verify_claims.py
 python scripts/make_audit_reports.py
 python scripts/build_paper_docx.py --template docs/paper/templates/ieee_a4_transitional.docx
 ```
+
+## Pass 6 — the relevance gate, and a paper-review triage
+
+### The relevance gate (built)
+
+The known relevance failure now has an implemented fix on the parser path, after nine
+refuted attempts. The full record is `docs/audit/RELEVANCE_GATE.md`.
+
+- **Diagnosed the actual bug, which was not what the previous nine attempts assumed.**
+  The parser was never failing to say "none" — it says "none" on all fifteen
+  out-of-scope test questions. It was being *overruled*. `_parsed_without_goal` ended in
+  an unconditional fallback that recited any policy clause scoring above
+  `RETRIEVAL_ACCEPT` (0.55). The nine questions it answered are exactly the nine whose
+  nearest clause clears 0.55; the six it refused are exactly the six below it. Shown
+  without a language model, from clause scores alone.
+- **The fix adds no signal and no threshold.** A clause may answer over a "none" verdict
+  only when the answer is the same for everyone — not a case act, no record named. Both
+  conditions are the rule `_personal_request` already applies to the parse.
+- **The verdict is now first-class.** `Interpretation.out_of_scope` is set only for a
+  valid reply naming literally `none`, so it is never confused with a parse failure or an
+  undeclared name, both of which still fall back to embeddings.
+- **Measured, paired case by case, 1.5B parser:** test split not-covered 6/15 to
+  **15/15**; accuracy 0.678 to 0.714; hallucination 0.169 to 0.094; coverage,
+  over-abstention and selective accuracy unchanged. **9 gained, 0 lost.**
+- **Passed the test that refuted attempt 4.** On the 86 curated Meridian questions the
+  gate refuses 23, but scored with the suite's own scorer it loses **0** correct answers
+  and gains 2 — none of the 23 was correct before.
+- **Recorded the limit honestly.** The gate inherits the parser's errors: the 1.5B calls
+  29 of 86 covered Meridian questions out of scope. Nothing is lost today because those
+  were already wrong, but a weak parser turns the gate into an abstention machine. The
+  7B the paper's figures use is not on this machine, so **no published number changed.**
+- 15 regression tests in `backend/tests/test_semantic_parser.py`, including the
+  "what is the returns policy" fallback the gate must not break.
+- That file was pure logic but unmarked `no_db`, so it needed Postgres to run. Marked.
+  **The database-free suite goes from 128 to 143 passing.**
+
+### Paper corrections
+
+- Three passages asserted the relevance check "is not yet implemented" and that "the
+  system does not recognise questions its rule base does not cover". Now scoped to the
+  LLM-free configuration, where both remain true. Net-zero on length.
+- Table III's caption now says it scores structured decisions and cannot measure the
+  verification gate, pointing to Section VIII-A, which tests it at the level of released
+  text.
+- Table VI's caption now states the denominator — every claim of that type, unverifiable
+  ones included — which is what a reader needs from its stranded continuation row.
+- `scripts/export_pdf.ps1` makes the docx-to-PDF step reproducible and **fails if the
+  paper exceeds six pages**, which caught two of the edits above.
+
+### Checked and found correct
+
+- An external review of the paper raised ten items. Five were already fixed and two rest
+  on misreadings of the current PDF; see the reply in the session record. The paper is
+  6 pages and all **25 claim checks** still pass.
+- Table VI's column break could not be fixed within six pages: `keep_together` and a
+  page-wide span were both measured and both cost a seventh page. The break stands and
+  the caption carries the denominator instead.
+
+### Reproducing
+
+```
+python scripts/relevance_gate_eval.py
+LLM_PROVIDER=local LOCAL_LLM_MODEL=Qwen/Qwen2.5-1.5B-Instruct \
+    python scripts/run_research.py --split test --systems ns_parser --tag relevance-gate
+LLM_PROVIDER=local LOCAL_LLM_MODEL=Qwen/Qwen2.5-1.5B-Instruct \
+    python scripts/relevance_gate_meridian_scored.py
+cd backend && python -m pytest tests/ -m no_db -q
+powershell -File scripts/export_pdf.ps1 docs/paper/PRAXIS_IEEE.docx
+```

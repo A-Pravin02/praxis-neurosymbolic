@@ -82,6 +82,12 @@ class Interpretation:
     parse: dict | None = None
     selected_clause: str | None = None
     parsed: bool = False
+    # The parser read the goal list and named none of them: a positive judgement that
+    # no declared goal decides this question, not a failure to pick one. Set only when
+    # the reply was valid and the name it gave was literally "none", so it is never
+    # confused with a parse that failed or named something undeclared - both of those
+    # fall back to the embedding interpreter instead.
+    out_of_scope: bool = False
 
     @property
     def top(self) -> IntentCandidate | None:
@@ -99,6 +105,7 @@ class Interpretation:
             "stated_inputs": [i.as_dict() for i in self.inputs],
             "encoder": self.encoder, "semantic_understanding": self.semantic,
             **({"parse": self.parse} if self.parse else {}),
+            **({"out_of_scope": True} if self.out_of_scope else {}),
         }
 
 

@@ -1,0 +1,1336 @@
+{
+  "split": "test",
+  "cases": 255,
+  "systems": {
+    "ns_parser": {
+      "overall": {
+        "cases": 255,
+        "accuracy": {
+          "value": 0.7137,
+          "n": 255,
+          "ci95": [
+            0.6588,
+            0.7686
+          ]
+        },
+        "hallucination_rate": {
+          "value": 0.0941,
+          "n": 255,
+          "ci95": [
+            0.0588,
+            0.1294
+          ]
+        },
+        "wrong_definite_rate": {
+          "value": 0.0784,
+          "n": 255,
+          "ci95": [
+            0.0471,
+            0.1137
+          ]
+        },
+        "unsupported_definite_rate": {
+          "value": 0.0157,
+          "n": 255,
+          "ci95": [
+            0.0039,
+            0.0314
+          ]
+        },
+        "leak_rate": {
+          "value": 0.0,
+          "n": 15,
+          "ci95": [
+            0.0,
+            0.0
+          ]
+        },
+        "coverage": {
+          "value": 0.8143,
+          "n": 210,
+          "ci95": [
+            0.7619,
+            0.8667
+          ]
+        },
+        "over_abstention": {
+          "value": 0.1857,
+          "n": 210,
+          "ci95": [
+            0.1333,
+            0.2381
+          ]
+        },
+        "selective_accuracy": {
+          "value": 0.883,
+          "n": 171,
+          "ci95": [
+            0.8304,
+            0.9298
+          ]
+        },
+        "answers_with_unsupported_number": {
+          "value": 0.0,
+          "n": 255,
+          "ci95": [
+            0.0,
+            0.0
+          ]
+        },
+        "numbers_stated": 315,
+        "unsupported_number_share": 0.0,
+        "parse_failure_rate": {
+          "value": 0.0,
+          "n": 255,
+          "ci95": [
+            0.0,
+            0.0
+          ]
+        },
+        "mean_latency_ms": 1358.6
+      },
+      "by_category": {
+        "calculation": {
+          "cases": 45,
+          "accuracy": {
+            "value": 0.6444,
+            "n": 45,
+            "ci95": [
+              0.4889,
+              0.7778
+            ]
+          },
+          "hallucination_rate": {
+            "value": 0.0,
+            "n": 45,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "wrong_definite_rate": {
+            "value": 0.0,
+            "n": 45,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "unsupported_definite_rate": {
+            "value": 0.0,
+            "n": 45,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "leak_rate": {
+            "value": null,
+            "n": 0,
+            "ci95": null
+          },
+          "coverage": {
+            "value": 0.6444,
+            "n": 45,
+            "ci95": [
+              0.4889,
+              0.7778
+            ]
+          },
+          "over_abstention": {
+            "value": 0.3556,
+            "n": 45,
+            "ci95": [
+              0.2222,
+              0.5111
+            ]
+          },
+          "selective_accuracy": {
+            "value": 1.0,
+            "n": 29,
+            "ci95": [
+              1.0,
+              1.0
+            ]
+          },
+          "answers_with_unsupported_number": {
+            "value": 0.0,
+            "n": 45,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "numbers_stated": 95,
+          "unsupported_number_share": 0.0,
+          "parse_failure_rate": {
+            "value": 0.0,
+            "n": 45,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "mean_latency_ms": 1510.7
+        },
+        "false_premise": {
+          "cases": 20,
+          "accuracy": {
+            "value": 0.9,
+            "n": 20,
+            "ci95": [
+              0.75,
+              1.0
+            ]
+          },
+          "hallucination_rate": {
+            "value": 0.0,
+            "n": 20,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "wrong_definite_rate": {
+            "value": 0.0,
+            "n": 20,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "unsupported_definite_rate": {
+            "value": 0.0,
+            "n": 20,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "leak_rate": {
+            "value": null,
+            "n": 0,
+            "ci95": null
+          },
+          "coverage": {
+            "value": 0.9,
+            "n": 20,
+            "ci95": [
+              0.75,
+              1.0
+            ]
+          },
+          "over_abstention": {
+            "value": 0.1,
+            "n": 20,
+            "ci95": [
+              0.0,
+              0.25
+            ]
+          },
+          "selective_accuracy": {
+            "value": 1.0,
+            "n": 18,
+            "ci95": [
+              1.0,
+              1.0
+            ]
+          },
+          "answers_with_unsupported_number": {
+            "value": 0.0,
+            "n": 20,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "numbers_stated": 34,
+          "unsupported_number_share": 0.0,
+          "parse_failure_rate": {
+            "value": 0.0,
+            "n": 20,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "mean_latency_ms": 1230.8
+        },
+        "known": {
+          "cases": 30,
+          "accuracy": {
+            "value": 0.8333,
+            "n": 30,
+            "ci95": [
+              0.7,
+              0.9667
+            ]
+          },
+          "hallucination_rate": {
+            "value": 0.0,
+            "n": 30,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "wrong_definite_rate": {
+            "value": 0.0,
+            "n": 30,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "unsupported_definite_rate": {
+            "value": 0.0,
+            "n": 30,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "leak_rate": {
+            "value": null,
+            "n": 0,
+            "ci95": null
+          },
+          "coverage": {
+            "value": 0.8333,
+            "n": 30,
+            "ci95": [
+              0.7,
+              0.9667
+            ]
+          },
+          "over_abstention": {
+            "value": 0.1667,
+            "n": 30,
+            "ci95": [
+              0.0333,
+              0.3
+            ]
+          },
+          "selective_accuracy": {
+            "value": 1.0,
+            "n": 25,
+            "ci95": [
+              1.0,
+              1.0
+            ]
+          },
+          "answers_with_unsupported_number": {
+            "value": 0.0,
+            "n": 30,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "numbers_stated": 34,
+          "unsupported_number_share": 0.0,
+          "parse_failure_rate": {
+            "value": 0.0,
+            "n": 30,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "mean_latency_ms": 1390.7
+        },
+        "missing_info": {
+          "cases": 15,
+          "accuracy": {
+            "value": 0.7333,
+            "n": 15,
+            "ci95": [
+              0.4667,
+              0.9333
+            ]
+          },
+          "hallucination_rate": {
+            "value": 0.2667,
+            "n": 15,
+            "ci95": [
+              0.0667,
+              0.5333
+            ]
+          },
+          "wrong_definite_rate": {
+            "value": 0.0,
+            "n": 15,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "unsupported_definite_rate": {
+            "value": 0.2667,
+            "n": 15,
+            "ci95": [
+              0.0667,
+              0.5333
+            ]
+          },
+          "leak_rate": {
+            "value": null,
+            "n": 0,
+            "ci95": null
+          },
+          "coverage": {
+            "value": null,
+            "n": 0,
+            "ci95": null
+          },
+          "over_abstention": {
+            "value": null,
+            "n": 0,
+            "ci95": null
+          },
+          "selective_accuracy": {
+            "value": null,
+            "n": 0,
+            "ci95": null
+          },
+          "answers_with_unsupported_number": {
+            "value": 0.0,
+            "n": 15,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "numbers_stated": 2,
+          "unsupported_number_share": 0.0,
+          "parse_failure_rate": {
+            "value": 0.0,
+            "n": 15,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "mean_latency_ms": 1601.6
+        },
+        "multi_hop": {
+          "cases": 20,
+          "accuracy": {
+            "value": 0.7,
+            "n": 20,
+            "ci95": [
+              0.5,
+              0.9
+            ]
+          },
+          "hallucination_rate": {
+            "value": 0.3,
+            "n": 20,
+            "ci95": [
+              0.1,
+              0.5
+            ]
+          },
+          "wrong_definite_rate": {
+            "value": 0.3,
+            "n": 20,
+            "ci95": [
+              0.1,
+              0.5
+            ]
+          },
+          "unsupported_definite_rate": {
+            "value": 0.0,
+            "n": 20,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "leak_rate": {
+            "value": null,
+            "n": 0,
+            "ci95": null
+          },
+          "coverage": {
+            "value": 1.0,
+            "n": 20,
+            "ci95": [
+              1.0,
+              1.0
+            ]
+          },
+          "over_abstention": {
+            "value": 0.0,
+            "n": 20,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "selective_accuracy": {
+            "value": 0.7,
+            "n": 20,
+            "ci95": [
+              0.5,
+              0.9
+            ]
+          },
+          "answers_with_unsupported_number": {
+            "value": 0.0,
+            "n": 20,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "numbers_stated": 0,
+          "unsupported_number_share": null,
+          "parse_failure_rate": {
+            "value": 0.0,
+            "n": 20,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "mean_latency_ms": 1245.8
+        },
+        "not_covered": {
+          "cases": 15,
+          "accuracy": {
+            "value": 1.0,
+            "n": 15,
+            "ci95": [
+              1.0,
+              1.0
+            ]
+          },
+          "hallucination_rate": {
+            "value": 0.0,
+            "n": 15,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "wrong_definite_rate": {
+            "value": 0.0,
+            "n": 15,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "unsupported_definite_rate": {
+            "value": 0.0,
+            "n": 15,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "leak_rate": {
+            "value": null,
+            "n": 0,
+            "ci95": null
+          },
+          "coverage": {
+            "value": null,
+            "n": 0,
+            "ci95": null
+          },
+          "over_abstention": {
+            "value": null,
+            "n": 0,
+            "ci95": null
+          },
+          "selective_accuracy": {
+            "value": null,
+            "n": 0,
+            "ci95": null
+          },
+          "answers_with_unsupported_number": {
+            "value": 0.0,
+            "n": 15,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "numbers_stated": 0,
+          "unsupported_number_share": null,
+          "parse_failure_rate": {
+            "value": 0.0,
+            "n": 15,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "mean_latency_ms": 1247.4
+        },
+        "paraphrased": {
+          "cases": 45,
+          "accuracy": {
+            "value": 0.6222,
+            "n": 45,
+            "ci95": [
+              0.4667,
+              0.7556
+            ]
+          },
+          "hallucination_rate": {
+            "value": 0.0222,
+            "n": 45,
+            "ci95": [
+              0.0,
+              0.0667
+            ]
+          },
+          "wrong_definite_rate": {
+            "value": 0.0222,
+            "n": 45,
+            "ci95": [
+              0.0,
+              0.0667
+            ]
+          },
+          "unsupported_definite_rate": {
+            "value": 0.0,
+            "n": 45,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "leak_rate": {
+            "value": null,
+            "n": 0,
+            "ci95": null
+          },
+          "coverage": {
+            "value": 0.6444,
+            "n": 45,
+            "ci95": [
+              0.4889,
+              0.7778
+            ]
+          },
+          "over_abstention": {
+            "value": 0.3556,
+            "n": 45,
+            "ci95": [
+              0.2222,
+              0.5111
+            ]
+          },
+          "selective_accuracy": {
+            "value": 0.9655,
+            "n": 29,
+            "ci95": [
+              0.8966,
+              1.0
+            ]
+          },
+          "answers_with_unsupported_number": {
+            "value": 0.0,
+            "n": 45,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "numbers_stated": 50,
+          "unsupported_number_share": 0.0,
+          "parse_failure_rate": {
+            "value": 0.0,
+            "n": 45,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "mean_latency_ms": 1305.0
+        },
+        "policy_version": {
+          "cases": 25,
+          "accuracy": {
+            "value": 0.88,
+            "n": 25,
+            "ci95": [
+              0.72,
+              1.0
+            ]
+          },
+          "hallucination_rate": {
+            "value": 0.12,
+            "n": 25,
+            "ci95": [
+              0.0,
+              0.28
+            ]
+          },
+          "wrong_definite_rate": {
+            "value": 0.12,
+            "n": 25,
+            "ci95": [
+              0.0,
+              0.28
+            ]
+          },
+          "unsupported_definite_rate": {
+            "value": 0.0,
+            "n": 25,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "leak_rate": {
+            "value": null,
+            "n": 0,
+            "ci95": null
+          },
+          "coverage": {
+            "value": 1.0,
+            "n": 25,
+            "ci95": [
+              1.0,
+              1.0
+            ]
+          },
+          "over_abstention": {
+            "value": 0.0,
+            "n": 25,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "selective_accuracy": {
+            "value": 0.88,
+            "n": 25,
+            "ci95": [
+              0.72,
+              1.0
+            ]
+          },
+          "answers_with_unsupported_number": {
+            "value": 0.0,
+            "n": 25,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "numbers_stated": 86,
+          "unsupported_number_share": 0.0,
+          "parse_failure_rate": {
+            "value": 0.0,
+            "n": 25,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "mean_latency_ms": 1316.8
+        },
+        "recommendation": {
+          "cases": 25,
+          "accuracy": {
+            "value": 0.6,
+            "n": 25,
+            "ci95": [
+              0.4,
+              0.8
+            ]
+          },
+          "hallucination_rate": {
+            "value": 0.4,
+            "n": 25,
+            "ci95": [
+              0.2,
+              0.6
+            ]
+          },
+          "wrong_definite_rate": {
+            "value": 0.4,
+            "n": 25,
+            "ci95": [
+              0.2,
+              0.6
+            ]
+          },
+          "unsupported_definite_rate": {
+            "value": 0.0,
+            "n": 25,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "leak_rate": {
+            "value": null,
+            "n": 0,
+            "ci95": null
+          },
+          "coverage": {
+            "value": 1.0,
+            "n": 25,
+            "ci95": [
+              1.0,
+              1.0
+            ]
+          },
+          "over_abstention": {
+            "value": 0.0,
+            "n": 25,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "selective_accuracy": {
+            "value": 0.6,
+            "n": 25,
+            "ci95": [
+              0.4,
+              0.8
+            ]
+          },
+          "answers_with_unsupported_number": {
+            "value": 0.0,
+            "n": 25,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "numbers_stated": 14,
+          "unsupported_number_share": 0.0,
+          "parse_failure_rate": {
+            "value": 0.0,
+            "n": 25,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "mean_latency_ms": 1335.2
+        },
+        "unauthorized": {
+          "cases": 15,
+          "accuracy": {
+            "value": 0.3333,
+            "n": 15,
+            "ci95": [
+              0.1333,
+              0.6
+            ]
+          },
+          "hallucination_rate": {
+            "value": 0.0,
+            "n": 15,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "wrong_definite_rate": {
+            "value": 0.0,
+            "n": 15,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "unsupported_definite_rate": {
+            "value": 0.0,
+            "n": 15,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "leak_rate": {
+            "value": 0.0,
+            "n": 15,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "coverage": {
+            "value": null,
+            "n": 0,
+            "ci95": null
+          },
+          "over_abstention": {
+            "value": null,
+            "n": 0,
+            "ci95": null
+          },
+          "selective_accuracy": {
+            "value": null,
+            "n": 0,
+            "ci95": null
+          },
+          "answers_with_unsupported_number": {
+            "value": 0.0,
+            "n": 15,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "numbers_stated": 0,
+          "unsupported_number_share": null,
+          "parse_failure_rate": {
+            "value": 0.0,
+            "n": 15,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "mean_latency_ms": 1296.3
+        }
+      },
+      "by_world": {
+        "101": {
+          "cases": 51,
+          "accuracy": {
+            "value": 0.7059,
+            "n": 51,
+            "ci95": [
+              0.5882,
+              0.8235
+            ]
+          },
+          "hallucination_rate": {
+            "value": 0.0784,
+            "n": 51,
+            "ci95": [
+              0.0196,
+              0.1569
+            ]
+          },
+          "wrong_definite_rate": {
+            "value": 0.0588,
+            "n": 51,
+            "ci95": [
+              0.0,
+              0.1176
+            ]
+          },
+          "unsupported_definite_rate": {
+            "value": 0.0196,
+            "n": 51,
+            "ci95": [
+              0.0,
+              0.0588
+            ]
+          },
+          "leak_rate": {
+            "value": 0.0,
+            "n": 3,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "coverage": {
+            "value": 0.7857,
+            "n": 42,
+            "ci95": [
+              0.6667,
+              0.9048
+            ]
+          },
+          "over_abstention": {
+            "value": 0.2143,
+            "n": 42,
+            "ci95": [
+              0.0952,
+              0.3333
+            ]
+          },
+          "selective_accuracy": {
+            "value": 0.9091,
+            "n": 33,
+            "ci95": [
+              0.7879,
+              1.0
+            ]
+          },
+          "answers_with_unsupported_number": {
+            "value": 0.0,
+            "n": 51,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "numbers_stated": 58,
+          "unsupported_number_share": 0.0,
+          "parse_failure_rate": {
+            "value": 0.0,
+            "n": 51,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "mean_latency_ms": 1452.5
+        },
+        "102": {
+          "cases": 51,
+          "accuracy": {
+            "value": 0.6863,
+            "n": 51,
+            "ci95": [
+              0.549,
+              0.8039
+            ]
+          },
+          "hallucination_rate": {
+            "value": 0.098,
+            "n": 51,
+            "ci95": [
+              0.0196,
+              0.1765
+            ]
+          },
+          "wrong_definite_rate": {
+            "value": 0.0784,
+            "n": 51,
+            "ci95": [
+              0.0196,
+              0.1569
+            ]
+          },
+          "unsupported_definite_rate": {
+            "value": 0.0196,
+            "n": 51,
+            "ci95": [
+              0.0,
+              0.0588
+            ]
+          },
+          "leak_rate": {
+            "value": 0.0,
+            "n": 3,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "coverage": {
+            "value": 0.7857,
+            "n": 42,
+            "ci95": [
+              0.6429,
+              0.9048
+            ]
+          },
+          "over_abstention": {
+            "value": 0.2143,
+            "n": 42,
+            "ci95": [
+              0.0952,
+              0.3571
+            ]
+          },
+          "selective_accuracy": {
+            "value": 0.8788,
+            "n": 33,
+            "ci95": [
+              0.7576,
+              0.9697
+            ]
+          },
+          "answers_with_unsupported_number": {
+            "value": 0.0,
+            "n": 51,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "numbers_stated": 68,
+          "unsupported_number_share": 0.0,
+          "parse_failure_rate": {
+            "value": 0.0,
+            "n": 51,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "mean_latency_ms": 1370.9
+        },
+        "103": {
+          "cases": 51,
+          "accuracy": {
+            "value": 0.6863,
+            "n": 51,
+            "ci95": [
+              0.5686,
+              0.8039
+            ]
+          },
+          "hallucination_rate": {
+            "value": 0.1176,
+            "n": 51,
+            "ci95": [
+              0.0392,
+              0.2157
+            ]
+          },
+          "wrong_definite_rate": {
+            "value": 0.098,
+            "n": 51,
+            "ci95": [
+              0.0392,
+              0.1765
+            ]
+          },
+          "unsupported_definite_rate": {
+            "value": 0.0196,
+            "n": 51,
+            "ci95": [
+              0.0,
+              0.0588
+            ]
+          },
+          "leak_rate": {
+            "value": 0.0,
+            "n": 3,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "coverage": {
+            "value": 0.8095,
+            "n": 42,
+            "ci95": [
+              0.6905,
+              0.9286
+            ]
+          },
+          "over_abstention": {
+            "value": 0.1905,
+            "n": 42,
+            "ci95": [
+              0.0714,
+              0.3095
+            ]
+          },
+          "selective_accuracy": {
+            "value": 0.8529,
+            "n": 34,
+            "ci95": [
+              0.7353,
+              0.9706
+            ]
+          },
+          "answers_with_unsupported_number": {
+            "value": 0.0,
+            "n": 51,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "numbers_stated": 58,
+          "unsupported_number_share": 0.0,
+          "parse_failure_rate": {
+            "value": 0.0,
+            "n": 51,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "mean_latency_ms": 1308.2
+        },
+        "104": {
+          "cases": 51,
+          "accuracy": {
+            "value": 0.7451,
+            "n": 51,
+            "ci95": [
+              0.6275,
+              0.8627
+            ]
+          },
+          "hallucination_rate": {
+            "value": 0.098,
+            "n": 51,
+            "ci95": [
+              0.0196,
+              0.1765
+            ]
+          },
+          "wrong_definite_rate": {
+            "value": 0.0784,
+            "n": 51,
+            "ci95": [
+              0.0196,
+              0.1569
+            ]
+          },
+          "unsupported_definite_rate": {
+            "value": 0.0196,
+            "n": 51,
+            "ci95": [
+              0.0,
+              0.0588
+            ]
+          },
+          "leak_rate": {
+            "value": 0.0,
+            "n": 3,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "coverage": {
+            "value": 0.8571,
+            "n": 42,
+            "ci95": [
+              0.7619,
+              0.9524
+            ]
+          },
+          "over_abstention": {
+            "value": 0.1429,
+            "n": 42,
+            "ci95": [
+              0.0476,
+              0.2381
+            ]
+          },
+          "selective_accuracy": {
+            "value": 0.8889,
+            "n": 36,
+            "ci95": [
+              0.7778,
+              0.9722
+            ]
+          },
+          "answers_with_unsupported_number": {
+            "value": 0.0,
+            "n": 51,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "numbers_stated": 57,
+          "unsupported_number_share": 0.0,
+          "parse_failure_rate": {
+            "value": 0.0,
+            "n": 51,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "mean_latency_ms": 1307.2
+        },
+        "105": {
+          "cases": 51,
+          "accuracy": {
+            "value": 0.7451,
+            "n": 51,
+            "ci95": [
+              0.6275,
+              0.8627
+            ]
+          },
+          "hallucination_rate": {
+            "value": 0.0784,
+            "n": 51,
+            "ci95": [
+              0.0196,
+              0.1569
+            ]
+          },
+          "wrong_definite_rate": {
+            "value": 0.0784,
+            "n": 51,
+            "ci95": [
+              0.0196,
+              0.1569
+            ]
+          },
+          "unsupported_definite_rate": {
+            "value": 0.0,
+            "n": 51,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "leak_rate": {
+            "value": 0.0,
+            "n": 3,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "coverage": {
+            "value": 0.8333,
+            "n": 42,
+            "ci95": [
+              0.7143,
+              0.9524
+            ]
+          },
+          "over_abstention": {
+            "value": 0.1667,
+            "n": 42,
+            "ci95": [
+              0.0476,
+              0.2857
+            ]
+          },
+          "selective_accuracy": {
+            "value": 0.8857,
+            "n": 35,
+            "ci95": [
+              0.7714,
+              0.9714
+            ]
+          },
+          "answers_with_unsupported_number": {
+            "value": 0.0,
+            "n": 51,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "numbers_stated": 74,
+          "unsupported_number_share": 0.0,
+          "parse_failure_rate": {
+            "value": 0.0,
+            "n": 51,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "mean_latency_ms": 1354.0
+        }
+      }
+    }
+  },
+  "not_run": {},
+  "significance": {}
+}

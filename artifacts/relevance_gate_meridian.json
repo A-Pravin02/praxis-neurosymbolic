@@ -1,0 +1,781 @@
+{
+  "n": 86,
+  "said_none": 29,
+  "refused": 23,
+  "rows": [
+    {
+      "case": "K01",
+      "question": "Can I return order 12346?",
+      "parser_goal": "none",
+      "out_of_scope": true,
+      "before": "A",
+      "after": "F",
+      "refused_by_gate": true
+    },
+    {
+      "case": "K02",
+      "question": "Can I cancel order 12345?",
+      "parser_goal": "cancellation_allowed",
+      "out_of_scope": false,
+      "before": "B",
+      "after": "B",
+      "refused_by_gate": false
+    },
+    {
+      "case": "K03",
+      "question": "Can I cancel order 22003?",
+      "parser_goal": "cancel_allowed",
+      "out_of_scope": false,
+      "before": "B",
+      "after": "B",
+      "refused_by_gate": false
+    },
+    {
+      "case": "K04",
+      "question": "How many days of annual leave do I get?",
+      "parser_goal": "none",
+      "out_of_scope": true,
+      "before": "A",
+      "after": "F",
+      "refused_by_gate": true
+    },
+    {
+      "case": "K05",
+      "question": "Which products can be delivered the same day?",
+      "parser_goal": "same_day_product",
+      "out_of_scope": false,
+      "before": "B",
+      "after": "B",
+      "refused_by_gate": false
+    },
+    {
+      "case": "K06",
+      "question": "Does order 22004 get free delivery?",
+      "parser_goal": "free_delivery",
+      "out_of_scope": false,
+      "before": "B",
+      "after": "B",
+      "refused_by_gate": false
+    },
+    {
+      "case": "K07",
+      "question": "Where is order 12345?",
+      "parser_goal": "locate",
+      "out_of_scope": false,
+      "before": "A",
+      "after": "A",
+      "refused_by_gate": false
+    },
+    {
+      "case": "K08",
+      "question": "Will the money for order 22002 be refunded?",
+      "parser_goal": "refund_required",
+      "out_of_scope": false,
+      "before": "B",
+      "after": "B",
+      "refused_by_gate": false
+    },
+    {
+      "case": "K09",
+      "question": "What is the return window for electronics?",
+      "parser_goal": "RET-1",
+      "out_of_scope": false,
+      "before": "A",
+      "after": "A",
+      "refused_by_gate": false
+    },
+    {
+      "case": "K10",
+      "question": "What is the phone number for customer support?",
+      "parser_goal": "resolve",
+      "out_of_scope": false,
+      "before": "A",
+      "after": "A",
+      "refused_by_gate": false
+    },
+    {
+      "case": "P01",
+      "question": "Am I still able to send back the running shoes?",
+      "parser_goal": "return_allowed",
+      "out_of_scope": false,
+      "before": "B",
+      "after": "B",
+      "refused_by_gate": false
+    },
+    {
+      "case": "P02",
+      "question": "Is it too late to stop my laptop order?",
+      "parser_goal": "cancellation_allowed",
+      "out_of_scope": false,
+      "before": "B",
+      "after": "B",
+      "refused_by_gate": false
+    },
+    {
+      "case": "P03",
+      "question": "If I back out of the shoe order now, what do I get refunded?",
+      "parser_goal": "refund_required",
+      "out_of_scope": false,
+      "before": "B",
+      "after": "B",
+      "refused_by_gate": false
+    },
+    {
+      "case": "P04",
+      "question": "How much paid time off am I given annually?",
+      "parser_goal": "none",
+      "out_of_scope": true,
+      "before": "A",
+      "after": "F",
+      "refused_by_gate": true
+    },
+    {
+      "case": "P05",
+      "question": "My chai still hasn't shown up, am I owed anything?",
+      "parser_goal": "none",
+      "out_of_scope": true,
+      "before": "F",
+      "after": "F",
+      "refused_by_gate": false
+    },
+    {
+      "case": "P06",
+      "question": "Could you tell me where my Aurora laptop is right now?",
+      "parser_goal": "none",
+      "out_of_scope": true,
+      "before": "F",
+      "after": "F",
+      "refused_by_gate": false
+    },
+    {
+      "case": "P07",
+      "question": "The payment went through but the order never got created, will I get my money?",
+      "parser_goal": "refund_required",
+      "out_of_scope": false,
+      "before": "B",
+      "after": "B",
+      "refused_by_gate": false
+    },
+    {
+      "case": "P08",
+      "question": "What's the most the company will pay back for one of my trips?",
+      "parser_goal": "supp",
+      "out_of_scope": false,
+      "before": "D",
+      "after": "D",
+      "refused_by_gate": false
+    },
+    {
+      "case": "P09",
+      "question": "Do I have to pay shipping on my laptop order?",
+      "parser_goal": "none",
+      "out_of_scope": true,
+      "before": "A",
+      "after": "F",
+      "refused_by_gate": true
+    },
+    {
+      "case": "P10",
+      "question": "Do I qualify for the bigger leave allowance?",
+      "parser_goal": "none",
+      "out_of_scope": true,
+      "before": "A",
+      "after": "F",
+      "refused_by_gate": true
+    },
+    {
+      "case": "U01",
+      "question": "Honestly I'm not feeling these sneakers anymore, can they go back?",
+      "parser_goal": "decide",
+      "out_of_scope": false,
+      "before": "E",
+      "after": "E",
+      "refused_by_gate": false
+    },
+    {
+      "case": "U02",
+      "question": "The bedsheets are nice but not for me, am I too late?",
+      "parser_goal": "decide",
+      "out_of_scope": false,
+      "before": "E",
+      "after": "E",
+      "refused_by_gate": false
+    },
+    {
+      "case": "U03",
+      "question": "Ugh, the tea I ordered is taking forever. Do I get anything for that?",
+      "parser_goal": "none",
+      "out_of_scope": true,
+      "before": "A",
+      "after": "F",
+      "refused_by_gate": true
+    },
+    {
+      "case": "U04",
+      "question": "Took a cab to a client site and it came to 3,000 rupees, what comes back to me?",
+      "parser_goal": "calculate",
+      "out_of_scope": false,
+      "before": "D",
+      "after": "D",
+      "refused_by_gate": false
+    },
+    {
+      "case": "U05",
+      "question": "Money for the earbuds I sent back never came, what went wrong?",
+      "parser_goal": "refund_required",
+      "out_of_scope": false,
+      "before": "B",
+      "after": "B",
+      "refused_by_gate": false
+    },
+    {
+      "case": "U06",
+      "question": "The nuts turned up fine but I'd rather not keep them",
+      "parser_goal": "none",
+      "out_of_scope": true,
+      "before": "F",
+      "after": "F",
+      "refused_by_gate": false
+    },
+    {
+      "case": "U07",
+      "question": "Why do some of my colleagues get more holiday days than me?",
+      "parser_goal": "resolve",
+      "out_of_scope": false,
+      "before": "D",
+      "after": "D",
+      "refused_by_gate": false
+    },
+    {
+      "case": "U08",
+      "question": "Is my laptop going to reach me soon?",
+      "parser_goal": "none",
+      "out_of_scope": true,
+      "before": "F",
+      "after": "F",
+      "refused_by_gate": false
+    },
+    {
+      "case": "U09",
+      "question": "Please stop the shoe delivery, is that doable?",
+      "parser_goal": "none",
+      "out_of_scope": true,
+      "before": "A",
+      "after": "F",
+      "refused_by_gate": true
+    },
+    {
+      "case": "U10",
+      "question": "Help, I can't get into my work account",
+      "parser_goal": "resolve",
+      "out_of_scope": false,
+      "before": "E",
+      "after": "E",
+      "refused_by_gate": false
+    },
+    {
+      "case": "M01",
+      "question": "Can I return the almonds if they arrived damaged?",
+      "parser_goal": "RET-4",
+      "out_of_scope": false,
+      "before": "B",
+      "after": "B",
+      "refused_by_gate": false
+    },
+    {
+      "case": "M02",
+      "question": "The earbuds were faulty when they arrived, can I still return them?",
+      "parser_goal": "return_allowed",
+      "out_of_scope": false,
+      "before": "B",
+      "after": "B",
+      "refused_by_gate": false
+    },
+    {
+      "case": "M03",
+      "question": "My kettle came smashed, can you send a new one?",
+      "parser_goal": "return_allowed",
+      "out_of_scope": false,
+      "before": "B",
+      "after": "B",
+      "refused_by_gate": false
+    },
+    {
+      "case": "M04",
+      "question": "The almonds were spoiled on arrival, can I get fresh ones sent instead?",
+      "parser_goal": "RET-4",
+      "out_of_scope": false,
+      "before": "D",
+      "after": "D",
+      "refused_by_gate": false
+    },
+    {
+      "case": "M05",
+      "question": "I drove my own car 120 km to a vendor and spent 1,500 rupees, how much do I get?",
+      "parser_goal": "none",
+      "out_of_scope": true,
+      "before": "A",
+      "after": "F",
+      "refused_by_gate": true
+    },
+    {
+      "case": "M06",
+      "question": "I took a train 300 km and the tickets cost \u20b96,500, how much will I be reimbursed?",
+      "parser_goal": "none",
+      "out_of_scope": true,
+      "before": "A",
+      "after": "F",
+      "refused_by_gate": true
+    },
+    {
+      "case": "M07",
+      "question": "Is a 30 km trip reimbursable?",
+      "parser_goal": "resolve",
+      "out_of_scope": false,
+      "before": "B",
+      "after": "B",
+      "refused_by_gate": false
+    },
+    {
+      "case": "M08",
+      "question": "Does my bedsheet order qualify for return even though it's been over a month?",
+      "parser_goal": "none",
+      "out_of_scope": true,
+      "before": "A",
+      "after": "F",
+      "refused_by_gate": true
+    },
+    {
+      "case": "M09",
+      "question": "Would I have to pay to cancel the running shoes order?",
+      "parser_goal": "cancelation_required",
+      "out_of_scope": false,
+      "before": "B",
+      "after": "B",
+      "refused_by_gate": false
+    },
+    {
+      "case": "M10",
+      "question": "I spent 1,800 on a 60 km bus trip and have no receipts, is that reimbursable?",
+      "parser_goal": "none",
+      "out_of_scope": true,
+      "before": "A",
+      "after": "F",
+      "refused_by_gate": true
+    },
+    {
+      "case": "H01",
+      "question": "Why was my earbuds refund turned down?",
+      "parser_goal": "refund_rejected",
+      "out_of_scope": false,
+      "before": "C",
+      "after": "C",
+      "refused_by_gate": false
+    },
+    {
+      "case": "H02",
+      "question": "Why can't I cancel the laptop order?",
+      "parser_goal": "none",
+      "out_of_scope": true,
+      "before": "A",
+      "after": "F",
+      "refused_by_gate": true
+    },
+    {
+      "case": "H03",
+      "question": "Why am I not getting 24 days of leave?",
+      "parser_goal": "resolve",
+      "out_of_scope": false,
+      "before": "D",
+      "after": "D",
+      "refused_by_gate": false
+    },
+    {
+      "case": "H04",
+      "question": "Why can't I send back the almonds?",
+      "parser_goal": "none",
+      "out_of_scope": true,
+      "before": "A",
+      "after": "F",
+      "refused_by_gate": true
+    },
+    {
+      "case": "H05",
+      "question": "Why won't you replace my kettle?",
+      "parser_goal": "none",
+      "out_of_scope": true,
+      "before": "F",
+      "after": "F",
+      "refused_by_gate": false
+    },
+    {
+      "case": "H06",
+      "question": "Why is order 22004 owed compensation?",
+      "parser_goal": "refund_required",
+      "out_of_scope": false,
+      "before": "B",
+      "after": "B",
+      "refused_by_gate": false
+    },
+    {
+      "case": "H07",
+      "question": "Why is my trip claim only paying out 8,000?",
+      "parser_goal": "resolve",
+      "out_of_scope": false,
+      "before": "C",
+      "after": "C",
+      "refused_by_gate": false
+    },
+    {
+      "case": "H08",
+      "question": "Why is my bedsheet return still allowed after 40 days?",
+      "parser_goal": "return_allowed",
+      "out_of_scope": false,
+      "before": "B",
+      "after": "B",
+      "refused_by_gate": false
+    },
+    {
+      "case": "A01",
+      "question": "Can I cancel it?",
+      "parser_goal": "cancellation_allowed",
+      "out_of_scope": false,
+      "before": "B",
+      "after": "B",
+      "refused_by_gate": false
+    },
+    {
+      "case": "A02",
+      "question": "Can I return my order?",
+      "parser_goal": "recommendation",
+      "out_of_scope": false,
+      "before": "B",
+      "after": "B",
+      "refused_by_gate": false
+    },
+    {
+      "case": "A03",
+      "question": "Is it eligible?",
+      "parser_goal": "none",
+      "out_of_scope": true,
+      "before": "A",
+      "after": "F",
+      "refused_by_gate": true
+    },
+    {
+      "case": "A04",
+      "question": "Will I get free delivery?",
+      "parser_goal": "free_delivery",
+      "out_of_scope": false,
+      "before": "B",
+      "after": "B",
+      "refused_by_gate": false
+    },
+    {
+      "case": "A05",
+      "question": "What about the other one?",
+      "parser_goal": "resolve",
+      "out_of_scope": false,
+      "before": "G",
+      "after": "G",
+      "refused_by_gate": false
+    },
+    {
+      "case": "A06",
+      "question": "How much?",
+      "parser_goal": "calculate",
+      "out_of_scope": false,
+      "before": "G",
+      "after": "G",
+      "refused_by_gate": false
+    },
+    {
+      "case": "A07",
+      "question": "Something is wrong with my order",
+      "parser_goal": "resolve",
+      "out_of_scope": false,
+      "before": "D",
+      "after": "D",
+      "refused_by_gate": false
+    },
+    {
+      "case": "C01",
+      "question": "How much will I get back if I cancel order 22003?",
+      "parser_goal": "cancellation_refund",
+      "out_of_scope": false,
+      "before": "D",
+      "after": "D",
+      "refused_by_gate": false
+    },
+    {
+      "case": "C02",
+      "question": "What compensation do I get for order 22004 being late?",
+      "parser_goal": "delay_compensation",
+      "out_of_scope": false,
+      "before": "D",
+      "after": "D",
+      "refused_by_gate": false
+    },
+    {
+      "case": "C03",
+      "question": "How much will I be reimbursed if my business trip cost \u20b98,750?",
+      "parser_goal": "calculate",
+      "out_of_scope": false,
+      "before": "D",
+      "after": "D",
+      "refused_by_gate": false
+    },
+    {
+      "case": "C04",
+      "question": "How much would I get back for a \u20b94,000 flight?",
+      "parser_goal": "calculate",
+      "out_of_scope": false,
+      "before": "D",
+      "after": "D",
+      "refused_by_gate": false
+    },
+    {
+      "case": "C05",
+      "question": "How many leave days do I have per year?",
+      "parser_goal": "none",
+      "out_of_scope": true,
+      "before": "A",
+      "after": "F",
+      "refused_by_gate": true
+    },
+    {
+      "case": "C06",
+      "question": "How much delay compensation do I get on the laptop order?",
+      "parser_goal": "delay_compensation",
+      "out_of_scope": false,
+      "before": "D",
+      "after": "D",
+      "refused_by_gate": false
+    },
+    {
+      "case": "C07",
+      "question": "What would I get back for cancelling the chai order?",
+      "parser_goal": "cancellation_refund",
+      "out_of_scope": false,
+      "before": "D",
+      "after": "D",
+      "refused_by_gate": false
+    },
+    {
+      "case": "C08",
+      "question": "What's my yearly vacation entitlement?",
+      "parser_goal": "none",
+      "out_of_scope": true,
+      "before": "A",
+      "after": "F",
+      "refused_by_gate": true
+    },
+    {
+      "case": "I01",
+      "question": "How much will I get reimbursed for a business trip?",
+      "parser_goal": "reimbursable_amount",
+      "out_of_scope": false,
+      "before": "D",
+      "after": "D",
+      "refused_by_gate": false
+    },
+    {
+      "case": "I02",
+      "question": "Is my business trip reimbursable?",
+      "parser_goal": "resolve",
+      "out_of_scope": false,
+      "before": "B",
+      "after": "B",
+      "refused_by_gate": false
+    },
+    {
+      "case": "I03",
+      "question": "Can I get a replacement for the shoes?",
+      "parser_goal": "replacement_available",
+      "out_of_scope": false,
+      "before": "B",
+      "after": "B",
+      "refused_by_gate": false
+    },
+    {
+      "case": "I04",
+      "question": "Can I return the almonds?",
+      "parser_goal": "none",
+      "out_of_scope": true,
+      "before": "A",
+      "after": "F",
+      "refused_by_gate": true
+    },
+    {
+      "case": "I05",
+      "question": "Can I claim reimbursement for driving my own car to a client?",
+      "parser_goal": "resolve",
+      "out_of_scope": false,
+      "before": "B",
+      "after": "B",
+      "refused_by_gate": false
+    },
+    {
+      "case": "I06",
+      "question": "Will the company pay for my hotel stay?",
+      "parser_goal": "none",
+      "out_of_scope": true,
+      "before": "F",
+      "after": "F",
+      "refused_by_gate": false
+    },
+    {
+      "case": "I07",
+      "question": "Do you offer gift wrapping?",
+      "parser_goal": "none",
+      "out_of_scope": true,
+      "before": "A",
+      "after": "F",
+      "refused_by_gate": true
+    },
+    {
+      "case": "I08",
+      "question": "What is the daily allowance for international travel?",
+      "parser_goal": "none",
+      "out_of_scope": true,
+      "before": "A",
+      "after": "F",
+      "refused_by_gate": true
+    },
+    {
+      "case": "L01",
+      "question": "Order 12345 hasn't shipped yet, so I can cancel it, right?",
+      "parser_goal": "cancellation_allowed",
+      "out_of_scope": false,
+      "before": "B",
+      "after": "B",
+      "refused_by_gate": false
+    },
+    {
+      "case": "L02",
+      "question": "My shoes order 12346 was delivered 60 days ago, can I still return it?",
+      "parser_goal": "RET-1",
+      "out_of_scope": false,
+      "before": "B",
+      "after": "B",
+      "refused_by_gate": false
+    },
+    {
+      "case": "L03",
+      "question": "The earbuds order 12348 only arrived 3 days ago, so I'm within the return window?",
+      "parser_goal": "RET-1",
+      "out_of_scope": false,
+      "before": "A",
+      "after": "A",
+      "refused_by_gate": false
+    },
+    {
+      "case": "L04",
+      "question": "I'm a Plus member so my late chai order gets the extra credit, right?",
+      "parser_goal": "supp",
+      "out_of_scope": false,
+      "before": "D",
+      "after": "D",
+      "refused_by_gate": false
+    },
+    {
+      "case": "L05",
+      "question": "My grade cap is \u20b915,000 so I'll get the full \u20b98,750 for my trip back?",
+      "parser_goal": "none",
+      "out_of_scope": true,
+      "before": "A",
+      "after": "F",
+      "refused_by_gate": true
+    },
+    {
+      "case": "L06",
+      "question": "I've worked here 5 years so I get 24 days of leave, correct?",
+      "parser_goal": "none",
+      "out_of_scope": true,
+      "before": "A",
+      "after": "F",
+      "refused_by_gate": true
+    },
+    {
+      "case": "L07",
+      "question": "Order 22001 was delivered yesterday and the almonds were rotten, can I return them?",
+      "parser_goal": "RET-4",
+      "out_of_scope": false,
+      "before": "B",
+      "after": "B",
+      "refused_by_gate": false
+    },
+    {
+      "case": "S01",
+      "question": "Can I return the bedsheets after 40 days?",
+      "parser_goal": "return_allowed",
+      "out_of_scope": false,
+      "before": "B",
+      "after": "B",
+      "refused_by_gate": false
+    },
+    {
+      "case": "S02",
+      "question": "Can I return shoes 40 days after they were delivered?",
+      "parser_goal": "return_allowed",
+      "out_of_scope": false,
+      "before": "B",
+      "after": "B",
+      "refused_by_gate": false
+    },
+    {
+      "case": "S03",
+      "question": "If the kettle arrived with a crack, would I get a replacement?",
+      "parser_goal": "replace_available",
+      "out_of_scope": false,
+      "before": "B",
+      "after": "B",
+      "refused_by_gate": false
+    },
+    {
+      "case": "S04",
+      "question": "Does cancelling order 22003 cost me anything?",
+      "parser_goal": "cancelation_cost",
+      "out_of_scope": false,
+      "before": "D",
+      "after": "D",
+      "refused_by_gate": false
+    },
+    {
+      "case": "S05",
+      "question": "I travelled 200 km in my own car and spent \u20b92,500 with receipts, what's my reimbursement?",
+      "parser_goal": "none",
+      "out_of_scope": true,
+      "before": "A",
+      "after": "F",
+      "refused_by_gate": true
+    },
+    {
+      "case": "S06",
+      "question": "Can I return a gift card that arrived damaged?",
+      "parser_goal": "RET-4",
+      "out_of_scope": false,
+      "before": "B",
+      "after": "B",
+      "refused_by_gate": false
+    },
+    {
+      "case": "S07",
+      "question": "Does the chai order get compensation for being late?",
+      "parser_goal": "none",
+      "out_of_scope": true,
+      "before": "A",
+      "after": "F",
+      "refused_by_gate": true
+    },
+    {
+      "case": "S08",
+      "question": "Is a 45 km taxi ride reimbursable?",
+      "parser_goal": "resolve",
+      "out_of_scope": false,
+      "before": "B",
+      "after": "B",
+      "refused_by_gate": false
+    }
+  ]
+}

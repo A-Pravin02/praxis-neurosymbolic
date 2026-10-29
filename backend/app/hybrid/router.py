@@ -203,8 +203,9 @@ class ReasoningRouter:
         checked - it must exist, be in force, and not be unrelated to the question by the
         encoder's measure - before its text is used.
         """
+        from_text = self._text_may_answer(interpretation)
         selected = interpretation.selected_clause
-        if selected:
+        if selected and from_text:
             ranked = self.pack.policies.search(interpretation.question,
                                                k=len(self.pack.policies.clauses))
             chosen = [c for c in ranked if c.clause.id == selected]
@@ -221,10 +222,40 @@ class ReasoningRouter:
         # about the policy as a whole rather than one clause of it. Refusing there
         # reported a knowledge gap over a corpus that covers the topic well - the clause
         # the question is closest to scored 0.72 while the gap was being declared. The
-        # same acceptance threshold the unparsed path already uses applies here.
-        if clauses and clauses[0].score >= RETRIEVAL_ACCEPT:
+        # same acceptance threshold the unparsed path already uses applies here, but only
+        # for the general question that fallback was added for; `_text_may_answer` says
+        # which those are.
+        if from_text and clauses and clauses[0].score >= RETRIEVAL_ACCEPT:
             return self._retrieval(clauses, neural_reason)
-        return self._insufficient(interpretation, clauses, neural_reason)
+        return self._insufficient(interpretation, clauses, neural_reason,
+                                  declined=not from_text)
+
+    def _text_may_answer(self, interpretation: "Interpretation") -> bool:
+        """The parser has ruled out every goal. May policy text still answer the question?
+
+        Only when the answer is the same for everyone. Once no rule decides the question,
+        nothing a clause says is about this person's case, so reciting the nearest clause
+        at someone asking about their own order states company policy they did not ask
+        about as though it settled what they did. That is what the unguarded fallback
+        did on the test split: every one of the nine out-of-scope questions it answered
+        named an order, and the clause it recited was about something else entirely -
+        "can you gift-wrap order ORD-85004 before it ships" was answered out of the
+        *cancellation* clause, which scores 0.64 against it. The six it refused are
+        exactly the six whose nearest clause fell below the acceptance floor, which is
+        to say it refused them by luck of the threshold rather than by judgement.
+
+        What survives is the general question the fallback exists for: "what is the
+        returns policy" asks what the text says, names no record, and the parser names
+        no clause only because the question is about the policy as a whole.
+
+        Both conditions are the rule `_personal_request` already applies to the parse -
+        "inform" means the answer is the same for everyone, so a question about the
+        asker's own position is not one. No threshold is introduced or tuned here; the
+        test is what kind of question was asked.
+        """
+        if interpretation.speech_act.label in CASE_ACTS:
+            return False
+        return not interpretation.mentions.records
 
     # -- topicality ---------------------------------------------------------
     def _domain_vocabulary(self) -> set[str]:
@@ -381,8 +412,32 @@ class ReasoningRouter:
                     ("NEURAL", "Answer from the model's general knowledge, uncited")],
         )
 
-    def _insufficient(self, interpretation, clauses, neural_reason) -> RouteDecision:
+    def _insufficient(self, interpretation, clauses, neural_reason, *,
+                      declined: bool = False) -> RouteDecision:
         best = clauses[0] if clauses else None
+        if declined:
+            # The parser ruled out every goal and the question is about one person's own
+            # case, so a clause cannot answer it however well it scores. Saying so is the
+            # point: the reason must not read as "no clause was relevant" when one was
+            # relevant-looking and was refused on purpose.
+            return RouteDecision(
+                Pipeline.INSUFFICIENT,
+                "The semantic parser read the question against every goal the rule base "
+                "declares and named none of them, and the question asks about one "
+                "person's own case rather than what a policy says in general. No rule "
+                "decides it, so no policy clause answers it either"
+                + (f" - the closest, {best.clause.id}, scores {best.score:.2f} but is "
+                   f"about {best.clause.title.lower()}" if best else "")
+                + ". Reciting it would state policy the person did not ask about as "
+                  "though it settled what they did, so the assistant says what is "
+                  "missing instead.",
+                neural_reason=neural_reason, clauses=clauses,
+                stages=[("NEURAL", "Understand the question"),
+                        ("NEURAL", "Parse it against the declared goals; none applies"),
+                        ("SYMBOLIC", "Confirm the parser named no declared goal"),
+                        ("HYBRID", "Establish the question is about one case, not policy"),
+                        ("HYBRID", "Refuse the nearest clause and report what is missing")],
+            )
         return RouteDecision(
             Pipeline.INSUFFICIENT,
             "Nothing in the company knowledge covers this: no goal in the rule base resembles "

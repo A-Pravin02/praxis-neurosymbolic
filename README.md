@@ -28,11 +28,19 @@ Coverage is reported beside every accuracy, because a system can buy a good
 hallucination rate by refusing the hard questions. PRAXIS does not: it answers more
 questions than retrieval *and* more of them correctly.
 
-**What does not work.** On the fifteen questions no policy clause covers, the system
-abstains in **none of them**. It maps an out-of-scope question onto the nearest in-scope
-goal and answers that question correctly, citing real clauses. Verification establishes
-that a claim follows from evidence, not that it answers the question asked. A relevance
-gate is the remedy and is not implemented. This is in the demo as a sample case.
+**What does not work.** On the fifteen questions no policy clause covers, the default
+LLM-free configuration abstains in **none of them**. It maps an out-of-scope question
+onto the nearest in-scope goal and answers that question correctly, citing real clauses.
+Verification establishes that a claim follows from evidence, not that it answers the
+question asked. This is in the demo as a sample case.
+
+The fix exists only where understanding can decline. Selecting a goal by nearest
+neighbour always returns a goal, so the encoder has no way to say "none"; the
+language-model parser does, and a gate on that verdict takes the parser configuration
+from 6 of 15 to **15 of 15**, gaining nine cases and losing none, and losing none on the
+curated suite either. Nine earlier attempts to detect out-of-scope questions by a score
+were refuted first — [docs/audit/RELEVANCE_GATE.md](docs/audit/RELEVANCE_GATE.md) records
+each with the measurement that killed it, and why the tenth had to be structural.
 
 ## The demo
 

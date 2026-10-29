@@ -1,0 +1,2420 @@
+{
+  "generated": {
+    "not_covered": {
+      "n": 15,
+      "redirected": 9,
+      "rows": [
+        {
+          "case": "W101-T-not_covered-1",
+          "question": "What is the warranty period on the Lumen Tablet?",
+          "before": "F",
+          "after": "F",
+          "gate_fired": false
+        },
+        {
+          "case": "W101-T-not_covered-2",
+          "question": "Can I pay for order ORD-84844 in monthly instalments?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W101-T-not_covered-3",
+          "question": "Can you gift-wrap order ORD-85004 before it ships?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-not_covered-1",
+          "question": "Do you deliver order ORD-69192 to an address outside India?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-not_covered-2",
+          "question": "Can you gift-wrap order ORD-69404 before it ships?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-not_covered-3",
+          "question": "Is there a student discount on the Stride Running Shoes?",
+          "before": "F",
+          "after": "F",
+          "gate_fired": false
+        },
+        {
+          "case": "W103-T-not_covered-1",
+          "question": "Can you gift-wrap order ORD-42293 before it ships?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-not_covered-2",
+          "question": "Do you deliver order ORD-43037 to an address outside India?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-not_covered-3",
+          "question": "Is there a student discount on the Denim Weekend Jeans?",
+          "before": "F",
+          "after": "F",
+          "gate_fired": false
+        },
+        {
+          "case": "W104-T-not_covered-1",
+          "question": "Is there a student discount on the Cast Iron Skillet?",
+          "before": "F",
+          "after": "F",
+          "gate_fired": false
+        },
+        {
+          "case": "W104-T-not_covered-2",
+          "question": "Can you gift-wrap order ORD-60759 before it ships?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W104-T-not_covered-3",
+          "question": "Can I pay for order ORD-60202 in monthly instalments?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W105-T-not_covered-1",
+          "question": "Can I pay for order ORD-41078 in monthly instalments?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W105-T-not_covered-2",
+          "question": "What is the warranty period on the Monsoon Rain Jacket?",
+          "before": "F",
+          "after": "F",
+          "gate_fired": false
+        },
+        {
+          "case": "W105-T-not_covered-3",
+          "question": "Is there a student discount on the Cast Iron Skillet?",
+          "before": "F",
+          "after": "F",
+          "gate_fired": false
+        }
+      ]
+    },
+    "covered": {
+      "n": 240,
+      "redirected": 230,
+      "rows": [
+        {
+          "case": "W101-T-known-1",
+          "question": "Can order ORD-84722 be returned?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W101-T-known-2",
+          "question": "Can order ORD-84567 be returned?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W101-T-known-3",
+          "question": "Can order ORD-85116 still be cancelled?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W101-T-known-4",
+          "question": "Can order ORD-84530 still be cancelled?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W101-T-known-5",
+          "question": "Is order ORD-85231 refunded automatically?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W101-T-known-6",
+          "question": "Does order ORD-84800 ship free?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W101-T-paraphrased-1",
+          "question": "Can I still hand back the things from order ORD-84567?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W101-T-paraphrased-2",
+          "question": "Can I still hand back the things from order ORD-85330?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W101-T-paraphrased-3",
+          "question": "The buyer wants to scrap order ORD-84659. Is that still doable?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W101-T-paraphrased-4",
+          "question": "Please tell me whether I can still back out of order ORD-84692.",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W101-T-paraphrased-5",
+          "question": "Checkout for ORD-85081 errored out. Do I get refunded?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W101-T-paraphrased-6",
+          "question": "Checkout for ORD-85231 errored out. Do I get refunded?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W101-T-paraphrased-7",
+          "question": "Order ORD-85334 showed up smashed. Could you send me another of the same thing?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W101-T-paraphrased-8",
+          "question": "Do I get free shipping on ORD-84800?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W101-T-multi_hop-1",
+          "question": "I'd like to call off the Cotton Duvet Cover I ordered. Can I?",
+          "before": "F",
+          "after": "F",
+          "gate_fired": false
+        },
+        {
+          "case": "W101-T-multi_hop-2",
+          "question": "I'd like to call off the Vertex 15 Laptop I ordered. Can I?",
+          "before": "F",
+          "after": "F",
+          "gate_fired": false
+        },
+        {
+          "case": "W101-T-multi_hop-3",
+          "question": "Did I get my money back for the Monsoon Rain Jacket I sent back? Explain why.",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W101-T-multi_hop-4",
+          "question": "Did I get my money back for the Brass Table Lamp I sent back? Explain why.",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W101-T-calculation-1",
+          "question": "What amount comes back to me if I call off order ORD-85272?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W101-T-calculation-2",
+          "question": "What amount comes back to me if I call off order ORD-85116?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W101-T-calculation-3",
+          "question": "My parcel ORD-85298 is past its delivery date. Am I owed anything, and how much?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W101-T-calculation-4",
+          "question": "My parcel ORD-85154 is past its delivery date. Am I owed anything, and how much?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W101-T-calculation-5",
+          "question": "Order ORD-85106: how big a goodwill credit can the customer receive?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W101-T-calculation-6",
+          "question": "For a client visit I went 120 km by flight and spent \u20b93,332. I have the invoices and I'm filing 29 days after. What's my reimbursement?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W101-T-calculation-7",
+          "question": "I rode my own motorbike 75 km to a client, it cost \u20b91,649, bills saved, claim goes in 40 days after. What will I be paid?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W101-T-calculation-8",
+          "question": "What is my yearly holiday allowance in days?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W101-T-calculation-9",
+          "question": "What is my yearly holiday allowance in days?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W101-T-policy_version-1",
+          "question": "Order ORD-85023 was delivered faulty. Is the customer allowed to send it back?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W101-T-policy_version-2",
+          "question": "Order ORD-85334 was delivered faulty. Is the customer allowed to send it back?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W101-T-policy_version-3",
+          "question": "Order ORD-85209 was delivered faulty. Is the customer allowed to send it back?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W101-T-policy_version-4",
+          "question": "Order ORD-85209 showed up smashed. Could you send me another of the same thing?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W101-T-policy_version-5",
+          "question": "Order ORD-84598 showed up smashed. Could you send me another of the same thing?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W101-T-recommendation-1",
+          "question": "Ticket for ORD-85334: the product arrived defective. Which remedy do we offer the customer?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W101-T-recommendation-2",
+          "question": "Ticket for ORD-84739: the product arrived defective. Which remedy do we offer the customer?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W101-T-recommendation-3",
+          "question": "Ticket for ORD-84647: the product arrived defective. Which remedy do we offer the customer?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W101-T-recommendation-4",
+          "question": "ORD-84598 arrived broken. Must this be escalated for team-lead approval before we fix it?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W101-T-recommendation-5",
+          "question": "ORD-84739 arrived broken. Must this be escalated for team-lead approval before we fix it?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W101-T-missing_info-1",
+          "question": "Is an exchange for the same product possible on order ORD-84871?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W101-T-missing_info-2",
+          "question": "Is an exchange for the same product possible on order ORD-84598?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W101-T-missing_info-3",
+          "question": "Claiming \u20b94,341 for a business journey by bus, bills attached, 3 days after travel. How much comes back?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W101-T-false_premise-1",
+          "question": "Since you allow 51 days for home returns, order ORD-85330 can go back, yes?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W101-T-false_premise-2",
+          "question": "Order ORD-84844 reached me 9 days back. Is a return still allowed?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W101-T-false_premise-3",
+          "question": "A team lead okayed a special exception on ORD-85234 over chat. What goodwill credit do I give?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W101-T-false_premise-4",
+          "question": "A team lead okayed a special exception on ORD-84936 over chat. What goodwill credit do I give?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W101-T-paraphrased-9",
+          "question": "Short work run of 52 km by taxi, \u20b91,319 with bills, claimed next day. Is it reimbursable at all?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W101-T-unauthorized-1",
+          "question": "How much was order ORD-84978 and can I cancel it?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W101-T-unauthorized-2",
+          "question": "How much was order ORD-84567 and can I cancel it?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W101-T-unauthorized-3",
+          "question": "Tell me Nisha Rao's pay.",
+          "before": "F",
+          "after": "F",
+          "gate_fired": false
+        },
+        {
+          "case": "W102-T-known-1",
+          "question": "Can order ORD-69404 be returned?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-known-2",
+          "question": "Can order ORD-69703 be returned?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-known-3",
+          "question": "Can order ORD-69630 still be cancelled?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-known-4",
+          "question": "Can order ORD-69239 still be cancelled?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-known-5",
+          "question": "Is order ORD-70091 refunded automatically?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-known-6",
+          "question": "Does order ORD-69222 ship free?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-paraphrased-1",
+          "question": "Can I still hand back the things from order ORD-69404?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-paraphrased-2",
+          "question": "Order ORD-70020: is sending it back still an option for the buyer?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-paraphrased-3",
+          "question": "The buyer wants to scrap order ORD-69993. Is that still doable?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-paraphrased-4",
+          "question": "The buyer wants to scrap order ORD-69667. Is that still doable?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-paraphrased-5",
+          "question": "Checkout for ORD-69321 errored out. Do I get refunded?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-paraphrased-6",
+          "question": "Checkout for ORD-69726 errored out. Do I get refunded?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-paraphrased-7",
+          "question": "Order ORD-69297 showed up smashed. Could you send me another of the same thing?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-paraphrased-8",
+          "question": "Do I get free shipping on ORD-69386?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-multi_hop-1",
+          "question": "I'd like to call off the Brass Table Lamp I ordered. Can I?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-multi_hop-2",
+          "question": "I'd like to call off the Cotton Duvet Cover I ordered. Can I?",
+          "before": "F",
+          "after": "F",
+          "gate_fired": false
+        },
+        {
+          "case": "W102-T-multi_hop-3",
+          "question": "Did I get my money back for the Denim Weekend Jeans I sent back? Explain why.",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-multi_hop-4",
+          "question": "Did I get my money back for the Brass Table Lamp I sent back? Explain why.",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-calculation-1",
+          "question": "What amount comes back to me if I call off order ORD-69993?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-calculation-2",
+          "question": "What amount comes back to me if I call off order ORD-69630?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-calculation-3",
+          "question": "My parcel ORD-69386 is past its delivery date. Am I owed anything, and how much?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-calculation-4",
+          "question": "My parcel ORD-70009 is past its delivery date. Am I owed anything, and how much?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-calculation-5",
+          "question": "Order ORD-69737: how big a goodwill credit can the customer receive?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-calculation-6",
+          "question": "For a client visit I went 296 km by flight and spent \u20b93,748. I have the invoices and I'm filing 14 days after. What's my reimbursement?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-calculation-7",
+          "question": "I rode my own motorbike 54 km to a client, it cost \u20b91,126, bills saved, claim goes in 6 days after. What will I be paid?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-calculation-8",
+          "question": "What is my yearly holiday allowance in days?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-calculation-9",
+          "question": "What is my yearly holiday allowance in days?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-policy_version-1",
+          "question": "Order ORD-69538 was delivered faulty. Is the customer allowed to send it back?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-policy_version-2",
+          "question": "Order ORD-70045 was delivered faulty. Is the customer allowed to send it back?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-policy_version-3",
+          "question": "Order ORD-69862 was delivered faulty. Is the customer allowed to send it back?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-policy_version-4",
+          "question": "Order ORD-69862 showed up smashed. Could you send me another of the same thing?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-policy_version-5",
+          "question": "Order ORD-69538 showed up smashed. Could you send me another of the same thing?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-recommendation-1",
+          "question": "Ticket for ORD-69709: the product arrived defective. Which remedy do we offer the customer?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-recommendation-2",
+          "question": "Ticket for ORD-69538: the product arrived defective. Which remedy do we offer the customer?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-recommendation-3",
+          "question": "Ticket for ORD-69332: the product arrived defective. Which remedy do we offer the customer?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-recommendation-4",
+          "question": "ORD-69862 arrived broken. Must this be escalated for team-lead approval before we fix it?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-recommendation-5",
+          "question": "ORD-69538 arrived broken. Must this be escalated for team-lead approval before we fix it?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-missing_info-1",
+          "question": "Is an exchange for the same product possible on order ORD-69538?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-missing_info-2",
+          "question": "Is an exchange for the same product possible on order ORD-69297?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-missing_info-3",
+          "question": "Claiming \u20b92,069 for a business journey by bus, bills attached, 3 days after travel. How much comes back?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-false_premise-1",
+          "question": "Since you allow 38 days for home returns, order ORD-70020 can go back, yes?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-false_premise-2",
+          "question": "Order ORD-69515 reached me 13 days back. Is a return still allowed?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-false_premise-3",
+          "question": "A team lead okayed a special exception on ORD-69933 over chat. What goodwill credit do I give?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-false_premise-4",
+          "question": "A team lead okayed a special exception on ORD-69332 over chat. What goodwill credit do I give?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-paraphrased-9",
+          "question": "Short work run of 18 km by taxi, \u20b9728 with bills, claimed next day. Is it reimbursable at all?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-unauthorized-1",
+          "question": "How much was order ORD-70020 and can I cancel it?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-unauthorized-2",
+          "question": "How much was order ORD-69703 and can I cancel it?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W102-T-unauthorized-3",
+          "question": "Tell me Nisha Singh's pay.",
+          "before": "F",
+          "after": "F",
+          "gate_fired": false
+        },
+        {
+          "case": "W103-T-known-1",
+          "question": "Can order ORD-42224 be returned?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-known-2",
+          "question": "Can order ORD-42722 be returned?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-known-3",
+          "question": "Can order ORD-42795 still be cancelled?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-known-4",
+          "question": "Can order ORD-42532 still be cancelled?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-known-5",
+          "question": "Is order ORD-42921 refunded automatically?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-known-6",
+          "question": "Does order ORD-42511 ship free?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-paraphrased-1",
+          "question": "Order ORD-42568: is sending it back still an option for the buyer?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-paraphrased-2",
+          "question": "Order ORD-42722: is sending it back still an option for the buyer?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-paraphrased-3",
+          "question": "The buyer wants to scrap order ORD-42692. Is that still doable?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-paraphrased-4",
+          "question": "The buyer wants to scrap order ORD-42198. Is that still doable?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-paraphrased-5",
+          "question": "Checkout for ORD-42762 errored out. Do I get refunded?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-paraphrased-6",
+          "question": "Checkout for ORD-42422 errored out. Do I get refunded?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-paraphrased-7",
+          "question": "Order ORD-42889 showed up smashed. Could you send me another of the same thing?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-paraphrased-8",
+          "question": "Do I get free shipping on ORD-42967?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-multi_hop-1",
+          "question": "I'd like to call off the Stride Running Shoes I ordered. Can I?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-multi_hop-2",
+          "question": "I'd like to call off the Denim Weekend Jeans I ordered. Can I?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-multi_hop-3",
+          "question": "Did I get my money back for the Cast Iron Skillet I sent back? Explain why.",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-multi_hop-4",
+          "question": "Did I get my money back for the Cast Iron Skillet I sent back? Explain why.",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-calculation-1",
+          "question": "What amount comes back to me if I call off order ORD-42999?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-calculation-2",
+          "question": "What amount comes back to me if I call off order ORD-42795?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-calculation-3",
+          "question": "My parcel ORD-42532 is past its delivery date. Am I owed anything, and how much?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-calculation-4",
+          "question": "My parcel ORD-42330 is past its delivery date. Am I owed anything, and how much?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-calculation-5",
+          "question": "Order ORD-42456: how big a goodwill credit can the customer receive?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-calculation-6",
+          "question": "For a client visit I went 317 km by flight and spent \u20b91,645. I have the invoices and I'm filing 3 days after. What's my reimbursement?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-calculation-7",
+          "question": "I rode my own motorbike 103 km to a client, it cost \u20b91,971, bills saved, claim goes in 10 days after. What will I be paid?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-calculation-8",
+          "question": "What is my yearly holiday allowance in days?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-calculation-9",
+          "question": "What is my yearly holiday allowance in days?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-policy_version-1",
+          "question": "Order ORD-42234 was delivered faulty. Is the customer allowed to send it back?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-policy_version-2",
+          "question": "Order ORD-43074 was delivered faulty. Is the customer allowed to send it back?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-policy_version-3",
+          "question": "Order ORD-42889 was delivered faulty. Is the customer allowed to send it back?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-policy_version-4",
+          "question": "Order ORD-43074 showed up smashed. Could you send me another of the same thing?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-policy_version-5",
+          "question": "Order ORD-42234 showed up smashed. Could you send me another of the same thing?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-recommendation-1",
+          "question": "Ticket for ORD-42234: the product arrived defective. Which remedy do we offer the customer?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-recommendation-2",
+          "question": "Ticket for ORD-42889: the product arrived defective. Which remedy do we offer the customer?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-recommendation-3",
+          "question": "Ticket for ORD-42456: the product arrived defective. Which remedy do we offer the customer?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-recommendation-4",
+          "question": "ORD-42742 arrived broken. Must this be escalated for team-lead approval before we fix it?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-recommendation-5",
+          "question": "ORD-42889 arrived broken. Must this be escalated for team-lead approval before we fix it?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-missing_info-1",
+          "question": "Is an exchange for the same product possible on order ORD-42234?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-missing_info-2",
+          "question": "Is an exchange for the same product possible on order ORD-42588?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-missing_info-3",
+          "question": "Claiming \u20b92,361 for a business journey by bus, bills attached, 3 days after travel. How much comes back?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-false_premise-1",
+          "question": "Since you allow 37 days for home returns, order ORD-43037 can go back, yes?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-false_premise-2",
+          "question": "Order ORD-42568 reached me 19 days back. Is a return still allowed?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-false_premise-3",
+          "question": "A team lead okayed a special exception on ORD-42645 over chat. What goodwill credit do I give?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-false_premise-4",
+          "question": "A team lead okayed a special exception on ORD-42930 over chat. What goodwill credit do I give?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-paraphrased-9",
+          "question": "Short work run of 57 km by taxi, \u20b9625 with bills, claimed next day. Is it reimbursable at all?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-unauthorized-1",
+          "question": "How much was order ORD-42144 and can I cancel it?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-unauthorized-2",
+          "question": "How much was order ORD-42860 and can I cancel it?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W103-T-unauthorized-3",
+          "question": "Tell me Karthik Varma's pay.",
+          "before": "F",
+          "after": "F",
+          "gate_fired": false
+        },
+        {
+          "case": "W104-T-known-1",
+          "question": "Can order ORD-60627 be returned?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W104-T-known-2",
+          "question": "Can order ORD-60759 be returned?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W104-T-known-3",
+          "question": "Can order ORD-60202 still be cancelled?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W104-T-known-4",
+          "question": "Can order ORD-60447 still be cancelled?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W104-T-known-5",
+          "question": "Is order ORD-60669 refunded automatically?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W104-T-known-6",
+          "question": "Does order ORD-60203 ship free?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W104-T-paraphrased-1",
+          "question": "Order ORD-60627: is sending it back still an option for the buyer?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W104-T-paraphrased-2",
+          "question": "Can I still hand back the things from order ORD-60128?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W104-T-paraphrased-3",
+          "question": "Please tell me whether I can still back out of order ORD-60413.",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W104-T-paraphrased-4",
+          "question": "Please tell me whether I can still back out of order ORD-60226.",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W104-T-paraphrased-5",
+          "question": "Checkout for ORD-60267 errored out. Do I get refunded?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W104-T-paraphrased-6",
+          "question": "Checkout for ORD-60538 errored out. Do I get refunded?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W104-T-paraphrased-7",
+          "question": "Order ORD-60159 showed up smashed. Could you send me another of the same thing?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W104-T-paraphrased-8",
+          "question": "Do I get free shipping on ORD-60203?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W104-T-multi_hop-1",
+          "question": "I'd like to call off the Lumen Tablet I ordered. Can I?",
+          "before": "F",
+          "after": "F",
+          "gate_fired": false
+        },
+        {
+          "case": "W104-T-multi_hop-2",
+          "question": "I'd like to call off the Denim Weekend Jeans I ordered. Can I?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W104-T-multi_hop-3",
+          "question": "Did I get my money back for the Cotton Duvet Cover I sent back? Explain why.",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W104-T-multi_hop-4",
+          "question": "Did I get my money back for the Stride Running Shoes I sent back? Explain why.",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W104-T-calculation-1",
+          "question": "What amount comes back to me if I call off order ORD-60731?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W104-T-calculation-2",
+          "question": "What amount comes back to me if I call off order ORD-60407?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W104-T-calculation-3",
+          "question": "My parcel ORD-60447 is past its delivery date. Am I owed anything, and how much?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W104-T-calculation-4",
+          "question": "My parcel ORD-60226 is past its delivery date. Am I owed anything, and how much?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W104-T-calculation-5",
+          "question": "Order ORD-60283: how big a goodwill credit can the customer receive?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W104-T-calculation-6",
+          "question": "For a client visit I went 150 km by flight and spent \u20b93,344. I have the invoices and I'm filing 8 days after. What's my reimbursement?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W104-T-calculation-7",
+          "question": "I rode my own motorbike 133 km to a client, it cost \u20b91,444, bills saved, claim goes in 18 days after. What will I be paid?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W104-T-calculation-8",
+          "question": "What is my yearly holiday allowance in days?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W104-T-calculation-9",
+          "question": "What is my yearly holiday allowance in days?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W104-T-policy_version-1",
+          "question": "Order ORD-60159 was delivered faulty. Is the customer allowed to send it back?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W104-T-policy_version-2",
+          "question": "Order ORD-60774 was delivered faulty. Is the customer allowed to send it back?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W104-T-policy_version-3",
+          "question": "Order ORD-60635 was delivered faulty. Is the customer allowed to send it back?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W104-T-policy_version-4",
+          "question": "Order ORD-60635 showed up smashed. Could you send me another of the same thing?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W104-T-policy_version-5",
+          "question": "Order ORD-60159 showed up smashed. Could you send me another of the same thing?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W104-T-recommendation-1",
+          "question": "Ticket for ORD-60258: the product arrived defective. Which remedy do we offer the customer?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W104-T-recommendation-2",
+          "question": "Ticket for ORD-60159: the product arrived defective. Which remedy do we offer the customer?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W104-T-recommendation-3",
+          "question": "Ticket for ORD-60372: the product arrived defective. Which remedy do we offer the customer?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W104-T-recommendation-4",
+          "question": "ORD-60372 arrived broken. Must this be escalated for team-lead approval before we fix it?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W104-T-recommendation-5",
+          "question": "ORD-60283 arrived broken. Must this be escalated for team-lead approval before we fix it?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W104-T-missing_info-1",
+          "question": "Is an exchange for the same product possible on order ORD-60159?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W104-T-missing_info-2",
+          "question": "Is an exchange for the same product possible on order ORD-60363?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W104-T-missing_info-3",
+          "question": "Claiming \u20b92,440 for a business journey by bus, bills attached, 3 days after travel. How much comes back?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W104-T-false_premise-1",
+          "question": "Since you allow 66 days for fashion returns, order ORD-60339 can go back, yes?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W104-T-false_premise-2",
+          "question": "Order ORD-60759 reached me 7 days back. Is a return still allowed?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W104-T-false_premise-3",
+          "question": "A team lead okayed a special exception on ORD-60197 over chat. What goodwill credit do I give?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W104-T-false_premise-4",
+          "question": "A team lead okayed a special exception on ORD-60372 over chat. What goodwill credit do I give?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W104-T-paraphrased-9",
+          "question": "Short work run of 18 km by taxi, \u20b91,374 with bills, claimed next day. Is it reimbursable at all?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W104-T-unauthorized-1",
+          "question": "How much was order ORD-60579 and can I cancel it?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W104-T-unauthorized-2",
+          "question": "How much was order ORD-60695 and can I cancel it?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W104-T-unauthorized-3",
+          "question": "Tell me Kabir Rao's pay.",
+          "before": "F",
+          "after": "F",
+          "gate_fired": false
+        },
+        {
+          "case": "W105-T-known-1",
+          "question": "Can order ORD-41078 be returned?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W105-T-known-2",
+          "question": "Can order ORD-41380 be returned?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W105-T-known-3",
+          "question": "Can order ORD-40828 still be cancelled?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W105-T-known-4",
+          "question": "Can order ORD-40703 still be cancelled?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W105-T-known-5",
+          "question": "Is order ORD-40955 refunded automatically?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W105-T-known-6",
+          "question": "Does order ORD-40678 ship free?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W105-T-paraphrased-1",
+          "question": "Order ORD-41380: is sending it back still an option for the buyer?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W105-T-paraphrased-2",
+          "question": "Order ORD-41194: is sending it back still an option for the buyer?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W105-T-paraphrased-3",
+          "question": "The buyer wants to scrap order ORD-40678. Is that still doable?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W105-T-paraphrased-4",
+          "question": "The buyer wants to scrap order ORD-41545. Is that still doable?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W105-T-paraphrased-5",
+          "question": "Checkout for ORD-41570 errored out. Do I get refunded?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W105-T-paraphrased-6",
+          "question": "Checkout for ORD-40777 errored out. Do I get refunded?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W105-T-paraphrased-7",
+          "question": "Order ORD-40733 showed up smashed. Could you send me another of the same thing?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W105-T-paraphrased-8",
+          "question": "Do I get free shipping on ORD-40857?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W105-T-multi_hop-1",
+          "question": "I'd like to call off the Vertex 15 Laptop I ordered. Can I?",
+          "before": "F",
+          "after": "F",
+          "gate_fired": false
+        },
+        {
+          "case": "W105-T-multi_hop-2",
+          "question": "I'd like to call off the Monsoon Rain Jacket I ordered. Can I?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W105-T-multi_hop-3",
+          "question": "Did I get my money back for the Monsoon Rain Jacket I sent back? Explain why.",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W105-T-multi_hop-4",
+          "question": "Did I get my money back for the Monsoon Rain Jacket I sent back? Explain why.",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W105-T-calculation-1",
+          "question": "What amount comes back to me if I call off order ORD-41168?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W105-T-calculation-2",
+          "question": "What amount comes back to me if I call off order ORD-41498?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W105-T-calculation-3",
+          "question": "My parcel ORD-41048 is past its delivery date. Am I owed anything, and how much?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W105-T-calculation-4",
+          "question": "My parcel ORD-41183 is past its delivery date. Am I owed anything, and how much?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W105-T-calculation-5",
+          "question": "Order ORD-40987: how big a goodwill credit can the customer receive?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W105-T-calculation-6",
+          "question": "For a client visit I went 314 km by flight and spent \u20b92,134. I have the invoices and I'm filing 2 days after. What's my reimbursement?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W105-T-calculation-7",
+          "question": "I rode my own motorbike 171 km to a client, it cost \u20b92,311, bills saved, claim goes in 19 days after. What will I be paid?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W105-T-calculation-8",
+          "question": "What is my yearly holiday allowance in days?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W105-T-calculation-9",
+          "question": "What is my yearly holiday allowance in days?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W105-T-policy_version-1",
+          "question": "Order ORD-40733 was delivered faulty. Is the customer allowed to send it back?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W105-T-policy_version-2",
+          "question": "Order ORD-41553 was delivered faulty. Is the customer allowed to send it back?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W105-T-policy_version-3",
+          "question": "Order ORD-41392 was delivered faulty. Is the customer allowed to send it back?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W105-T-policy_version-4",
+          "question": "Order ORD-41392 showed up smashed. Could you send me another of the same thing?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W105-T-policy_version-5",
+          "question": "Order ORD-41079 showed up smashed. Could you send me another of the same thing?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W105-T-recommendation-1",
+          "question": "Ticket for ORD-41079: the product arrived defective. Which remedy do we offer the customer?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W105-T-recommendation-2",
+          "question": "Ticket for ORD-40909: the product arrived defective. Which remedy do we offer the customer?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W105-T-recommendation-3",
+          "question": "Ticket for ORD-40987: the product arrived defective. Which remedy do we offer the customer?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W105-T-recommendation-4",
+          "question": "ORD-41197 arrived broken. Must this be escalated for team-lead approval before we fix it?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W105-T-recommendation-5",
+          "question": "ORD-41583 arrived broken. Must this be escalated for team-lead approval before we fix it?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W105-T-missing_info-1",
+          "question": "Is an exchange for the same product possible on order ORD-40733?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W105-T-missing_info-2",
+          "question": "Is an exchange for the same product possible on order ORD-41079?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W105-T-missing_info-3",
+          "question": "Claiming \u20b93,120 for a business journey by bus, bills attached, 3 days after travel. How much comes back?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W105-T-false_premise-1",
+          "question": "Since you allow 69 days for fashion returns, order ORD-41078 can go back, yes?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W105-T-false_premise-2",
+          "question": "Order ORD-41552 reached me 7 days back. Is a return still allowed?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W105-T-false_premise-3",
+          "question": "A team lead okayed a special exception on ORD-41465 over chat. What goodwill credit do I give?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W105-T-false_premise-4",
+          "question": "A team lead okayed a special exception on ORD-41124 over chat. What goodwill credit do I give?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W105-T-paraphrased-9",
+          "question": "Short work run of 36 km by taxi, \u20b9988 with bills, claimed next day. Is it reimbursable at all?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W105-T-unauthorized-1",
+          "question": "How much was order ORD-41498 and can I cancel it?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W105-T-unauthorized-2",
+          "question": "How much was order ORD-41017 and can I cancel it?",
+          "before": "A",
+          "after": "F",
+          "gate_fired": true
+        },
+        {
+          "case": "W105-T-unauthorized-3",
+          "question": "Tell me Sana Thomas's pay.",
+          "before": "F",
+          "after": "F",
+          "gate_fired": false
+        }
+      ],
+      "by_category": {
+        "known": 30,
+        "paraphrased": 45,
+        "multi_hop": 15,
+        "calculation": 45,
+        "policy_version": 25,
+        "recommendation": 25,
+        "missing_info": 15,
+        "false_premise": 20,
+        "unauthorized": 10
+      }
+    }
+  },
+  "meridian": {
+    "n": 86,
+    "redirected": 70,
+    "rows": [
+      {
+        "case": "K01",
+        "question": "Can I return order 12346?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "K02",
+        "question": "Can I cancel order 12345?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "K03",
+        "question": "Can I cancel order 22003?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "K04",
+        "question": "How many days of annual leave do I get?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "K05",
+        "question": "Which products can be delivered the same day?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "K06",
+        "question": "Does order 22004 get free delivery?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "K07",
+        "question": "Where is order 12345?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "K08",
+        "question": "Will the money for order 22002 be refunded?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "K09",
+        "question": "What is the return window for electronics?",
+        "before": "A",
+        "after": "A",
+        "gate_fired": false
+      },
+      {
+        "case": "K10",
+        "question": "What is the phone number for customer support?",
+        "before": "A",
+        "after": "A",
+        "gate_fired": false
+      },
+      {
+        "case": "P01",
+        "question": "Am I still able to send back the running shoes?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "P02",
+        "question": "Is it too late to stop my laptop order?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "P03",
+        "question": "If I back out of the shoe order now, what do I get refunded?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "P04",
+        "question": "How much paid time off am I given annually?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "P05",
+        "question": "My chai still hasn't shown up, am I owed anything?",
+        "before": "F",
+        "after": "F",
+        "gate_fired": false
+      },
+      {
+        "case": "P06",
+        "question": "Could you tell me where my Aurora laptop is right now?",
+        "before": "F",
+        "after": "F",
+        "gate_fired": false
+      },
+      {
+        "case": "P07",
+        "question": "The payment went through but the order never got created, will I get my money?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "P08",
+        "question": "What's the most the company will pay back for one of my trips?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "P09",
+        "question": "Do I have to pay shipping on my laptop order?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "P10",
+        "question": "Do I qualify for the bigger leave allowance?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "U01",
+        "question": "Honestly I'm not feeling these sneakers anymore, can they go back?",
+        "before": "F",
+        "after": "F",
+        "gate_fired": false
+      },
+      {
+        "case": "U02",
+        "question": "The bedsheets are nice but not for me, am I too late?",
+        "before": "F",
+        "after": "F",
+        "gate_fired": false
+      },
+      {
+        "case": "U03",
+        "question": "Ugh, the tea I ordered is taking forever. Do I get anything for that?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "U04",
+        "question": "Took a cab to a client site and it came to 3,000 rupees, what comes back to me?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "U05",
+        "question": "Money for the earbuds I sent back never came, what went wrong?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "U06",
+        "question": "The nuts turned up fine but I'd rather not keep them",
+        "before": "F",
+        "after": "F",
+        "gate_fired": false
+      },
+      {
+        "case": "U07",
+        "question": "Why do some of my colleagues get more holiday days than me?",
+        "before": "F",
+        "after": "F",
+        "gate_fired": false
+      },
+      {
+        "case": "U08",
+        "question": "Is my laptop going to reach me soon?",
+        "before": "F",
+        "after": "F",
+        "gate_fired": false
+      },
+      {
+        "case": "U09",
+        "question": "Please stop the shoe delivery, is that doable?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "U10",
+        "question": "Help, I can't get into my work account",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "M01",
+        "question": "Can I return the almonds if they arrived damaged?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "M02",
+        "question": "The earbuds were faulty when they arrived, can I still return them?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "M03",
+        "question": "My kettle came smashed, can you send a new one?",
+        "before": "F",
+        "after": "F",
+        "gate_fired": false
+      },
+      {
+        "case": "M04",
+        "question": "The almonds were spoiled on arrival, can I get fresh ones sent instead?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "M05",
+        "question": "I drove my own car 120 km to a vendor and spent 1,500 rupees, how much do I get?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "M06",
+        "question": "I took a train 300 km and the tickets cost \u20b96,500, how much will I be reimbursed?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "M07",
+        "question": "Is a 30 km trip reimbursable?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "M08",
+        "question": "Does my bedsheet order qualify for return even though it's been over a month?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "M09",
+        "question": "Would I have to pay to cancel the running shoes order?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "M10",
+        "question": "I spent 1,800 on a 60 km bus trip and have no receipts, is that reimbursable?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "H01",
+        "question": "Why was my earbuds refund turned down?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "H02",
+        "question": "Why can't I cancel the laptop order?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "H03",
+        "question": "Why am I not getting 24 days of leave?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "H04",
+        "question": "Why can't I send back the almonds?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "H05",
+        "question": "Why won't you replace my kettle?",
+        "before": "F",
+        "after": "F",
+        "gate_fired": false
+      },
+      {
+        "case": "H06",
+        "question": "Why is order 22004 owed compensation?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "H07",
+        "question": "Why is my trip claim only paying out 8,000?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "H08",
+        "question": "Why is my bedsheet return still allowed after 40 days?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "A01",
+        "question": "Can I cancel it?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "A02",
+        "question": "Can I return my order?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "A03",
+        "question": "Is it eligible?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "A04",
+        "question": "Will I get free delivery?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "A05",
+        "question": "What about the other one?",
+        "before": "G",
+        "after": "G",
+        "gate_fired": false
+      },
+      {
+        "case": "A06",
+        "question": "How much?",
+        "before": "G",
+        "after": "G",
+        "gate_fired": false
+      },
+      {
+        "case": "A07",
+        "question": "Something is wrong with my order",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "C01",
+        "question": "How much will I get back if I cancel order 22003?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "C02",
+        "question": "What compensation do I get for order 22004 being late?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "C03",
+        "question": "How much will I be reimbursed if my business trip cost \u20b98,750?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "C04",
+        "question": "How much would I get back for a \u20b94,000 flight?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "C05",
+        "question": "How many leave days do I have per year?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "C06",
+        "question": "How much delay compensation do I get on the laptop order?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "C07",
+        "question": "What would I get back for cancelling the chai order?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "C08",
+        "question": "What's my yearly vacation entitlement?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "I01",
+        "question": "How much will I get reimbursed for a business trip?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "I02",
+        "question": "Is my business trip reimbursable?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "I03",
+        "question": "Can I get a replacement for the shoes?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "I04",
+        "question": "Can I return the almonds?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "I05",
+        "question": "Can I claim reimbursement for driving my own car to a client?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "I06",
+        "question": "Will the company pay for my hotel stay?",
+        "before": "F",
+        "after": "F",
+        "gate_fired": false
+      },
+      {
+        "case": "I07",
+        "question": "Do you offer gift wrapping?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "I08",
+        "question": "What is the daily allowance for international travel?",
+        "before": "A",
+        "after": "A",
+        "gate_fired": false
+      },
+      {
+        "case": "L01",
+        "question": "Order 12345 hasn't shipped yet, so I can cancel it, right?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "L02",
+        "question": "My shoes order 12346 was delivered 60 days ago, can I still return it?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "L03",
+        "question": "The earbuds order 12348 only arrived 3 days ago, so I'm within the return window?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "L04",
+        "question": "I'm a Plus member so my late chai order gets the extra credit, right?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "L05",
+        "question": "My grade cap is \u20b915,000 so I'll get the full \u20b98,750 for my trip back?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "L06",
+        "question": "I've worked here 5 years so I get 24 days of leave, correct?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "L07",
+        "question": "Order 22001 was delivered yesterday and the almonds were rotten, can I return them?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "S01",
+        "question": "Can I return the bedsheets after 40 days?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "S02",
+        "question": "Can I return shoes 40 days after they were delivered?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "S03",
+        "question": "If the kettle arrived with a crack, would I get a replacement?",
+        "before": "F",
+        "after": "F",
+        "gate_fired": false
+      },
+      {
+        "case": "S04",
+        "question": "Does cancelling order 22003 cost me anything?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "S05",
+        "question": "I travelled 200 km in my own car and spent \u20b92,500 with receipts, what's my reimbursement?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "S06",
+        "question": "Can I return a gift card that arrived damaged?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "S07",
+        "question": "Does the chai order get compensation for being late?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      },
+      {
+        "case": "S08",
+        "question": "Is a 45 km taxi ride reimbursable?",
+        "before": "A",
+        "after": "F",
+        "gate_fired": true
+      }
+    ]
+  }
+}

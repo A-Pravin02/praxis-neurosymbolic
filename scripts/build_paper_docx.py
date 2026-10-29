@@ -354,10 +354,10 @@ class Doc:
         return cap
 
     def table(self, headers: list[str], rows: list[list[str]], caption: str,
-              span: bool = False):
+              span: bool = False, keep_together: bool = False):
         if span:
             self.span_start()
-        self.caption(caption)
+        cap = self.caption(caption)
         t = self.d.add_table(rows=1, cols=len(headers))
         try:
             t.style = "Table Grid"
@@ -374,10 +374,32 @@ class Doc:
                 cell.text = ""
                 run = cell.paragraphs[0].add_run(str(value))
                 run.font.size = Pt(8)
+        if keep_together:
+            self._keep_together(cap, t)
         self.d.add_paragraph()
         if span:
             self.span_end()
         return t
+
+    @staticmethod
+    def _keep_together(cap, t) -> None:
+        """Push a whole table into the next column rather than let it break across one.
+
+        Table VI started four lines above the column break, so its last row appeared at
+        the top of the next column with the heading and column labels left behind. Two
+        settings are needed: `cantSplit` stops a single row breaking, and "keep with
+        next" on the caption and on every row but the last keeps the group contiguous,
+        which is what moves the whole block.
+        """
+        if cap is not None:
+            cap.paragraph_format.keep_with_next = True
+        for row in t.rows[:-1]:
+            for cell in row.cells:
+                for paragraph in cell.paragraphs:
+                    paragraph.paragraph_format.keep_with_next = True
+        for row in t.rows:
+            trPr = row._tr.get_or_add_trPr()
+            trPr.append(OxmlElement("w:cantSplit"))
 
 
 # --------------------------------------------------------------------------
@@ -724,8 +746,8 @@ def build(doc: Doc, test: dict, confirm: dict, scale: dict,
         rows.append([desc, num(T(name, "accuracy")[0]), num(T(name, "hallucination_rate")[0]),
                      num(T(name, "leak_rate")[0])])
     doc.table(["Configuration", "Accuracy", "Hallucination", "Disclosure"], rows,
-              "TABLE II. Ablations on the test split. Each row disables exactly one "
-              "mechanism.")
+              "TABLE II. Decision-level ablations on the test split. Each row disables "
+              "one mechanism; the gate acts on wording, so Section VIII-A tests it.")
 
     doc.p("Three readings matter. Three-valued reasoning carries real weight: treating "
           f"unknown as false costs {abs(ns_acc - T('ns_two_valued','accuracy')[0]):.3f} "
@@ -857,9 +879,10 @@ def build(doc: Doc, test: dict, confirm: dict, scale: dict,
           "claim follows from evidence, not that it answers the question asked.")
     doc.p("This qualifies the architecture's central promise: an out-of-scope question "
           "is not unsupportable, it is answerable about something else, and the "
-          "grounding makes the irrelevant answer more convincing rather than less. A "
-          "relevance check between the resolved goal and the question, independent of "
-          "the evidence gate, is the remedy and is not yet implemented.")
+          "grounding makes the irrelevant answer more convincing rather than less. The "
+          "remedy is a relevance check independent of the evidence gate, which this "
+          "configuration has no way to express: selecting a goal by nearest neighbour "
+          "always returns one.")
 
     # ---- Study II: the from-scratch model ----
     if fb:
@@ -963,8 +986,18 @@ def build(doc: Doc, test: dict, confirm: dict, scale: dict,
             doc.table(["Claim type", "n", "Refuted rate", "Unverifiable"],
                       [[label.get(k, k), str(cnt), f"{r:.3f}", str(u)]
                        for k, cnt, r, u in s2["kinds"]],
-                      "TABLE VI. Refuted-claim rate by claim type, with the "
-                      "unverifiable claims counted separately.")
+                      "TABLE VI. Refuted-claim rate by claim type, over all n of that "
+                      "type; unverifiable claims counted apart.",
+                      # This table breaks across the column boundary, stranding its last
+                      # row under the next column's top. Both layout fixes were measured
+                      # and both cost a seventh page the submission does not have:
+                      # keep_together=True pushes the whole block into the next column,
+                      # and span=True moves it into a page-wide band. So the break
+                      # stands, and the caption carries the denominator instead, which is
+                      # what a reader needs from the stranded row. Reclaiming the two
+                      # lines means cutting prose from this section - a content decision,
+                      # not a formatting one.
+                      keep_together=False)
 
         # Fig. 3 removed: Table VI tabulates the same rates and adds the counts.
         doc.h2("How This Result Should Be Read")
@@ -1056,9 +1089,9 @@ def build(doc: Doc, test: dict, confirm: dict, scale: dict,
           "reduction is not an artefact of refusing difficult questions.")
     doc.p("Two findings temper this. The parser configuration's perfect selective "
           "accuracy on the test split does not transfer to unseen worlds, and the "
-          "system does not recognise questions its rule base does not cover — a failure "
-          "verification is structurally unable to catch, because relevance is not "
-          "support.")
+          "LLM-free configuration does not recognise questions its rule base does not "
+          "cover — a failure verification is structurally unable to catch, because "
+          "relevance is not support.")
     if fb:
         s2 = football_stats(FOOTBALL_CLAIMS)
         doc.p(f"The secondary study makes the price explicit: the graph refutes "
@@ -1069,10 +1102,11 @@ def build(doc: Doc, test: dict, confirm: dict, scale: dict,
               f"silent-but-sound one, and the useful question is never whether "
               f"hallucination falls - gating guarantees that - but how much of the "
               f"answer survives.")
-    doc.p("Future work is a relevance gate separate from the evidence gate, an "
-          "independently authored evaluation, a single-stack measurement of the "
-          "capability effect noted in Section XII, and raising coverage in Study II "
-          "without reintroducing unsupported claims.")
+    doc.p("Future work is a relevance gate for the LLM-free configuration, which needs "
+          "goal selection to have a null option it currently lacks, an independently "
+          "authored evaluation, a single-stack measurement of the capability effect "
+          "noted in Section XII, and raising coverage in Study II without "
+          "reintroducing unsupported claims.")
 
     # ---- references ----
     # The IEEE template numbers Heading 1 sections; References must not be a

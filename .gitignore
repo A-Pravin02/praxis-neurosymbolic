@@ -68,6 +68,10 @@ eval_reports/research/*
 !eval_reports/research/paper/
 !eval_reports/research/confirm/
 !eval_reports/research/gate-ablation-v3/
+# The relevance gate's two arms. The baseline is the 1.5B run made before the gate
+# existed, so both are needed to re-check that nine cases were gained and none lost.
+!eval_reports/research/relevance-gate/
+!eval_reports/research/qwen2.5-1.5b/
 !eval_reports/research/**/*.jsonl
 !eval_reports/research/**/*.json
 !eval_reports/research/**/*.md
