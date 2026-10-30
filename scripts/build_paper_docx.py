@@ -60,10 +60,11 @@ def checks() -> dict:
 
 def gate_sentence() -> str:
     c = checks()
-    return (f"The verifier defines {c['distinct_checks']} deterministic checks - fact "
+    return (f"The verifier defines {c['defined_checks']} deterministic checks - fact "
             f"validity, authorization, policy applicability, policy version, symbolic "
             f"provenance, calculation, supported numbers, record consistency, "
-            f"contradictions, answer agreement and unsupported claims. Which of them "
+            f"contradictions, answer agreement, unsupported claims and "
+            f"{', '.join(c['never_ran'])}, which no test question reaches. Which "
             f"apply depends on what the case asserts, so none runs on every question: "
             f"over the {c['cases']} test cases the number that runs ranges from "
             f"{c['min_per_case']} to {c['max_per_case']}, with a median of "
@@ -452,7 +453,7 @@ def build(doc: Doc, test: dict, confirm: dict, scale: dict,
         f"neuro-symbolic architecture in which a language model is never the authority "
         f"for a decision: a neural encoder interprets the question, a three-valued "
         f"symbolic reasoner applies versioned business rules to authorized records, and "
-        f"a suite of {checks()['distinct_checks']} deterministic checks gates the answer "
+        f"a suite of {checks()['defined_checks']} deterministic checks gates the answer "
         f"before release. The decision path contains no language model. "
         f"On 255 held-out questions over five generated enterprise worlds this default "
         f"configuration answers {num(ns_acc)} correctly at a "
@@ -572,10 +573,9 @@ def build(doc: Doc, test: dict, confirm: dict, scale: dict,
                "blocks are neural, dotted stored knowledge, solid grey symbolic, dark "
                "the release gate. The rule engine is three-valued - true, false, "
                "unknown - while verification is four-valued, since a claim may also be "
-               "not checkable; the two are distinct layers. The dashed panel marks the "
-               "one check that is absent: nothing tests whether the resolved goal "
-               "answers the question asked, which is the failure analysed in "
-               "Section X.",
+               "not checkable; the two are distinct layers. The dashed panel is the "
+               "relevance check: nothing on this path tests whether the resolved goal "
+               "answers the question asked, the failure analysed in Section X.",
                width_in=3.30)
     doc.p(f"Fig. 1 shows the implemented pipeline. The neural lane - a 33M encoder by "
           "default, or the model acting as semantic parser - yields a goal, the records "
@@ -583,15 +583,15 @@ def build(doc: Doc, test: dict, confirm: dict, scale: dict,
           "symbolic lane resolves the policy version in force on the case's own date, "
           "restricts records to those the asker may see, and evaluates the rules under "
           "three-valued logic to produce an established conclusion. Claims are then "
-          f"extracted and checked against the evidence by the applicable members of an "
-          f"{checks()['distinct_checks']}-check suite, and "
+          f"extracted and checked against the evidence by the applicable members of a "
+          f"{checks()['defined_checks']}-check suite, and "
           "the release gate either publishes the answer or withholds it and reports "
           "insufficient evidence.")
     doc.p("A model may phrase the conclusion but never establishes it, and its "
           "wording is checked for figures the evidence does not carry. The dashed "
-          "panel records what is absent - a relevance check between the resolved goal "
-          "and the question - because its absence is this architecture's sharpest "
-          "failure.")
+          "panel is a relevance check between the resolved goal and the question, "
+          "which this configuration cannot express: nearest-neighbour selection "
+          "always returns a goal.")
 
     doc.h2("Neural Understanding")
     doc.p("A 33M-parameter bge-small encoder, run locally through ONNX, maps the "

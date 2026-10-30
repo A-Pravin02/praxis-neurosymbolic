@@ -171,9 +171,16 @@ if census_path.exists() and paper_docx.exists():
     census = json.loads(census_path.read_text(encoding="utf-8"))
     import docx  # type: ignore
     _t = " ".join(" ".join(p.text for p in docx.Document(str(paper_docx)).paragraphs).split())
-    want = (f"defines {census['distinct_checks']} deterministic checks")
-    check(want in _t, "paper states the measured number of verification checks",
+    # Defined and observed are different numbers, and the paper has to state the one
+    # it means. It defines twelve; eleven appear on this split, because the twelfth
+    # belongs to a pipeline these questions never reach.
+    want = (f"defines {census['defined_checks']} deterministic checks")
+    check(want in _t, "paper states the number of checks the verifier defines",
           f"'{want}' present" if want in _t else f"'{want}' NOT in the paper")
+    never = ", ".join(census.get("never_ran", []))
+    check(bool(never) and never in _t,
+          "paper names the check no test question reaches",
+          f"'{never}' present" if never and never in _t else "NOT named")
     check("ten deterministic checks" not in _t.lower(),
           "paper no longer claims ten checks run before release",
           "absent" if "ten deterministic checks" not in _t.lower()

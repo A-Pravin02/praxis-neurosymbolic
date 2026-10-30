@@ -91,7 +91,7 @@ docs/audit/                change log, statistical validation, gate evidence
 
 ## Documents
 
-- [Project report](docs/PRAXIS_PROJECT_REPORT.pdf) — problem, architecture, implementation, sample cases with results
+- [Project report](docs/PRAXIS_FINAL_REPORT.pdf) — problem, architecture, implementation, sample cases with results
 - [IEEE paper](docs/paper/PRAXIS_IEEE.pdf) — six pages
 - [Validation report](docs/audit/PRAXIS_SUBMISSION_REPORT.pdf) — what was recomputed and what remains open
 - [Change log](docs/audit/CHANGE_LOG.md) — every correction made during the audit, with its evidence

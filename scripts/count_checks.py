@@ -11,6 +11,7 @@ default configuration and tabulates the check names that appear.
 from __future__ import annotations
 
 import collections
+import re
 import pathlib
 import sys
 
@@ -68,6 +69,16 @@ def main() -> None:
     print(f"run on some cases: {len(names) - len(always)} "
           f"({', '.join(sorted(n for n in names if n not in always))})")
 
+    # How many checks the verifier *defines*, read out of the source rather than counted
+    # by hand, so "defined" and "observed" cannot drift apart in the write-up. They are
+    # not the same number: a check only one pipeline runs cannot appear in a split whose
+    # questions never reach that pipeline.
+    defined = sorted(_defined_checks())
+    never = [n for n in defined if n not in names]
+    print(f"\ndefined in the verifier: {len(defined)}")
+    print(f"never run on this split: {len(never)}"
+          + (f" ({', '.join(never)})" if never else ""))
+
     # Written so the paper can state these from a record rather than from memory.
     import json
     out = ROOT / "artifacts/verification_checks.json"
@@ -76,6 +87,9 @@ def main() -> None:
         "split": "test",
         "cases": len(cases),
         "distinct_checks": len(names),
+        "defined_checks": len(defined),
+        "defined_names": defined,
+        "never_ran": never,
         "check_names": sorted(names),
         "ran_on_cases": dict(names),
         "checks_per_case": {str(k): v for k, v in sorted(per_case.items())},
@@ -88,6 +102,17 @@ def main() -> None:
             f"{outcome}/{cat}: {v}" for (z, outcome, cat), v in by_outcome.items() if z),
     }, indent=1), encoding="utf-8")
     print(f"\nwrote {out.relative_to(ROOT)}")
+
+
+def _defined_checks() -> set[str]:
+    """Every check name the verifier can emit, read from its source.
+
+    The names are string literals in `Check(...)` constructions. Reading them from the
+    file rather than calling the methods means the count needs no case to run against,
+    and a check added to the verifier is counted the moment it exists.
+    """
+    source = (BACKEND / "app/hybrid/verification.py").read_text(encoding="utf-8")
+    return set(re.findall(r"""Check\(\s*["']([^"']+)["']""", source))
 
 
 if __name__ == "__main__":

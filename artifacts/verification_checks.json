@@ -2,6 +2,24 @@
  "split": "test",
  "cases": 255,
  "distinct_checks": 11,
+ "defined_checks": 12,
+ "defined_names": [
+  "answer agreement",
+  "authorization",
+  "calculation",
+  "citation integrity",
+  "contradictions",
+  "fact validity",
+  "policy applicability",
+  "policy version",
+  "record consistency",
+  "supported numbers",
+  "symbolic provenance",
+  "unsupported claims"
+ ],
+ "never_ran": [
+  "citation integrity"
+ ],
  "check_names": [
   "answer agreement",
   "authorization",

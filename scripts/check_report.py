@@ -25,7 +25,7 @@ import subprocess
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-PDF = ROOT / "docs/PRAXIS_PROJECT_REPORT.pdf"
+PDF = ROOT / "docs/PRAXIS_FINAL_REPORT.pdf"
 TEST = ROOT / "eval_reports/research/paper/test.report.json"
 CONFIRM = ROOT / "eval_reports/research/confirm/confirm.report.json"
 SUITE = ROOT / "artifacts/demo_suite.json"
@@ -74,13 +74,20 @@ def main() -> None:
     check(top == list(range(1, 13)), "sections are 1-12 with no gap or duplicate",
           f"found {top}")
 
-    for kind, last in (("Figure", 7), ("Table", 6)):
+    # The expected count is whatever the document captions, not a number written here:
+    # hardcoding it meant that adding a table failed this check instead of being
+    # checked by it. What matters is that the numbering runs 1..n with no gap and no
+    # repeat, which is still fully tested.
+    counts = {kind: [int(m.group(1)) for m in
+                     re.finditer(rf"^\s*{kind} (\d+)\.\s+[A-Z]", raw, re.M)]
+              for kind in ("Figure", "Table")}
+    for kind, found in counts.items():
+        last = max(found) if found else 0
         # A caption begins its own paragraph, so it is anchored to a line start in the
         # extracted text. Matching anywhere instead counts a sentence that merely ends
         # "... in Table 2." as a second caption, which is how this check first reported
         # duplicates that do not exist.
-        defined = [int(m.group(1)) for m in
-                   re.finditer(rf"^\s*{kind} (\d+)\.\s+[A-Z]", raw, re.M)]
+        defined = found
         dupes = {n: defined.count(n) for n in set(defined) if defined.count(n) > 1}
         check(sorted(set(defined)) == list(range(1, last + 1)) and not dupes,
               f"{kind}s 1-{last} each captioned exactly once",
@@ -132,6 +139,16 @@ def main() -> None:
           and "LOREM" not in raw.upper(),
           "no placeholder or TODO text survives", "")
 
+    # An f-string that lost its `f` prefix prints its own source. One did, and reached
+    # the PDF as "{r.ref('ui-failure')}" in the middle of a sentence, so the shape is
+    # checked for rather than trusted not to recur.
+    unrendered = re.findall(r"\{[A-Za-z_][^}]{0,80}\}", flat)
+    check(not unrendered, "no unrendered template placeholder reached the page",
+          f"found {unrendered[:3]}" if unrendered else "none")
+    check("**" not in flat and not re.findall(r"(?<![\w*])\*[A-Za-z]", flat),
+          "no raw markdown emphasis reached the page", "")
+    check("`" not in flat, "no raw backticks reached the page", "")
+
     # ---- every table number matches the records -------------------------------
     systems = [("neurosymbolic", "PRAXIS (no LLM)"), ("ns_parser", "PRAXIS (LLM parser)"),
                ("llm_rag_rules", None), ("llm_rag_selfcheck", None),
@@ -178,9 +195,14 @@ def main() -> None:
               f"{timing['repeat_mean_ms']:.1f} ms")
 
     census = json.loads(CENSUS.read_text(encoding="utf-8"))
-    check(f"{census['distinct_checks']} deterministic checks" in flat,
-          "the verification-check count matches the census",
-          f"{census['distinct_checks']}")
+    check(f"{census['defined_checks']} deterministic checks" in flat,
+          "the defined check count matches the census",
+          f"{census['defined_checks']} defined")
+    check(f"{census['distinct_checks']} of them run" in flat,
+          "the observed check count is stated separately from the defined one",
+          f"{census['distinct_checks']} observed of {census['defined_checks']}")
+    for name in census.get("never_ran", []):
+        check(name in flat, f"the report names the check that never runs ({name})", "")
     check(f"ranges from {census['min_per_case']} to {census['max_per_case']}" in flat,
           "the per-case range of checks matches the census",
           f"{census['min_per_case']}-{census['max_per_case']}")

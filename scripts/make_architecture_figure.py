@@ -38,6 +38,16 @@ import matplotlib.pyplot as plt                     # noqa: E402
 from matplotlib.patches import FancyArrowPatch, FancyBboxPatch  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
+CHECK_CENSUS = ROOT / "artifacts/verification_checks.json"
+
+
+def _checks_defined() -> int:
+    """How many checks the verifier defines, from the census `count_checks.py` writes."""
+    import json
+
+    if not CHECK_CENSUS.exists():
+        raise SystemExit(f"missing {CHECK_CENSUS}\nRun scripts/count_checks.py first.")
+    return json.loads(CHECK_CENSUS.read_text(encoding="utf-8"))["defined_checks"]
 
 # The printed size. One IEEE column is about 3.4 in inside the margins. Data units
 # are square - ylim is derived from the aspect - so a box of height 5 is the same
@@ -73,10 +83,13 @@ def box(ax, x, y, w, label, style, fontsize=6.8, textcolor="#000000", h=ROW):
     ax.add_patch(FancyBboxPatch((x, y), w, h,
                                 boxstyle="round,pad=0.25,rounding_size=0.8",
                                 **style))
+    # The label sits on an opaque patch of the box's own fill colour. Without it the
+    # hatching and the dot fill run through the letters, which is legible on screen and
+    # muddy at 6.8pt in print; the pad clears the strokes rather than just the glyphs.
     ax.text(x + w / 2, y + h / 2, label, ha="center", va="center",
             fontsize=fontsize, color=textcolor, zorder=5,
             bbox=dict(facecolor=style.get("facecolor", "#ffffff"), edgecolor="none",
-                      boxstyle="square,pad=0.16", alpha=0.97))
+                      boxstyle="square,pad=0.3", alpha=1.0))
 
 
 def note(ax, x, y, text, fontsize=6.0, **kw):
@@ -150,8 +163,13 @@ def build(out_dir: Path) -> list[Path]:
     box(ax, 28.0, Y_CONC, 44.0, "established conclusion", SYMBOLIC, 6.6)
     arrow(ax, (75.0, Y_AUTH), (66.0, Y_CONC + ROW), rad=0.12)
 
+    # The count is read from the census, never written here: the diagram said "ten"
+    # while the text said eleven, and the true figure is twelve defined of which
+    # eleven run on the test split. A literal in a drawing script is exactly how that
+    # drifts, so the number comes from the same artifact the prose quotes.
     box(ax, 7.0, Y_CHECK, 88.0,
-        "ten checks: supported / contradicted / unverified / not checkable",
+        f"{_checks_defined()} checks: supported / contradicted / unverified / "
+        f"not checkable",
         SYMBOLIC, 6.1)
     arrow(ax, (50.0, Y_CONC), (50.0, Y_CHECK + ROW))
 
@@ -174,7 +192,12 @@ def build(out_dir: Path) -> list[Path]:
                                 boxstyle="round,pad=0.25,rounding_size=0.8",
                                 facecolor="#ffffff", edgecolor="#000000",
                                 linewidth=1.0, linestyle=(0, (3.5, 2))))
-    note(ax, 51.0, Y_GAP + ROW / 2, "NOT IMPLEMENTED: relevance of goal to question",
+    # Not simply "NOT IMPLEMENTED" any more. The relevance check exists on the parser
+    # path, where understanding can name no goal, and does not exist on the encoder
+    # path, where nearest-neighbour selection always returns one. Showing it as wholly
+    # absent would understate what is built; showing it as present would overstate it.
+    note(ax, 51.0, Y_GAP + ROW / 2,
+         "relevance of goal to question: parser path only, not the encoder",
          6.2, color="#000000", ha="center", va="center")
 
     # The shading legend lives in the caption, where it prints at caption size
