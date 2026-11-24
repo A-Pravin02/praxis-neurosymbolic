@@ -40,6 +40,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt                     # noqa: E402
 from matplotlib.patches import FancyArrowPatch, FancyBboxPatch  # noqa: E402
+from _paths import show
 
 ROOT = Path(__file__).resolve().parents[1]
 CHECK_CENSUS = ROOT / "artifacts/verification_checks.json"
@@ -350,7 +351,7 @@ def main() -> None:
                     help="check the printed type sizes and the placement width")
     args = ap.parse_args()
     for path in build(args.out):
-        print(f"  wrote {path.relative_to(ROOT)}")
+        print(f"  wrote {show(path)}")
     if args.audit:
         raise SystemExit(audit(args.out))
 

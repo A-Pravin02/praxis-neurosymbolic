@@ -63,10 +63,25 @@ reason it passed or failed, and the released answer.
 
 ```bash
 python scripts/independent_metrics.py   # recomputes all 151 published metrics
-python scripts/verify_claims.py         # checks 25 claims against code, tests, records
+python scripts/verify_claims.py         # checks 26 claims against code, tests, records
 python scripts/count_checks.py          # censuses the verification checks
+python scripts/check_paper.py           # the paper's build inputs, and each figure's source
 cd backend && python -m pytest -q -m no_db
 ```
+
+## Rebuilding the paper
+
+```bash
+pip install -r backend/requirements-paper.txt
+python scripts/build_paper.py --pdf
+```
+
+One command: both figures, the document, the PDF, and the two checks that read them
+back. Every figure in the paper is matplotlib code in `scripts/`, and
+`backend/tests/test_paper_build.py` regenerates each one and compares it byte for byte
+with the committed file, so a figure edited by hand fails the suite.
+`docs/paper/REPRODUCING.md` maps each section of the paper to the code that implements
+it.
 
 `independent_metrics.py` implements the paper's metric definitions against the raw
 per-question records rather than reusing the evaluation harness, so an error shared by
@@ -84,6 +99,7 @@ backend/app/evaluation/    benchmark, scoring, system definitions
 backend/data/benchmark_worlds/   13 generated worlds, 663 cases
 demo/                      the inspectable interface
 scripts/                   experiment, audit and figure scripts
+scripts/build_paper.py     rebuilds the paper end to end from the records
 eval_reports/research/     per-question records behind every reported number
 docs/paper/                the IEEE paper and its figures
 docs/audit/                change log, statistical validation, gate evidence
@@ -92,13 +108,13 @@ docs/audit/                change log, statistical validation, gate evidence
 ## Documents
 
 - [Project report](docs/PRAXIS_FINAL_REPORT.pdf) — problem, architecture, implementation, sample cases with results
-- [IEEE paper](docs/paper/PRAXIS_IEEE.pdf) — six pages
+- [IEEE paper](docs/paper/PRAXIS_IEEE.pdf) — eight pages; built by `scripts/build_paper.py`
 - [Validation report](docs/audit/PRAXIS_SUBMISSION_REPORT.pdf) — what was recomputed and what remains open
 - [Change log](docs/audit/CHANGE_LOG.md) — every correction made during the audit, with its evidence
 
 ## Scope
 
-Evaluated on generated enterprise worlds with gold answers from an independent oracle,
+Evaluated on generated enterprise worlds with gold answers from an oracle independent of the system under test,
 not real customer traffic, in a single domain whose governing rules can be written down.
 This is not a general-domain factuality result, and no claim is made that the approach
 eliminates hallucination.

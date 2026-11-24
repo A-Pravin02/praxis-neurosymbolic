@@ -14,7 +14,7 @@ training corpus the model could recite a neighbouring fact and look correct, so 
 matches are withheld. This is what creates genuine opportunities to hallucinate: the
 model is asked about events it has no information on.
 
-    python scripts/prepare_football.py --csv C:/Users/aprav/Downloads/goal.txt
+    python scripts/prepare_football.py --csv <path-to>/goal.txt
 
 Writes under `nanogpt/data/football/` (the corpus) and `artifacts/football/` (the
 knowledge graph, the evaluation set and the manifest).

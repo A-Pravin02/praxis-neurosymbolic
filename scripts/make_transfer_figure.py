@@ -26,6 +26,7 @@ from pathlib import Path
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt   # noqa: E402
+from _paths import show
 
 ROOT = Path(__file__).resolve().parents[1]
 TEST = ROOT / "eval_reports/research/paper/test.report.json"
@@ -101,7 +102,7 @@ def main() -> None:
             c, _ = value_ci(confirm, name, key)
             print(f"  {name:16} {key:20} test {t:.3f} -> confirm {c:.3f} "
                   f"({c - t:+.3f})")
-    print(f"wrote {out.relative_to(ROOT)}")
+    print(f"wrote {show(out)}")
 
 
 if __name__ == "__main__":

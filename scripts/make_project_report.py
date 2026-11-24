@@ -26,6 +26,7 @@ import docx
 from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Inches, Pt, RGBColor
+from _paths import show
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 OUT = ROOT / "docs/PRAXIS_FINAL_REPORT.docx"
@@ -1354,7 +1355,7 @@ def main() -> None:
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
     r.doc.save(OUT)
-    print(f"  wrote {OUT.relative_to(ROOT)}")
+    print(f"  wrote {show(OUT)}")
     print(f"  sample suite: {suite['correct']}/{suite['total']} correct")
     print(f"  checks census: {census['defined_checks']} defined, "
           f"{census['distinct_checks']} observed, "

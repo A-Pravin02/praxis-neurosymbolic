@@ -685,10 +685,10 @@ def build(doc: Doc, test: dict, confirm: dict, scale: dict,
            f"{football_stats(FOOTBALL_CLAIMS)['refuted_rate']:.3f} of its claims, and "
            f"gating leaves {football_stats(FOOTBALL_CLAIMS)['coverage']:.3f} "
            f"coverage. " if fb else "")
-        + f"We report coverage beside every accuracy and document a failure the "
-          f"aggregate hides: on questions no policy covers, the default configuration "
-          f"abstains in 0 of 15 cases, because verification establishes support, not "
-          f"relevance.",
+        + "We report coverage beside every accuracy and document a failure the "
+          "aggregate hides: on questions no policy covers, the default configuration "
+          "abstains in 0 of 15 cases, because verification establishes support, not "
+          "relevance.",
         "Abstract")
     # "three-valued" alone was ambiguous across two layers that differ: the rule engine
     # is three-valued, the verifier four-valued. Both are named.
@@ -1308,7 +1308,6 @@ def build(doc: Doc, test: dict, confirm: dict, scale: dict,
         # Recomputed from claims.jsonl rather than read from report.json, which
         # counts unverified claims as false. See football_stats.
         s2 = football_stats(FOOTBALL_CLAIMS)
-        gated = fb["systems"]["slm_verified"]
         params = fb["model_parameters"]
         tokens = corpus["tokens"]["train"]
 

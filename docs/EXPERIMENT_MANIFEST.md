@@ -1,6 +1,6 @@
 # Experiment manifest
 
-Generated 2026-10-28 10:19 UTC from the artifacts on disk by `scripts/make_experiment_manifest.py`. Commit `8138fd2`.
+Generated 2026-11-24 17:31 UTC from the artifacts on disk by `scripts/make_experiment_manifest.py`. Commit `956a35f`.
 
 An experiment appears here only when its per-question or per-claim records exist. **Reproducible** means the published aggregate was recomputed from those records and matched, not that the run was repeated end to end.
 
@@ -15,9 +15,11 @@ An experiment appears here only when its per-question or per-claim records exist
 | `research/gate-ablation/test+raw` | enterprise benchmark (records only) | 255 | 0 | 0 | 0 | unresolved |
 | `research/gate-ablation-fixed/test+raw` | enterprise benchmark (records only) | 255 | 0 | 0 | 0 | unresolved |
 | `research/gate-ablation-v3/test+raw` | enterprise benchmark (records only) | 255 | 0 | 0 | 0 | unresolved |
+| `research/latency-protocol/test+raw` | enterprise benchmark (records only) | 255 | 0 | 0 | 0 | unresolved |
 | `research/parser-codefix/test+raw` | enterprise benchmark (records only) | 255 | 0 | 0 | 0 | unresolved |
 | `research/parser-test/test+raw` | enterprise benchmark (records only) | 255 | 0 | 0 | 0 | unresolved |
 | `research/qwen2.5-1.5b/dev+raw` | enterprise benchmark (records only) | 153 | 0 | 0 | 0 | unresolved |
+| `research/relevance-gate/test+raw` | enterprise benchmark (records only) | 255 | 0 | 0 | 0 | unresolved |
 | `research/smoke-qwen/dev+raw` | enterprise benchmark (records only) | 4 | 0 | 0 | 0 | unresolved |
 | `football/claim-gating` | from-scratch model, claim-level gating | 1056 claims | 2 | - | - | records present |
 

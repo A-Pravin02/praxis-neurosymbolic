@@ -22,6 +22,7 @@ from pathlib import Path
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt   # noqa: E402
+from _paths import show
 
 ROOT = Path(__file__).resolve().parents[1]
 REPORT = ROOT / "eval_reports/research/paper/test.report.json"
@@ -110,7 +111,7 @@ def main() -> None:
     args = ap.parse_args()
     if not REPORT.exists():
         raise SystemExit(f"missing {REPORT}")
-    print(f"  wrote {build(args.out).relative_to(ROOT)}")
+    print(f"  wrote {show(build(args.out))}")
 
 
 if __name__ == "__main__":

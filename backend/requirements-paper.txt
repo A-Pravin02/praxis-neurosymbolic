@@ -1,0 +1,12 @@
+# Everything scripts/build_paper.py needs, and nothing the service needs at runtime.
+#
+# These were missing from requirements.txt while the figure scripts imported them, so a
+# fresh clone could install the dependencies as documented and still not regenerate a
+# single figure. They are pinned because the figure check in
+# backend/tests/test_paper_build.py compares regenerated PNGs byte for byte against the
+# committed ones, and matplotlib's output moves between releases.
+-r requirements.txt
+
+matplotlib==3.11.2      # Fig. 1 and Fig. 2; both figures are drawn, not imported
+pillow==10.4.0          # the architecture figure's --audit reads back its own PNG
+pymupdf==2.0            # scripts/render_pdf_pages.py, for inspecting the exported PDF

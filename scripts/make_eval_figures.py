@@ -18,6 +18,7 @@ from pathlib import Path
 import matplotlib
 matplotlib.use("Agg")                       # no display on a headless machine
 import matplotlib.pyplot as plt             # noqa: E402
+from _paths import show
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -279,7 +280,7 @@ def main() -> None:
     ]
     for target in written:
         if target:
-            print(f"  wrote {target.relative_to(ROOT)}")
+            print(f"  wrote {show(target)}")
     skipped = sum(1 for t in written if t is None)
     if skipped:
         print(f"  {skipped} figure(s) skipped: the source data is not present yet")

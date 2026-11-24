@@ -21,6 +21,7 @@ WORLDS = BACKEND / "data/benchmark_worlds"
 sys.path.insert(0, str(BACKEND))
 
 import yaml  # noqa: E402
+from _paths import show
 
 
 def main() -> None:
@@ -101,7 +102,7 @@ def main() -> None:
         "zero_check_reason": sorted(
             f"{outcome}/{cat}: {v}" for (z, outcome, cat), v in by_outcome.items() if z),
     }, indent=1), encoding="utf-8")
-    print(f"\nwrote {out.relative_to(ROOT)}")
+    print(f"\nwrote {show(out)}")
 
 
 def _defined_checks() -> set[str]:

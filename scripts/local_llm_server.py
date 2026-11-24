@@ -1,7 +1,7 @@
 """A local, OpenAI-compatible chat-completions server for an open-weights model.
 
-    python scripts/local_llm_server.py --model C:/Users/aprav/models/Qwen2.5-1.5B-Instruct
-    python scripts/local_llm_server.py --model C:/Users/aprav/models/Qwen2.5-7B-Instruct --4bit
+    python scripts/local_llm_server.py --model <models-dir>/Qwen2.5-1.5B-Instruct
+    python scripts/local_llm_server.py --model <models-dir>/Qwen2.5-7B-Instruct --4bit
 
 Then point Praxis (or the benchmark) at it:
 

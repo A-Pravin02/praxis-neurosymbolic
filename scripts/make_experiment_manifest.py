@@ -18,6 +18,7 @@ import json
 import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
+from _paths import show
 
 ROOT = Path(__file__).resolve().parents[1]
 RESEARCH = ROOT / "eval_reports/research"
@@ -81,7 +82,7 @@ def research_experiments() -> list[dict]:
                     continue
                 records = rows(jsonl)
                 systems.append({"system": system, "cases": len(records),
-                                "records": str(jsonl.relative_to(ROOT)),
+                                "records": show(jsonl),
                                 "sha256": sha256(jsonl)})
                 pub = published.get(system, {}).get("overall", {})
                 if not pub:
@@ -102,7 +103,7 @@ def research_experiments() -> list[dict]:
                 "split": split,
                 "cases": payload.get("cases"),
                 "systems": systems,
-                "report": str(report.relative_to(ROOT)),
+                "report": show(report),
                 "metrics_checked": checked,
                 "metrics_mismatched": mismatched,
                 "reproducible": (checked > 0 and mismatched == 0),
@@ -151,7 +152,7 @@ def football_experiment() -> dict | None:
         "sampling": payload.get("sampling"),
         "claims_total": payload.get("claims_total"),
         "claims_checkable": payload.get("claims_checkable"),
-        "records": str(claims.relative_to(ROOT)) if claims.exists() else None,
+        "records": show(claims) if claims.exists() else None,
         "sha256": sha256(claims) if claims.exists() else None,
         "reproducible": claims.exists(),
         "caveat": ("the gated hallucination rate is zero by construction: only "

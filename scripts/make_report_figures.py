@@ -7,6 +7,7 @@ behind it says so on its face rather than showing a plausible-looking bar.
 from __future__ import annotations
 
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -17,7 +18,13 @@ from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
 
 OUT = Path(sys.argv[1] if len(sys.argv) > 1 else ".")
 OUT.mkdir(parents=True, exist_ok=True)
-NSKB = Path("C:/Users/aprav/OneDrive/Desktop/neurosymbolic-kbqa")
+
+# Figure 6 plots a *different* project's development run - the earlier
+# neurosymbolic-kbqa prototype, which is not part of this repository. The path used to
+# be one author's desktop, so on any other machine the rows silently came back empty
+# and the figure drew itself with nothing in it. It is now an environment variable,
+# and its absence is announced rather than drawn.
+NSKB = Path(os.environ["PRAXIS_NSKB_DIR"]) if os.environ.get("PRAXIS_NSKB_DIR") else None
 
 NEURAL, SYMBOLIC, HYBRID = "#4C72B0", "#C44E52", "#8172B2"
 INK, MUTED, PAPER = "#1F2430", "#6B7280", "#FFFFFF"
@@ -241,6 +248,8 @@ def fig_comparison():
 
 # --- Figure 6: measured results ----------------------------------------------
 def load_rows(name):
+    if NSKB is None:
+        return []
     path = NSKB / "results" / f"dev.{name}.jsonl"
     if not path.exists():
         return []

@@ -20,6 +20,7 @@ import pathlib
 import re
 import subprocess
 import sys
+from _paths import show
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 BACKEND = ROOT / "backend"
@@ -111,7 +112,7 @@ for label, path in (("main results", ROOT / "eval_reports/research/paper/test.re
                     ("Study II report", ROOT / "artifacts/football/results/report.json"),
                     ("architecture source", ROOT / "docs/paper/figures/architecture.svg")):
     check(path.exists(), f"{label} source data present",
-          f"{path.relative_to(ROOT)}" if path.exists() else "MISSING")
+          f"{show(path)}" if path.exists() else "MISSING")
 
 # --------------------------------------------------------------------------
 # 5b. The Section VI worked example must close arithmetically.

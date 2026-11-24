@@ -22,7 +22,6 @@ import sys
 from pathlib import Path
 
 BACKEND = Path(__file__).resolve().parents[1] / "backend"
-PG_BIN = _find_pg_bin()
 
 
 def _find_pg_bin() -> str:
@@ -37,6 +36,11 @@ def _find_pg_bin() -> str:
         if matches:
             return matches[0]
     return ""  # hope it's on PATH
+
+
+# After the definition, not before it. This line stood above `_find_pg_bin` and raised
+# NameError at import, so the script had never run at all: `--help` did not even print.
+PG_BIN = _find_pg_bin()
 
 
 def psql(sql: str, *, user: str = "postgres", dbname: str = "postgres",

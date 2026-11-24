@@ -28,6 +28,7 @@ import pathlib
 import statistics
 import sys
 import time
+from _paths import show
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "backend"))
@@ -88,7 +89,7 @@ def main() -> None:
           f"(first case {t['first_case_ms']:.1f} ms: index construction)")
     print(f"repeat pass {t['repeat_pass_ms']:8.1f} ms for the set, "
           f"{t['repeat_mean_ms']:.1f} ms per case")
-    print(f"written to {OUT.relative_to(ROOT)}")
+    print(f"written to {show(OUT)}")
 
 
 if __name__ == "__main__":

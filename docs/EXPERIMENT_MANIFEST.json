@@ -1,6 +1,6 @@
 {
-  "generated": "2026-10-28 10:19 UTC",
-  "git_commit": "8138fd2",
+  "generated": "2026-11-24 17:31 UTC",
+  "git_commit": "956a35f",
   "experiments": [
     {
       "id": "research/confirm/confirm",
@@ -276,6 +276,19 @@
       "note": "per-question records present, no aggregate report written"
     },
     {
+      "id": "research/latency-protocol/test+raw",
+      "kind": "enterprise benchmark (records only)",
+      "tag": "latency-protocol",
+      "split": "test",
+      "cases": 255,
+      "systems": [],
+      "report": null,
+      "metrics_checked": 0,
+      "metrics_mismatched": 0,
+      "reproducible": null,
+      "note": "per-question records present, no aggregate report written"
+    },
+    {
       "id": "research/parser-codefix/test+raw",
       "kind": "enterprise benchmark (records only)",
       "tag": "parser-codefix",
@@ -307,6 +320,19 @@
       "tag": "qwen2.5-1.5b",
       "split": "dev",
       "cases": 153,
+      "systems": [],
+      "report": null,
+      "metrics_checked": 0,
+      "metrics_mismatched": 0,
+      "reproducible": null,
+      "note": "per-question records present, no aggregate report written"
+    },
+    {
+      "id": "research/relevance-gate/test+raw",
+      "kind": "enterprise benchmark (records only)",
+      "tag": "relevance-gate",
+      "split": "test",
+      "cases": 255,
       "systems": [],
       "report": null,
       "metrics_checked": 0,

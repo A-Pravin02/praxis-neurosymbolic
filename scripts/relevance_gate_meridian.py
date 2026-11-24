@@ -31,6 +31,7 @@ import pathlib
 import sys
 
 import yaml
+from _paths import show
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 BACKEND = ROOT / "backend"
@@ -99,7 +100,7 @@ def main() -> None:
     OUT.write_text(json.dumps({"n": len(rows), "said_none": len(none_said),
                                "refused": len(refused), "rows": rows}, indent=2),
                    encoding="utf-8")
-    print(f"\nwritten to {OUT.relative_to(ROOT)}")
+    print(f"\nwritten to {show(OUT)}")
 
 
 if __name__ == "__main__":

@@ -48,6 +48,7 @@ import pathlib
 import sys
 
 import yaml
+from _paths import show
 
 # The benchmark questions carry rupee amounts, and this prints them.
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -193,7 +194,7 @@ def main() -> None:
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(result, indent=2), encoding="utf-8")
-    print(f"\nwritten to {OUT.relative_to(ROOT)}")
+    print(f"\nwritten to {show(OUT)}")
 
 
 if __name__ == "__main__":

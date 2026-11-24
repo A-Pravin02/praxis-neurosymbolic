@@ -22,6 +22,7 @@ from pathlib import Path
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt   # noqa: E402
+from _paths import show
 
 ROOT = Path(__file__).resolve().parents[1]
 RESULTS = ROOT / "artifacts/football/results"
@@ -308,7 +309,7 @@ def main() -> None:
     ]
     for target in written:
         if target:
-            print(f"  wrote {target.relative_to(ROOT)}")
+            print(f"  wrote {show(target)}")
     missing = sum(1 for t in written if t is None)
     if missing:
         print(f"  {missing} figure(s) skipped: their source data is not present")
