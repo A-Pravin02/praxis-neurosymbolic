@@ -76,9 +76,22 @@ Only complete runs (every question of the split answered) are included in the re
 
 ## 5. The paper
 
+The submitted artifact is `docs/paper/PRAXIS_IEEE.docx`, built from the result files by
+`scripts/build_paper_docx.py`; `main.tex` is an earlier LaTeX draft and is **not** what
+the PDF is made from.
+
 ```bash
-cd docs/paper && pdflatex main && bibtex main && pdflatex main && pdflatex main
+python scripts/make_architecture_figure.py --audit   # Fig. 1, with its type-size check
+python scripts/make_results_figure.py                # Fig. 2
+python scripts/build_paper_docx.py \
+  --template docs/paper/templates/ieee_a4_transitional.docx \
+  --out docs/paper/PRAXIS_IEEE.docx
+powershell -File scripts/export_pdf.ps1 docs/paper/PRAXIS_IEEE.docx
 ```
+
+The build fails rather than emitting a placeholder if a result file is missing, and it
+fails if the case the Section IV-D trace quotes stops demonstrating the policy-version
+reversal it is quoted for.
 
 ## Protocol notes
 
@@ -148,5 +161,10 @@ A reviewer re-running them is re-verifying, not taking the report's word:
 python scripts/independent_metrics.py    # 151 values from raw records, 0 mismatched
 python scripts/verify_claims.py          # 25 textual claims against the artifacts
 cd backend && python -m pytest tests/ -m no_db -q    # 143 passed
-powershell -File scripts/export_pdf.ps1 docs/paper/PRAXIS_IEEE.docx   # 6 pages
+powershell -File scripts/export_pdf.ps1 docs/paper/PRAXIS_IEEE.docx   # 8 pages
 ```
+
+The paper was six pages before the reviewer's additions — the baselines paragraph, the
+dataset and rule-base sizes, the code link, the worked trace, the full confirmatory
+table and the extra columns in the ablation table — and is eight with them. If the venue
+enforces six, the content has to come back out; it is not a layout problem.

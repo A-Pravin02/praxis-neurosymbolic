@@ -27,10 +27,13 @@ ROOT = Path(__file__).resolve().parents[1]
 REPORT = ROOT / "eval_reports/research/paper/test.report.json"
 
 ORDER = ["neurosymbolic", "ns_parser", "llm_rag_rules", "llm_rag_selfcheck",
-         "llm_rag", "llm_only"]
-LABEL = {"neurosymbolic": "PRAXIS\n(no LLM)", "ns_parser": "PRAXIS\n(LLM parser)",
-         "llm_rag_rules": "LLM+RAG\n+rules", "llm_rag_selfcheck": "LLM+RAG\n+selfcheck",
-         "llm_rag": "LLM\n+RAG", "llm_only": "LLM\nonly"}
+         "llm_rag", "llm_only", "rag_extractive"]
+# Seven bars where there were six, so the parenthesised labels no longer fit their
+# slot and ran into their neighbours. Shortened to what distinguishes each system.
+LABEL = {"neurosymbolic": "PRAXIS\nno LLM", "ns_parser": "PRAXIS\nparser",
+         "llm_rag_rules": "LLM+RAG\n+rules", "llm_rag_selfcheck": "LLM+RAG\n+check",
+         "llm_rag": "LLM\n+RAG", "llm_only": "LLM\nonly",
+         "rag_extractive": "Extractive\nRAG"}
 OURS = ("neurosymbolic", "ns_parser")
 FILL_OURS = dict(facecolor="#ffffff", edgecolor="#000000", hatch="///", linewidth=0.9)
 FILL_BASE = dict(facecolor="#9a9a9a", edgecolor="#000000", linewidth=0.9)
@@ -65,7 +68,7 @@ def panel(ax, report, systems, key, title, ylabel):
         ax.annotate(f"{v:.3f}", (x, v + (his[x] if x < len(his) else 0)),
                     ha="center", va="bottom", fontsize=5.4)
     ax.set_xticks(list(xs))
-    ax.set_xticklabels([LABEL.get(s, s) for s in systems], fontsize=5.6)
+    ax.set_xticklabels([LABEL.get(s, s) for s in systems], fontsize=5.3)
     ax.set_ylim(0, 1.12)
     ax.set_ylabel(ylabel, fontsize=6.0)
     ax.set_title(title, fontsize=7.0)
@@ -87,12 +90,9 @@ def build(out: Path) -> Path:
     panel(axes[1], report, systems, "hallucination_rate",
           "Hallucination (lower better)", "hallucinated / all cases")
 
-    fig.suptitle("Test split, 255 questions. Bars are 95% bootstrap intervals; "
-                 "hatched bars are the proposed system.", fontsize=6.6)
-    fig.text(0.5, 0.005,
-             "source: eval_reports/research/paper/test.report.json · coverage is in Table II",
-             ha="center", fontsize=5.2, color="#555555")
-    fig.tight_layout(rect=(0, 0.05, 1, 0.90))
+    # No title and no footer: the caption carries both, and reclaiming the bands they
+    # reserved removes the blank gap above the plots and lets the panels print larger.
+    fig.tight_layout()
     out.mkdir(parents=True, exist_ok=True)
     target = out / "main_results.png"
     fig.savefig(target, dpi=300)

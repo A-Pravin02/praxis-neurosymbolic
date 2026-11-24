@@ -17,6 +17,10 @@ The diagram shows the system **as implemented**, not as hoped for. Two consequen
 Greyscale with hatching, matching the other figures: the paper prints in black and
 white, and identity must not depend on colour.
 
+The flow is one straight column, top to bottom. An earlier version snaked left and
+right across the page, which made the reading order something a reader had to work out
+rather than follow.
+
 Sized for print, which is the whole reason this is a vertical figure. An earlier
 version laid the pipeline out horizontally in four lanes at `figsize=(7.6, 4.0)`.
 Placed in a column it had to be scaled to roughly two-fifths of that width, which
@@ -52,12 +56,17 @@ def _checks_defined() -> int:
 # The printed size. One IEEE column is about 3.4 in inside the margins. Data units
 # are square - ylim is derived from the aspect - so a box of height 5 is the same
 # number of points whichever way it is measured.
-FIG_W, FIG_H = 3.30, 3.00
+FIG_W, FIG_H = 3.30, 4.10
 MIN_PT = 6.0            # nothing smaller than this may be drawn
 UNIT_PT = FIG_W / 100 * 72          # points per data unit
-ROW = 5.4                           # one line of type plus padding
+ROW = 4.9                           # one line of type plus padding
+PITCH = 7.8                         # one row plus the arrow beneath it
 
 NEURAL = dict(facecolor="#ffffff", edgecolor="#000000", hatch="///", linewidth=0.9)
+# The realizer is optional - the default configuration has none - so it is drawn with
+# the neural fill and a dashed edge, which is what "may be present" looks like here.
+NEURAL_OPT = dict(facecolor="#ffffff", edgecolor="#000000", hatch="///",
+                  linewidth=0.9, linestyle=(0, (3, 2)))
 SYMBOLIC = dict(facecolor="#d9d9d9", edgecolor="#000000", hatch="", linewidth=0.9)
 GATE = dict(facecolor="#4d4d4d", edgecolor="#000000", hatch="", linewidth=1.1)
 IO = dict(facecolor="#ffffff", edgecolor="#000000", hatch="", linewidth=1.1)
@@ -74,6 +83,8 @@ def box(ax, x, y, w, label, style, fontsize=6.8, textcolor="#000000", h=ROW):
     row, and silently overflowing the box is how the previous figure became
     unreadable. A label too wide for its box is reported rather than drawn badly.
     """
+    if not label:                       # a zero-height spacer, drawn for alignment
+        return
     _sizes.append(fontsize)
     # ~0.5 em per character for this face, plus a little padding.
     need_pt = len(label) * fontsize * 0.5 + 4
@@ -103,6 +114,12 @@ def note(ax, x, y, text, fontsize=6.0, **kw):
             linespacing=1.2, **kw)
 
 
+def line(ax, p, q, linestyle="-", lw=0.9):
+    """One leg of a routed connector, with no arrowhead."""
+    ax.plot([p[0], q[0]], [p[1], q[1]], linestyle=linestyle, linewidth=lw,
+            color="#000000", solid_capstyle="round", zorder=1)
+
+
 def arrow(ax, p, q, linestyle="-", lw=0.9, rad=0.0):
     ax.add_patch(FancyArrowPatch(p, q, arrowstyle="-|>", mutation_scale=6,
                                  linewidth=lw, linestyle=linestyle, color="#000000",
@@ -111,6 +128,33 @@ def arrow(ax, p, q, linestyle="-", lw=0.9, rad=0.0):
 
 
 def build(out_dir: Path) -> list[Path]:
+    """Draw the pipeline as a single straight top-to-bottom flow.
+
+    Six things the previous drawing did not say, each of which the text does:
+
+      * the asker's identity and the date of the case are *inputs*, and they are what
+        select the authorized view and the policy version, so each gets its own box
+        and its own arrow into the box it selects;
+      * stored records reach the reasoner through the authorized view, not through the
+        policy-version resolver, which was where the arrow pointed;
+      * a model may write the final wording, so the realizer is on the diagram - as an
+        optional box, because the default configuration has none;
+      * claims are extracted from that wording before anything is checked;
+      * the controller re-verifies what the realizer writes, which is a loop, not a
+        straight line;
+      * the relevance check belongs between understanding and the rule engine, where it
+        would act, with the branch it would take.
+
+    Boxes are tagged A1-A2, B1-B4 and C1-C4, matching Sections IV-A, IV-B and IV-C, so
+    a reader can move between drawing and prose without guessing. The flow is one
+    column top to bottom: the earlier version snaked left and right, which made the
+    reading order a puzzle rather than a sequence.
+
+    Nothing is written beneath a box any more. Every such note in the previous version
+    collided with the box below it at print size - the encoder note sat across the
+    relevance panel, the realizer note across claim extraction - and all of them say
+    what the caption already says.
+    """
     _sizes.clear()
     _overflow.clear()
     fig, ax = plt.subplots(figsize=(FIG_W, FIG_H))
@@ -120,88 +164,130 @@ def build(out_dir: Path) -> list[Path]:
     ax.axis("off")
     fig.subplots_adjust(left=0, right=1, top=1, bottom=0)
 
-    L, R = 3.0, 97.0                    # drawable span
+    X, W = 11.0, 78.0                   # the single flow column
+    MID = X + W / 2
+    HALF = W / 2 - 2.0                  # a half-width box, for the two paired rows
+    XR = X + W / 2 + 2.0                # left edge of the right-hand half box
+    LEFT_LANE, RIGHT_LANE = X - 6.5, X + W + 5.0   # margins kept clear for routing
 
-    # Vertical bands, top down. Every box sits on one of these, so a lane always
-    # encloses its own contents and nothing is placed by eye.
-    Y_Q, Y_NEU, Y_STORE, Y_AUTH, Y_CONC, Y_CHECK, Y_GATE, Y_OUT, Y_GAP = (
-        84.0, 73.0, 56.5, 48.0, 39.5, 30.5, 16.0, 7.5, 0.8)
+    def row(i: int) -> float:
+        return top - 3.5 - ROW - i * PITCH
+
+    (Y_Q, Y_UND, Y_REL, Y_RET, Y_IN, Y_VER, Y_AUTH, Y_ENG, Y_CONC,
+     Y_REAL, Y_CLAIM, Y_CHECK, Y_GATE, Y_OUT) = (row(i) for i in range(14))
 
     # ---- lane backgrounds ------------------------------------------------
-    for y0, y1, name in ((Y_NEU - 5.5, Y_NEU + ROW + 1.2, "NEURAL"),
-                         (Y_CHECK - 1.6, Y_STORE + ROW + 1.6, "SYMBOLIC"),
-                         (Y_OUT - 1.6, Y_GATE + ROW + 1.6, "RELEASE")):
-        ax.add_patch(FancyBboxPatch((L + 4.5, y0), R - L - 4.5, y1 - y0,
+    for y0, y1, name in ((Y_RET - 1.4, Y_UND + ROW + 1.4, "NEURAL"),
+                         (Y_CONC - 1.4, Y_IN + ROW + 1.4, "SYMBOLIC"),
+                         (Y_OUT - 1.4, Y_REAL + ROW + 1.4, "RELEASE")):
+        ax.add_patch(FancyBboxPatch((X - 3.0, y0), W + 6.0, y1 - y0,
                                     boxstyle="round,pad=0.3,rounding_size=0.8",
-                                    facecolor="#fbfbfb", edgecolor="#bbbbbb",
+                                    facecolor="#fbfbfb", edgecolor="#999999",
                                     linewidth=0.6, linestyle=(0, (3, 2))))
-        note(ax, L + 1.4, (y0 + y1) / 2, name, 6.0, color="#888888", rotation=90,
+        # Darkened from #888888: at 6 pt these were the faintest type on the page.
+        note(ax, X - 5.6, (y0 + y1) / 2, name, 6.0, color="#333333", rotation=90,
              va="center", ha="center", style="italic")
 
+    def down(y_from: float, y_to: float, x: float = MID, **kw) -> None:
+        arrow(ax, (x, y_from), (x, y_to + ROW), **kw)
+
     # ---- question in -----------------------------------------------------
-    box(ax, 30.0, Y_Q, 40.0, "user question", IO, 7.0)
-    arrow(ax, (50, Y_Q), (50, Y_NEU + ROW))
+    box(ax, X + 16.0, Y_Q, W - 32.0, "user question", IO, 7.0)
+    down(Y_Q, Y_UND)
 
-    # ---- neural lane -----------------------------------------------------
-    box(ax, 10.0, Y_NEU, 40.0, "understanding", NEURAL)
-    box(ax, 55.0, Y_NEU, 40.0, "retrieval", NEURAL)
-    arrow(ax, (50.0, Y_NEU + ROW / 2), (55.0, Y_NEU + ROW / 2))
-    note(ax, 52.0, Y_NEU - 3.4, "33M encoder, or the model as parser", 6.0,
-         color="#666666", ha="center", shield=True)
+    # ---- A. neural understanding ----------------------------------------
+    box(ax, X, Y_UND, W, "A1  understanding: goal, records, facts", NEURAL, 6.1)
+    down(Y_UND, Y_REL)
 
-    # ---- knowledge and symbolic lane -------------------------------------
-    box(ax, 55.0, Y_STORE, 40.0, "records and graph", STORE)
-    arrow(ax, (75.0, Y_NEU), (75.0, Y_STORE + ROW))
-    box(ax, 7.0, Y_STORE, 42.0, "policy version on date", SYMBOLIC, 6.6)
-    arrow(ax, (55.0, Y_STORE + ROW / 2), (49.0, Y_STORE + ROW / 2))
-
-    box(ax, 7.0, Y_AUTH, 42.0, "authorized view", SYMBOLIC, 6.6)
-    box(ax, 55.0, Y_AUTH, 40.0, "rule engine, three-valued", SYMBOLIC, 6.3)
-    arrow(ax, (28.0, Y_STORE), (28.0, Y_AUTH + ROW))
-    arrow(ax, (49.0, Y_AUTH + ROW / 2), (55.0, Y_AUTH + ROW / 2))
-
-    box(ax, 28.0, Y_CONC, 44.0, "established conclusion", SYMBOLIC, 6.6)
-    arrow(ax, (75.0, Y_AUTH), (66.0, Y_CONC + ROW), rad=0.12)
-
-    # The count is read from the census, never written here: the diagram said "ten"
-    # while the text said eleven, and the true figure is twelve defined of which
-    # eleven run on the test split. A literal in a drawing script is exactly how that
-    # drifts, so the number comes from the same artifact the prose quotes.
-    box(ax, 7.0, Y_CHECK, 88.0,
-        f"{_checks_defined()} checks: supported / contradicted / unverified / "
-        f"not checkable",
-        SYMBOLIC, 6.1)
-    arrow(ax, (50.0, Y_CONC), (50.0, Y_CHECK + ROW))
-
-    # ---- release lane ----------------------------------------------------
-    box(ax, 32.0, Y_GATE, 36.0, "release gate", GATE, 6.8, "#ffffff")
-    arrow(ax, (50.0, Y_CHECK), (50.0, Y_GATE + ROW))
-    note(ax, 51.0, Y_GATE + ROW + 2.6,
-         "no language model acts on this decision path", 6.0,
-         color="#555555", ha="center", style="italic", shield=True)
-
-    box(ax, 55.0, Y_OUT, 40.0, "answer released", IO, 6.6)
-    box(ax, 7.0, Y_OUT, 40.0, "withhold, abstain", GATE, 6.6, "#ffffff")
-    arrow(ax, (64.0, Y_GATE), (72.0, Y_OUT + ROW), rad=-0.12)
-    arrow(ax, (36.0, Y_GATE), (28.0, Y_OUT + ROW), rad=0.12)
-    note(ax, 77.0, Y_GATE - 2.2, "pass", 6.0, ha="center")
-    note(ax, 23.0, Y_GATE - 2.2, "fail", 6.0, ha="center")
-
-    # ---- the gap the error analysis found --------------------------------
-    ax.add_patch(FancyBboxPatch((7.0, Y_GAP), 88.0, ROW,
+    # ---- the relevance check, drawn where it would act -------------------
+    REL_W = W - 15.0
+    ax.add_patch(FancyBboxPatch((X, Y_REL), REL_W, ROW,
                                 boxstyle="round,pad=0.25,rounding_size=0.8",
                                 facecolor="#ffffff", edgecolor="#000000",
                                 linewidth=1.0, linestyle=(0, (3.5, 2))))
-    # Not simply "NOT IMPLEMENTED" any more. The relevance check exists on the parser
-    # path, where understanding can name no goal, and does not exist on the encoder
-    # path, where nearest-neighbour selection always returns one. Showing it as wholly
-    # absent would understate what is built; showing it as present would overstate it.
-    note(ax, 51.0, Y_GAP + ROW / 2,
-         "relevance of goal to question: parser path only, not the encoder",
-         6.2, color="#000000", ha="center", va="center")
+    note(ax, X + REL_W / 2, Y_REL + ROW / 2,
+         "does the goal answer the question?  parser only", 6.0,
+         color="#000000", ha="center", va="center")
+    # The branch the check takes on the parser path, routed inside the figure: the
+    # label previously ran off the right edge and was cropped out of the paper.
+    arrow(ax, (X + REL_W, Y_REL + ROW / 2), (X + REL_W + 4.5, Y_REL + ROW / 2))
+    note(ax, 97.5, Y_REL + ROW / 2, "no goal:\nabstain", 6.0,
+         color="#333333", ha="right", va="center")
+    down(Y_REL, Y_RET)
 
-    # The shading legend lives in the caption, where it prints at caption size
-    # instead of competing with the diagram for a row.
+    box(ax, X, Y_RET, W, "A2  retrieval of policy text and records", NEURAL, 6.1)
+    down(Y_RET, Y_IN, x=XR + HALF / 2)
+
+    # ---- B. the two inputs, then symbolic reasoning ----------------------
+    box(ax, X, Y_IN, HALF, "who is asking", IO, 6.2)
+    box(ax, XR, Y_IN, HALF, "date of the case", IO, 6.2)
+    box(ax, X, Y_VER, HALF, "records and graph", STORE, 6.1)
+    box(ax, XR, Y_VER, HALF, "B1  policy version on date", SYMBOLIC, 6.1)
+    # The date selects the version; the identity selects the view, two rows down, so
+    # its arrow is routed round the left margin rather than through the store.
+    down(Y_IN, Y_VER, x=XR + HALF / 2)
+    line(ax, (X, Y_IN + ROW / 2), (LEFT_LANE, Y_IN + ROW / 2))
+    line(ax, (LEFT_LANE, Y_IN + ROW / 2), (LEFT_LANE, Y_AUTH + ROW / 2))
+    arrow(ax, (LEFT_LANE, Y_AUTH + ROW / 2), (X, Y_AUTH + ROW / 2))
+
+    box(ax, X, Y_AUTH, W, "B2  authorized view of the records", SYMBOLIC, 6.1)
+    down(Y_VER, Y_AUTH, x=X + HALF / 2)          # records into the view
+    down(Y_VER, Y_AUTH, x=XR + HALF / 2)         # version into the view
+    down(Y_AUTH, Y_ENG)
+
+    box(ax, X, Y_ENG, W, "B3  rule engine, three-valued", SYMBOLIC, 6.1)
+    down(Y_ENG, Y_CONC)
+    box(ax, X, Y_CONC, W, "B4  established conclusion", SYMBOLIC, 6.1)
+    down(Y_CONC, Y_REAL)
+
+    # ---- C. the release gate --------------------------------------------
+    box(ax, X, Y_REAL, W, "C1  realizer: wording only (optional)", NEURAL_OPT, 6.1)
+    down(Y_REAL, Y_CLAIM)
+    box(ax, X, Y_CLAIM, W, "C2  claim extraction from the wording", SYMBOLIC, 6.1)
+    down(Y_CLAIM, Y_CHECK)
+    box(ax, X, Y_CHECK, W, f"C3  {_checks_defined()} checks, four-valued",
+        SYMBOLIC, 6.1)
+    down(Y_CHECK, Y_GATE)
+
+    box(ax, X + 18.0, Y_GATE, W - 36.0, "C4  release gate", GATE, 6.6, "#ffffff")
+    # The controller's re-verification: a failed check sends the wording back to be
+    # written again and checked again. Routed up the right margin, which is clear
+    # between these rows, so it crosses no box.
+    line(ax, (X + W - 18.0, Y_GATE + ROW / 2), (RIGHT_LANE, Y_GATE + ROW / 2),
+         linestyle=(0, (2.5, 1.5)))
+    line(ax, (RIGHT_LANE, Y_GATE + ROW / 2), (RIGHT_LANE, Y_REAL + ROW / 2),
+         linestyle=(0, (2.5, 1.5)))
+    arrow(ax, (RIGHT_LANE, Y_REAL + ROW / 2), (X + W, Y_REAL + ROW / 2),
+          linestyle=(0, (2.5, 1.5)))
+    note(ax, RIGHT_LANE + 1.0, (Y_GATE + Y_REAL) / 2 + ROW / 2, "re-verify", 6.0,
+         color="#333333", ha="center", va="center", rotation=90)
+
+    box(ax, X, Y_OUT, HALF, "withhold, abstain", GATE, 6.2, "#ffffff")
+    box(ax, XR, Y_OUT, HALF, "answer released", IO, 6.2)
+    arrow(ax, (MID + 7.0, Y_GATE), (XR + HALF / 2, Y_OUT + ROW), rad=-0.14)
+    arrow(ax, (MID - 7.0, Y_GATE), (X + HALF / 2, Y_OUT + ROW), rad=0.14)
+    note(ax, X + HALF / 2 - 9.0, Y_GATE - 1.8, "fail", 6.0, ha="center")
+    note(ax, XR + HALF / 2 + 9.0, Y_GATE - 1.8, "pass", 6.0, ha="center")
+
+    # ---- legend ----------------------------------------------------------
+    # The shading was explained in the caption alone, which makes a reader cross back
+    # and forth to decode four fills. Widths are computed from the type size, because
+    # the first version of this row was laid out by guess and ran off the page.
+    sw_w, sw_h = 5.0, 2.9
+    y0 = Y_OUT - 6.6
+    x0 = X - 3.0
+    for style, name in ((NEURAL, "neural"), (SYMBOLIC, "symbolic"),
+                        (STORE, "stored"), (GATE, "gate")):
+        ax.add_patch(FancyBboxPatch((x0, y0), sw_w, sw_h,
+                                    boxstyle="round,pad=0.12,rounding_size=0.4",
+                                    **{k: v for k, v in style.items()
+                                       if k != "linestyle"}))
+        note(ax, x0 + sw_w + 1.0, y0 + sw_h / 2, name, 6.0, color="#333333",
+             ha="left", va="center")
+        x0 += sw_w + 1.0 + len(name) * 6.0 * 0.5 / UNIT_PT + 3.0
+    note(ax, X - 3.0, y0 - 3.4, "dashed edge: optional, or not implemented", 6.0,
+         color="#333333", ha="left", va="center")
+
     out_dir.mkdir(parents=True, exist_ok=True)
     written = []
     for suffix, kwargs in ((".svg", {}), (".png", {"dpi": 400})):
@@ -228,15 +314,27 @@ def audit(out_dir: Path) -> int:
     # The builder must place the figure at FIG_W, or the type sizes are fiction.
     builder = ROOT / "scripts/build_paper_docx.py"
     if builder.exists():
-        m = re.search(r'architecture\.png"[^)]*?width_in=([\d.]+)',
+        # `[^)]*?` could not cross a parenthesis, and the caption now contains several,
+        # so this check quietly stopped running - the one check that keeps the printed
+        # type sizes from becoming fiction. It now spans anything up to the next
+        # mention of the figure, and a miss is a failure rather than a silent skip.
+        m = re.search(r'architecture\.png"(?:.(?!architecture))*?width_in=([\d.]+)',
                       builder.read_text(encoding="utf-8"), re.S)
-        if m:
-            placed = float(m.group(1))
-            ok = abs(placed - FIG_W) < 0.05
-            print(f"  placed in paper at   : {placed} in "
-                  f"{'(matches)' if ok else '(MISMATCH - type will not print at size)'}")
-            if not ok:
-                return 1
+        if not m:
+            print("  FAIL: cannot find the width the paper places this figure at")
+            return 1
+        placed = float(m.group(1))
+        ok = abs(placed - FIG_W) < 0.05
+        print(f"  placed in paper at   : {placed} in "
+              f"{'(matches)' if ok else '(MISMATCH - type will not print at size)'}")
+        if not ok:
+            return 1
+    if _overflow:
+        # Collected since this script was written and never reported, so a label wider
+        # than its box was recorded and silently drawn anyway.
+        for line in _overflow:
+            print(f"  FAIL: label overflows its box: {line}")
+        return 1
     if smallest < MIN_PT:
         print(f"  FAIL: {smallest:.1f} pt is below the {MIN_PT} pt floor")
         return 1
