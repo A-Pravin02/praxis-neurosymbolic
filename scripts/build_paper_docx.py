@@ -1538,10 +1538,10 @@ def build(doc: Doc, test: dict, confirm: dict, scale: dict,
         "https://doi.org/10.1145/3703155",
         "P. Lewis et al., “Retrieval-augmented generation for knowledge-intensive "
         "NLP tasks,” in Proc. Adv. Neural Inf. Process. Syst. (NeurIPS), vol. 33, "
-        "pp. 9459–9474, 2020.",
+        "pp. 9459–9474, 2020, https://arxiv.org/abs/2005.11401",
         "A. Asai et al., “Self-RAG: learning to retrieve, generate, and critique "
         "through self-reflection,” in Proc. Int. Conf. Learn. Representations "
-        "(ICLR), 2024.",
+        "(ICLR), 2024, https://arxiv.org/abs/2310.11511",
         "S. Dhuliawala et al., “Chain-of-verification reduces hallucination in "
         "large language models,” in Findings Assoc. Comput. Linguistics: ACL 2024, "
         "pp. 3563–3578, 2024, https://doi.org/10.18653/v1/2024.findings-acl.212",
@@ -1562,12 +1562,14 @@ def build(doc: Doc, test: dict, confirm: dict, scale: dict,
         "Proc. Conf. Empir. Methods Nat. Lang. Process. (EMNLP), pp. 5153–5176, "
         "2023, https://doi.org/10.18653/v1/2023.emnlp-main.313",
         "L. Gao et al., “PAL: program-aided language models,” in Proc. Int. Conf. "
-        "Mach. Learn. (ICML), PMLR vol. 202, pp. 10764–10799, 2023.",
+        "Mach. Learn. (ICML), PMLR vol. 202, pp. 10764–10799, 2023, "
+        "https://arxiv.org/abs/2211.10435",
         "W. Chen et al., “Program of thoughts prompting: disentangling computation "
         "from reasoning for numerical reasoning tasks,” Trans. Mach. Learn. Res., "
-        "2023.",
+        "2023, https://arxiv.org/abs/2211.12588",
         "Z. Cheng et al., “Binding language models in symbolic languages,” in Proc. "
-        "Int. Conf. Learn. Representations (ICLR), 2023.",
+        "Int. Conf. Learn. Representations (ICLR), 2023, "
+        "https://arxiv.org/abs/2210.02875",
         "A. d’Avila Garcez and L. C. Lamb, “Neurosymbolic AI: the 3rd wave,” Artif. "
         "Intell. Rev., vol. 56, no. 11, pp. 12387–12406, 2023, "
         "https://doi.org/10.1007/s10462-023-10448-w",
@@ -1577,16 +1579,18 @@ def build(doc: Doc, test: dict, confirm: dict, scale: dict,
         "S. C. Kleene, Introduction to Metamathematics. Amsterdam, The Netherlands: "
         "North-Holland, 1952.",
         "X. Wang et al., “Self-consistency improves chain of thought reasoning in "
-        "language models,” in Proc. Int. Conf. Learn. Representations (ICLR), 2023.",
+        "language models,” in Proc. Int. Conf. Learn. Representations (ICLR), 2023, "
+        "https://arxiv.org/abs/2203.11171",
         "S. Xiao et al., “C-Pack: packed resources for general Chinese embeddings,” "
         "in Proc. ACM SIGIR Conf. Res. Develop. Inf. Retrieval, pp. 641–649, 2024, "
         "https://doi.org/10.1145/3626772.3657878",
-        "Qwen Team, “Qwen2.5 technical report,” arXiv:2412.15115, 2024.",
+        "Qwen Team, “Qwen2.5 technical report,” 2024, "
+        "https://arxiv.org/abs/2412.15115",
         "Q. McNemar, “Note on the sampling error of the difference between "
         "correlated proportions or percentages,” Psychometrika, vol. 12, no. 2, pp. "
         "153–157, 1947, https://doi.org/10.1007/BF02295996",
         "A. Karpathy, “nanoGPT,” 2023. [Online]. Available: "
-        "github.com/karpathy/nanoGPT",
+        "https://github.com/karpathy/nanoGPT",
     ]
     # The `references` style numbers entries itself; a manual "[1] " would print twice.
     for ref in refs:
