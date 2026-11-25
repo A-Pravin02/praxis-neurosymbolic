@@ -1,6 +1,6 @@
 # PRAXIS
 
-**Reducing hallucinations in large language models through a neuro-symbolic reasoning layer.**
+**Reducing hallucinations through a neuro-symbolic decision layer.**
 
 A language model is never the authority for a decision. A neural encoder interprets the
 question, a three-valued symbolic reasoner applies versioned business rules to authorized

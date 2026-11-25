@@ -1530,10 +1530,12 @@ def build(doc: Doc, test: dict, confirm: dict, scale: dict,
     # publisher's own listing gives them.
     refs = [
         "Z. Ji et al., “Survey of hallucination in natural language generation,” "
-        "ACM Comput. Surv., vol. 55, no. 12, pp. 1–38, 2023.",
+        "ACM Comput. Surv., vol. 55, no. 12, pp. 1–38, 2023, "
+        "https://doi.org/10.1145/3571730",
         "L. Huang et al., “A survey on hallucination in large language models: "
         "principles, taxonomy, challenges, and open questions,” ACM Trans. Inf. "
-        "Syst., vol. 43, no. 2, art. 42, pp. 1–55, 2025.",
+        "Syst., vol. 43, no. 2, art. 42, pp. 1–55, 2025, "
+        "https://doi.org/10.1145/3703155",
         "P. Lewis et al., “Retrieval-augmented generation for knowledge-intensive "
         "NLP tasks,” in Proc. Adv. Neural Inf. Process. Syst. (NeurIPS), vol. 33, "
         "pp. 9459–9474, 2020.",
@@ -1542,20 +1544,23 @@ def build(doc: Doc, test: dict, confirm: dict, scale: dict,
         "(ICLR), 2024.",
         "S. Dhuliawala et al., “Chain-of-verification reduces hallucination in "
         "large language models,” in Findings Assoc. Comput. Linguistics: ACL 2024, "
-        "pp. 3563–3578, 2024.",
+        "pp. 3563–3578, 2024, https://doi.org/10.18653/v1/2024.findings-acl.212",
         "P. Manakul et al., “SelfCheckGPT: zero-resource black-box hallucination "
         "detection for generative large language models,” in Proc. Conf. Empir. "
-        "Methods Nat. Lang. Process. (EMNLP), pp. 9004–9017, 2023.",
+        "Methods Nat. Lang. Process. (EMNLP), pp. 9004–9017, 2023, "
+        "https://doi.org/10.18653/v1/2023.emnlp-main.557",
         "S. Min et al., “FActScore: fine-grained atomic evaluation of factual "
         "precision in long form text generation,” in Proc. Conf. Empir. Methods "
-        "Nat. Lang. Process. (EMNLP), pp. 12076–12100, 2023.",
+        "Nat. Lang. Process. (EMNLP), pp. 12076–12100, 2023, "
+        "https://doi.org/10.18653/v1/2023.emnlp-main.741",
         "L. Pan et al., “Logic-LM: empowering large language models with symbolic "
         "solvers for faithful logical reasoning,” in Findings Assoc. Comput. "
-        "Linguistics: EMNLP 2023, pp. 3806–3824, 2023.",
+        "Linguistics: EMNLP 2023, pp. 3806–3824, 2023, "
+        "https://doi.org/10.18653/v1/2023.findings-emnlp.248",
         "T. X. Olausson et al., “LINC: a neurosymbolic approach for logical "
         "reasoning by combining language models with first-order logic provers,” in "
         "Proc. Conf. Empir. Methods Nat. Lang. Process. (EMNLP), pp. 5153–5176, "
-        "2023.",
+        "2023, https://doi.org/10.18653/v1/2023.emnlp-main.313",
         "L. Gao et al., “PAL: program-aided language models,” in Proc. Int. Conf. "
         "Mach. Learn. (ICML), PMLR vol. 202, pp. 10764–10799, 2023.",
         "W. Chen et al., “Program of thoughts prompting: disentangling computation "
@@ -1564,19 +1569,22 @@ def build(doc: Doc, test: dict, confirm: dict, scale: dict,
         "Z. Cheng et al., “Binding language models in symbolic languages,” in Proc. "
         "Int. Conf. Learn. Representations (ICLR), 2023.",
         "A. d’Avila Garcez and L. C. Lamb, “Neurosymbolic AI: the 3rd wave,” Artif. "
-        "Intell. Rev., vol. 56, no. 11, pp. 12387–12406, 2023.",
+        "Intell. Rev., vol. 56, no. 11, pp. 12387–12406, 2023, "
+        "https://doi.org/10.1007/s10462-023-10448-w",
         "H. Kautz, “The third AI summer: AAAI Robert S. Engelmore memorial "
-        "lecture,” AI Mag., vol. 43, no. 1, pp. 105–125, 2022.",
+        "lecture,” AI Mag., vol. 43, no. 1, pp. 105–125, 2022, "
+        "https://doi.org/10.1002/aaai.12036",
         "S. C. Kleene, Introduction to Metamathematics. Amsterdam, The Netherlands: "
         "North-Holland, 1952.",
         "X. Wang et al., “Self-consistency improves chain of thought reasoning in "
         "language models,” in Proc. Int. Conf. Learn. Representations (ICLR), 2023.",
         "S. Xiao et al., “C-Pack: packed resources for general Chinese embeddings,” "
-        "in Proc. ACM SIGIR Conf. Res. Develop. Inf. Retrieval, pp. 641–649, 2024.",
+        "in Proc. ACM SIGIR Conf. Res. Develop. Inf. Retrieval, pp. 641–649, 2024, "
+        "https://doi.org/10.1145/3626772.3657878",
         "Qwen Team, “Qwen2.5 technical report,” arXiv:2412.15115, 2024.",
         "Q. McNemar, “Note on the sampling error of the difference between "
         "correlated proportions or percentages,” Psychometrika, vol. 12, no. 2, pp. "
-        "153–157, 1947.",
+        "153–157, 1947, https://doi.org/10.1007/BF02295996",
         "A. Karpathy, “nanoGPT,” 2023. [Online]. Available: "
         "github.com/karpathy/nanoGPT",
     ]
