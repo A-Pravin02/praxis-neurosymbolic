@@ -712,14 +712,14 @@ def build(doc: Doc, test: dict, confirm: dict, scale: dict,
     # address on a published paper. Fill both before submitting.
     # The department line is dropped at the authors' request; IEEE's block is
     # name / affiliation / city, country / email, and the department line is optional.
-    # Athiban Karthik's address is still a placeholder because nobody has given it:
-    # inventing an address for a named co-author would put a false contact on a
-    # published paper, so it stays visible until it is filled in.
+    # Both addresses are the ones the authors gave. Neither was ever guessed at: a
+    # placeholder stood here until each was supplied, because inventing an address for
+    # a named author would put a false contact on a published paper.
     doc.authors([
         "Pravin Anbalagan\nVellore Institute of Technology (VIT)\n"
         "Vellore, India\npravinanbalagan02@gmail.com",
         "Athiban Karthik\nVellore Institute of Technology (VIT)\n"
-        "Vellore, India\n<EMAIL>",
+        "Vellore, India\nathibankarthik7@gmail.com",
     ])
 
     # Title and authors span the page; everything below is two-column, as IEEE sets it.
