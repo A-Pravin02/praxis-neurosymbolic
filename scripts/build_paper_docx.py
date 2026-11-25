@@ -701,7 +701,8 @@ def build(doc: Doc, test: dict, confirm: dict, scale: dict,
     # parameters rather than a large one. The title below drops that clause and keeps
     # what the paper measures - a reduction in hallucination, achieved by a
     # neuro-symbolic layer - so it is the author's wording and it is accurate.
-    doc.title("Reducing Hallucinations Through a Neuro-Symbolic Layer")
+    doc.title("PRAXIS: Reducing Hallucinations Through a Neuro-Symbolic "
+              "Decision Layer")
     # IEEE conference format sets authors side by side. python-docx cannot lay out
     # the template's multi-column author block directly, so a single-row table gives
     # the same visual result and keeps the template's Author style on each cell.
