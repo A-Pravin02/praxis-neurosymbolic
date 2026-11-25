@@ -38,9 +38,14 @@ from pathlib import Path
 
 import matplotlib
 matplotlib.use("Agg")
+# Without a fixed salt, matplotlib derives SVG element ids from object addresses, so
+# every build renumbers every clip-path and the file differs from the committed one
+# although the drawing is identical. Pair it with metadata={"Date": None} at save time
+# - the embedded timestamp is the other reason an unchanged figure looks changed.
+matplotlib.rcParams["svg.hashsalt"] = "praxis-architecture"
 import matplotlib.pyplot as plt                     # noqa: E402
 from matplotlib.patches import FancyArrowPatch, FancyBboxPatch  # noqa: E402
-from _paths import show
+from _paths import show               # noqa: E402  (after matplotlib setup)
 
 ROOT = Path(__file__).resolve().parents[1]
 CHECK_CENSUS = ROOT / "artifacts/verification_checks.json"
@@ -291,7 +296,8 @@ def build(out_dir: Path) -> list[Path]:
 
     out_dir.mkdir(parents=True, exist_ok=True)
     written = []
-    for suffix, kwargs in ((".svg", {}), (".png", {"dpi": 400})):
+    for suffix, kwargs in ((".svg", {"metadata": {"Date": None}}),
+                           (".png", {"dpi": 400})):
         target = out_dir / f"architecture{suffix}"
         # No bbox_inches="tight": cropping changes the width the figure was sized
         # for, which is what silently shrank the type in the first place.

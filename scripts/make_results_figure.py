@@ -21,8 +21,11 @@ from pathlib import Path
 
 import matplotlib
 matplotlib.use("Agg")
+# A fixed salt makes the SVG's element ids deterministic; without it they come from
+# object addresses and every build rewrites the file without changing the drawing.
+matplotlib.rcParams["svg.hashsalt"] = "praxis-results"
 import matplotlib.pyplot as plt   # noqa: E402
-from _paths import show
+from _paths import show               # noqa: E402  (after matplotlib setup)
 
 ROOT = Path(__file__).resolve().parents[1]
 REPORT = ROOT / "eval_reports/research/paper/test.report.json"
@@ -99,7 +102,9 @@ def build(out: Path) -> Path:
     fig.savefig(target, dpi=300)
     # Vector twin: Word rasterises the PNG to about 200 dpi on
     # export, so keep a scalable source for the camera-ready.
-    fig.savefig(target.with_suffix('.svg'))
+    # metadata={"Date": None} drops the embedded timestamp, so an unchanged figure
+    # produces an unchanged file and a rebuild leaves the working tree clean.
+    fig.savefig(target.with_suffix('.svg'), metadata={"Date": None})
     plt.close(fig)
     return target
 

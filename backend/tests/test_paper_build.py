@@ -96,11 +96,18 @@ def test_regenerating_a_figure_reproduces_the_committed_file(figure, script, tmp
         cwd=ROOT, capture_output=True, text=True)
     assert result.returncode == 0, result.stderr
 
-    produced = tmp_path / figure
-    assert produced.exists(), f"{script} did not write {figure}"
-    assert _sha(produced) == _sha(FIGURES / figure), (
-        f"{figure} in docs/paper/figures differs from what {script} draws; "
-        f"regenerate it with scripts/build_paper.py rather than editing it")
+    # The raster the paper embeds and the vector twin kept for the camera-ready. The
+    # SVG was not reproducible at first: matplotlib stamps a build timestamp into it
+    # and derives element ids from object addresses, so every build rewrote both files
+    # without changing the drawing and a rebuild left the working tree dirty. A fixed
+    # svg.hashsalt and metadata={"Date": None} in each script settle both, and this
+    # covers the SVG so it stays settled.
+    for name in (figure, Path(figure).with_suffix(".svg").name):
+        produced = tmp_path / name
+        assert produced.exists(), f"{script} did not write {name}"
+        assert _sha(produced) == _sha(FIGURES / name), (
+            f"{name} in docs/paper/figures differs from what {script} draws; "
+            f"regenerate it with scripts/build_paper.py rather than editing it")
 
 
 def test_a_figure_script_can_write_outside_the_repository(tmp_path):
