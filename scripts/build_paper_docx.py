@@ -694,13 +694,14 @@ def build(doc: Doc, test: dict, confirm: dict, scale: dict,
                     if not r.get("correct")]
 
     # ---- front matter ----
-    # The previous title, "Reducing Hallucinations in Large Language Models Through a
-    # Neuro-Symbolic Reasoning Layer", claimed the wrong result: the configuration this
-    # paper leads with contains no language model at all, so nothing in it reduces a
-    # language model's hallucination rate - it replaces the inference that produced it.
-    # Study II does gate a model, and it is 4.3M parameters, not a large one.
-    doc.title("Replacing Language-Model Inference with a Neuro-Symbolic Decision "
-              "Layer for Enterprise Policy Question Answering")
+    # An earlier title, "Reducing Hallucinations in Large Language Models Through a
+    # Neuro-Symbolic Reasoning Layer", claimed a result the paper does not have: the
+    # configuration it leads with contains no language model at all, so nothing in it
+    # reduces a *language model's* hallucination rate, and Study II's model is 4.3M
+    # parameters rather than a large one. The title below drops that clause and keeps
+    # what the paper measures - a reduction in hallucination, achieved by a
+    # neuro-symbolic layer - so it is the author's wording and it is accurate.
+    doc.title("Reducing Hallucinations Through a Neuro-Symbolic Layer")
     # IEEE conference format sets authors side by side. python-docx cannot lay out
     # the template's multi-column author block directly, so a single-row table gives
     # the same visual result and keeps the template's Author style on each cell.

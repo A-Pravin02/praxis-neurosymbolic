@@ -72,15 +72,22 @@ UNIT_PT = FIG_W / 100 * 72          # points per data unit
 ROW = 4.9                           # one line of type plus padding
 PITCH = 6.7                         # one row plus the arrow beneath it
 
+# Every box is white. The grey and near-black fills these used to carry printed as
+# flat tone, swallowed the type inside them - "C4 release gate" was white on charcoal -
+# and photocopied worse than they displayed. The four kinds are told apart by hatch and
+# by line weight instead, which survive a photocopy and cost no ink.
 NEURAL = dict(facecolor="#ffffff", edgecolor="#000000", hatch="///", linewidth=0.9)
 # The realizer is optional - the default configuration has none - so it is drawn with
 # the neural fill and a dashed edge, which is what "may be present" looks like here.
 NEURAL_OPT = dict(facecolor="#ffffff", edgecolor="#000000", hatch="///",
                   linewidth=0.9, linestyle=(0, (3, 2)))
-SYMBOLIC = dict(facecolor="#d9d9d9", edgecolor="#000000", hatch="", linewidth=0.9)
-GATE = dict(facecolor="#4d4d4d", edgecolor="#000000", hatch="", linewidth=1.1)
+SYMBOLIC = dict(facecolor="#ffffff", edgecolor="#000000", hatch="", linewidth=0.9)
+# The gate is the only kind that decides anything, so it keeps a mark of its own: a
+# cross hatch and the heaviest outline, rather than a fill dark enough to need
+# reversed-out type.
+GATE = dict(facecolor="#ffffff", edgecolor="#000000", hatch="xx", linewidth=1.5)
 IO = dict(facecolor="#ffffff", edgecolor="#000000", hatch="", linewidth=1.1)
-STORE = dict(facecolor="#f0f0f0", edgecolor="#000000", hatch="...", linewidth=0.9)
+STORE = dict(facecolor="#ffffff", edgecolor="#000000", hatch="...", linewidth=0.9)
 
 _sizes: list[float] = []
 _overflow: list[str] = []
@@ -120,7 +127,7 @@ def note(ax, x, y, text, fontsize=6.0, **kw):
     if shield:
         kw["bbox"] = dict(facecolor="#ffffff", edgecolor="none",
                           boxstyle="square,pad=0.1")
-    ax.text(x, y, text, fontsize=fontsize, color=kw.pop("color", "#444444"),
+    ax.text(x, y, text, fontsize=fontsize, color=kw.pop("color", "#000000"),
             linespacing=1.2, **kw)
 
 
@@ -192,10 +199,10 @@ def build(out_dir: Path) -> list[Path]:
                          (Y_OUT - 1.4, Y_REAL + ROW + 1.4, "RELEASE")):
         ax.add_patch(FancyBboxPatch((X - 3.0, y0), W + 6.0, y1 - y0,
                                     boxstyle="round,pad=0.3,rounding_size=0.8",
-                                    facecolor="#fbfbfb", edgecolor="#999999",
+                                    facecolor="#ffffff", edgecolor="#000000",
                                     linewidth=0.6, linestyle=(0, (3, 2))))
         # Darkened from #888888: at 6 pt these were the faintest type on the page.
-        note(ax, X - 5.6, (y0 + y1) / 2, name, 6.0, color="#333333", rotation=90,
+        note(ax, X - 5.6, (y0 + y1) / 2, name, 6.0, color="#000000", rotation=90,
              va="center", ha="center", style="italic")
 
     def down(y_from: float, y_to: float, x: float = MID, **kw) -> None:
@@ -222,7 +229,7 @@ def build(out_dir: Path) -> list[Path]:
     # label previously ran off the right edge and was cropped out of the paper.
     arrow(ax, (X + REL_W, Y_REL + ROW / 2), (X + REL_W + 4.5, Y_REL + ROW / 2))
     note(ax, 97.5, Y_REL + ROW / 2, "no goal:\nabstain", 6.0,
-         color="#333333", ha="right", va="center")
+         color="#000000", ha="right", va="center")
     down(Y_REL, Y_RET)
 
     box(ax, X, Y_RET, W, "A2  retrieval of policy text and records", NEURAL, 6.1)
@@ -259,7 +266,7 @@ def build(out_dir: Path) -> list[Path]:
         SYMBOLIC, 6.1)
     down(Y_CHECK, Y_GATE)
 
-    box(ax, X + 18.0, Y_GATE, W - 36.0, "C4  release gate", GATE, 6.6, "#ffffff")
+    box(ax, X + 18.0, Y_GATE, W - 36.0, "C4  release gate", GATE, 6.6, "#000000")
     # The controller's re-verification: a failed check sends the wording back to be
     # written again and checked again. Routed up the right margin, which is clear
     # between these rows, so it crosses no box.
@@ -270,9 +277,9 @@ def build(out_dir: Path) -> list[Path]:
     arrow(ax, (RIGHT_LANE, Y_REAL + ROW / 2), (X + W, Y_REAL + ROW / 2),
           linestyle=(0, (2.5, 1.5)))
     note(ax, RIGHT_LANE + 1.0, (Y_GATE + Y_REAL) / 2 + ROW / 2, "re-verify", 6.0,
-         color="#333333", ha="center", va="center", rotation=90)
+         color="#000000", ha="center", va="center", rotation=90)
 
-    box(ax, X, Y_OUT, HALF, "withhold, abstain", GATE, 6.2, "#ffffff")
+    box(ax, X, Y_OUT, HALF, "withhold, abstain", GATE, 6.2, "#000000")
     box(ax, XR, Y_OUT, HALF, "answer released", IO, 6.2)
     arrow(ax, (MID + 7.0, Y_GATE), (XR + HALF / 2, Y_OUT + ROW), rad=-0.14)
     arrow(ax, (MID - 7.0, Y_GATE), (X + HALF / 2, Y_OUT + ROW), rad=0.14)
@@ -292,11 +299,11 @@ def build(out_dir: Path) -> list[Path]:
                                     boxstyle="round,pad=0.12,rounding_size=0.4",
                                     **{k: v for k, v in style.items()
                                        if k != "linestyle"}))
-        note(ax, x0 + sw_w + 1.0, y0 + sw_h / 2, name, 6.0, color="#333333",
+        note(ax, x0 + sw_w + 1.0, y0 + sw_h / 2, name, 6.0, color="#000000",
              ha="left", va="center")
         x0 += sw_w + 1.0 + len(name) * 6.0 * 0.5 / UNIT_PT + 3.0
     note(ax, X - 3.0, y0 - 3.4, "dashed edge: optional, or not implemented", 6.0,
-         color="#333333", ha="left", va="center")
+         color="#000000", ha="left", va="center")
 
     out_dir.mkdir(parents=True, exist_ok=True)
     written = []
