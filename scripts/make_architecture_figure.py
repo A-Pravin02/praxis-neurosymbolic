@@ -62,11 +62,15 @@ def _checks_defined() -> int:
 # The printed size. One IEEE column is about 3.4 in inside the margins. Data units
 # are square - ylim is derived from the aspect - so a box of height 5 is the same
 # number of points whichever way it is measured.
-FIG_W, FIG_H = 3.30, 4.10
+# Height reduced from 4.10 in for the six-page limit. Only the vertical pitch
+# changes: the width, every box width and every type size are untouched, so the audit
+# that governs this figure - no label below six points, no label wider than its box -
+# tests exactly what it tested before, and still passes.
+FIG_W, FIG_H = 3.30, 3.55
 MIN_PT = 6.0            # nothing smaller than this may be drawn
 UNIT_PT = FIG_W / 100 * 72          # points per data unit
 ROW = 4.9                           # one line of type plus padding
-PITCH = 7.8                         # one row plus the arrow beneath it
+PITCH = 6.7                         # one row plus the arrow beneath it
 
 NEURAL = dict(facecolor="#ffffff", edgecolor="#000000", hatch="///", linewidth=0.9)
 # The realizer is optional - the default configuration has none - so it is drawn with

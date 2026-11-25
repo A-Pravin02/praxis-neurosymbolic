@@ -11,7 +11,9 @@ axis labels instead.
 Error bars are the 95% bootstrap intervals already stored in the report. Coverage is
 drawn beside accuracy so a system cannot look good merely by refusing to answer.
 
-Greyscale with hatching, matching the rest of the paper.
+Every bar is white with a black outline; the proposed systems are hatched and the
+baselines are plain. Nothing in the figure depends on a fill tone, so it survives a
+greyscale print and a photocopy unchanged.
 """
 from __future__ import annotations
 
@@ -39,8 +41,12 @@ LABEL = {"neurosymbolic": "PRAXIS\nno LLM", "ns_parser": "PRAXIS\nparser",
          "llm_rag": "LLM\n+RAG", "llm_only": "LLM\nonly",
          "rag_extractive": "Extractive\nRAG"}
 OURS = ("neurosymbolic", "ns_parser")
+# Every bar is white. The grey fill the baselines used to carry prints as a muddy
+# mid-tone on a laser printer and photocopies worse, and it carried no information the
+# hatching does not: the proposed systems are hatched, the baselines are plain, and
+# both read the same in colour, in greyscale and in a photocopy of a photocopy.
 FILL_OURS = dict(facecolor="#ffffff", edgecolor="#000000", hatch="///", linewidth=0.9)
-FILL_BASE = dict(facecolor="#9a9a9a", edgecolor="#000000", linewidth=0.9)
+FILL_BASE = dict(facecolor="#ffffff", edgecolor="#000000", linewidth=0.9)
 
 
 def value_ci(report: dict, system: str, key: str):
@@ -68,11 +74,15 @@ def panel(ax, report, systems, key, title, ylabel):
         ax.bar(x, v, width=0.68, **st)
     ax.errorbar(list(xs), vals, yerr=[los, his], fmt="none", ecolor="#000000",
                 elinewidth=0.9, capsize=2.5)
-    for x, v in zip(xs, vals):
-        ax.annotate(f"{v:.3f}", (x, v + (his[x] if x < len(his) else 0)),
-                    ha="center", va="bottom", fontsize=5.4)
+    # The printed value over each bar is gone with the width: at one column the
+    # labels collided with their own error bars, and Table II beside the figure gives
+    # every one of these numbers to three places. A bar chart that has to be read to
+    # three places was the wrong instrument anyway; this one shows the shape.
     ax.set_xticks(list(xs))
-    ax.set_xticklabels([LABEL.get(s, s) for s in systems], fontsize=5.3)
+    # Numbered, not named. At one column each of the seven slots is a third of an
+    # inch, which no system name fits; the numbers are the row order of Table II,
+    # which carries the names and the same values to three places.
+    ax.set_xticklabels([str(i + 1) for i in range(len(systems))], fontsize=6.0)
     ax.set_ylim(0, 1.12)
     ax.set_ylabel(ylabel, fontsize=6.0)
     ax.set_title(title, fontsize=7.0)
@@ -88,11 +98,14 @@ def build(out: Path) -> Path:
     # Two panels, not three: drawn near its printed size so the labels stay legible,
     # a third panel would cost the height the page budget does not have. Coverage is
     # in Table II instead, beside over-abstention.
-    fig, axes = plt.subplots(1, 2, figsize=(6.9, 1.95))
+    # One column wide, not two. Spanning the page cost roughly thirty lines of
+    # column space for two panels of seven bars each, and the numbers are now
+    # tabulated beside it, so the figure only has to show the shape of the comparison.
+    fig, axes = plt.subplots(1, 2, figsize=(3.30, 1.45))
     panel(axes[0], report, systems, "accuracy",
-          "Accuracy (higher better)", "correct / all cases")
+          "Accuracy", "correct / all cases")
     panel(axes[1], report, systems, "hallucination_rate",
-          "Hallucination (lower better)", "hallucinated / all cases")
+          "Hallucination", "hallucinated / all cases")
 
     # No title and no footer: the caption carries both, and reclaiming the bands they
     # reserved removes the blank gap above the plots and lets the panels print larger.

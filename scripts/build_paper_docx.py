@@ -60,16 +60,14 @@ def checks() -> dict:
 
 def gate_sentence() -> str:
     c = checks()
-    return (f"The verifier defines {c['defined_checks']} deterministic checks — fact "
-            f"validity, authorization, policy applicability, policy version, symbolic "
-            f"provenance, calculation, supported numbers, record consistency, "
-            f"contradictions, answer agreement, unsupported claims and "
-            f"{', '.join(c['never_ran'])}, which no test question reaches. Which "
-            f"apply depends on what the case asserts, so none runs on every question: "
-            f"over the {c['cases']} test cases the number that runs ranges from "
-            f"{c['min_per_case']} to {c['max_per_case']}, with a median of "
-            f"{c['median_per_case']}. The {c['zero_check_cases']} cases that run none "
-            f"are refusals settled before there is anything to verify. An answer "
+    return (f"The verifier defines {c['defined_checks']} deterministic checks — among "
+            f"them authorization, policy version, symbolic provenance and unsupported "
+            f"numbers — one of which, {', '.join(c['never_ran'])}, no test question "
+            f"reaches. Which apply depends on what the case asserts, so none runs on "
+            f"every question: over the {c['cases']} test cases the number that runs "
+            f"ranges from {c['min_per_case']} to {c['max_per_case']}, median "
+            f"{c['median_per_case']}, and the {c['zero_check_cases']} cases running "
+            f"none are refusals settled before there is anything to verify. An answer "
             f"failing any check that did run is withheld and the system reports that "
             f"it does not know. Statuses are four-valued: supported, contradicted, "
             f"unverified, not checkable.")
@@ -106,12 +104,11 @@ def worked_example() -> str:
         raise SystemExit(f"worked example sums to {total}, records say {actual}")
     return (f"For the parser configuration, N = {len(rows)} = {len(ans)} answerable "
             f"+ {n_of('conditional')} conditional + {n_of('denied')} denied "
-            f"+ {n_of('not_covered')} not-covered. Of the {len(ans)} answerable, "
-            f"{len(definite)} were definite and all correct (selective accuracy "
-            f"1.000); every conditional case drew a correctly hedged answer and every "
-            f"denied case a refusal without disclosure, {cond} and {den}; and {nc} of "
-            f"{n_of('not_covered')} not-covered cases were correctly refused. "
-            f"Accuracy is therefore ({ans_correct} + {cond} + {den} + {nc}) / "
+            f"+ {n_of('not_covered')} not-covered; of the answerable, {len(definite)} "
+            f"were definite and all correct (selective accuracy 1.000), every "
+            f"conditional case drew a correctly hedged answer and every denied case a "
+            f"refusal without disclosure, and {nc} not-covered cases were correctly "
+            f"refused, so accuracy is ({ans_correct} + {cond} + {den} + {nc}) / "
             f"{len(rows)} = {total}/{len(rows)} = {total/len(rows):.3f}.")
 
 
@@ -495,6 +492,11 @@ class Doc:
     def caption(self, text):
         para = self.p(self._AUTONUMBER.sub("", text), "table head")
         para.paragraph_format.keep_with_next = True
+        # Table II's caption split across the column break, so its last clause printed
+        # at the head of the right-hand column with nothing to say what it described.
+        # A caption is one unit of text and is never worth breaking: it is short, and
+        # half a caption is not half as useful but useless.
+        para.paragraph_format.keep_together = True
         return para
 
     def figure(self, path: Path, caption: str, width_in: float = 3.1,
@@ -522,6 +524,56 @@ class Doc:
             self.span_end()
         return cap
 
+    # IEEE tables are ruled horizontally and never vertically: one rule above the
+    # headings, one below them, one under the last row, and nothing else. A full grid
+    # boxes every cell, which is what Word draws when asked for "Table Grid" and what
+    # this code asked for until the style turned out not to exist in the template.
+    @staticmethod
+    def _border(kind: str, size: int = 8) -> OxmlElement:
+        el = OxmlElement(f"w:{kind}")
+        el.set(qn("w:val"), "single")
+        el.set(qn("w:sz"), str(size))        # eighths of a point: 8 = 1pt
+        el.set(qn("w:space"), "0")
+        el.set(qn("w:color"), "000000")
+        return el
+
+    @staticmethod
+    def _no_border(kind: str) -> OxmlElement:
+        el = OxmlElement(f"w:{kind}")
+        el.set(qn("w:val"), "none")
+        el.set(qn("w:sz"), "0")
+        el.set(qn("w:space"), "0")
+        return el
+
+    def _rule_table(self, t) -> None:
+        borders = OxmlElement("w:tblBorders")
+        borders.append(self._border("top", 12))        # 1.5pt rule above the headings
+        borders.append(self._border("bottom", 12))     # and under the last row
+        for kind in ("left", "right", "insideH", "insideV"):
+            borders.append(self._no_border(kind))
+        t._tbl.tblPr.append(borders)
+
+        # Word indents every cell by 0.08 in on each side. Across seven columns that
+        # is 1.1 in of the 3.4 in a column has, which is why "0.796" wrapped as "0.79"
+        # and "6" once Table II gained two columns. With no vertical rules the padding
+        # separates nothing, so it goes down to a hair either side; the column widths
+        # then mean what they say.
+        margins = OxmlElement("w:tblCellMar")
+        for kind, twips in (("left", 36), ("right", 36), ("top", 0), ("bottom", 0)):
+            el = OxmlElement(f"w:{kind}")
+            el.set(qn("w:w"), str(twips))              # twentieths of a point
+            el.set(qn("w:type"), "dxa")
+            margins.append(el)
+        t._tbl.tblPr.append(margins)
+
+    def _rule_under_headings(self, t) -> None:
+        """The thinner rule that separates the heading row from the body."""
+        for cell in t.rows[0].cells:
+            tc = cell._tc.get_or_add_tcPr()
+            edges = OxmlElement("w:tcBorders")
+            edges.append(self._border("bottom", 8))    # 1pt
+            tc.append(edges)
+
     def table(self, headers: list[str], rows: list[list[str]], caption: str,
               span: bool = False, keep_together: bool = False,
               widths: list[float] | None = None):
@@ -536,10 +588,12 @@ class Doc:
             self.span_start()
         cap = self.caption(caption)
         t = self.d.add_table(rows=1, cols=len(headers))
-        try:
-            t.style = "Table Grid"
-        except KeyError:
-            pass
+        # This asked for "Table Grid", which the template does not define - the only
+        # table style in it is "Normal Table" - so the KeyError below was swallowed and
+        # every table took whatever Word defaulted to. The rules are now drawn here, in
+        # the three places IEEE puts them, so the same file renders the same way
+        # wherever it is opened.
+        self._rule_table(t)
         for cell, head in zip(t.rows[0].cells, headers):
             cell.text = ""
             run = cell.paragraphs[0].add_run(head)
@@ -556,6 +610,9 @@ class Doc:
         # never leaves its column labels behind - which is the defect that made
         # pushing whole tables about seem like the only remedy.
         t.rows[0]._tr.get_or_add_trPr().append(OxmlElement("w:tblHeader"))
+        # Drawn after the body rows exist, so the rule lands under the headings rather
+        # than under the only row the table had when it was created.
+        self._rule_under_headings(t)
         if widths:
             t.autofit = False
             for row in t.rows:
@@ -668,25 +725,23 @@ def build(doc: Doc, test: dict, confirm: dict, scale: dict,
         f"for a decision: a neural encoder interprets the question, a three-valued "
         f"symbolic reasoner applies versioned business rules to authorized records, and "
         f"a suite of {checks()['defined_checks']} deterministic checks gates the answer "
-        f"before release. The decision path contains no language model. "
+        f"before release, so the decision path contains no language model. "
         f"On a frozen test split of 255 questions over five generated enterprise worlds "
         f"this default configuration answers {num(ns_acc)} correctly at a hallucination "
         f"rate of {num(ns_hal)} with {num(ns_cov)} coverage, against {num(rules_acc)} "
         f"and {num(rules_hal)} for a 7B instruction-tuned model given the same corpus "
-        f"and the same rules in its prompt — a paired gain of "
-        f"{ns_acc - rules_acc:+.3f} accuracy "
-        f"(exact McNemar, p = {rules_p:.1g}). Confining the "
-        f"model to semantic parsing reaches {num(pa_acc)} accuracy, but only that "
-        f"configuration fails to transfer: on a confirmatory split of unseen companies "
-        f"it falls to {num(cpa_acc)} while the LLM-free configuration holds at "
-        f"{num(cns_acc)}. "
+        f"and rules in its prompt — a paired gain of {ns_acc - rules_acc:+.3f} accuracy "
+        f"(exact McNemar, p = {rules_p:.1g}). Confining the model to semantic parsing "
+        f"reaches {num(pa_acc)} accuracy but fails to transfer, falling to "
+        f"{num(cpa_acc)} on a confirmatory split of unseen companies while the LLM-free "
+        f"configuration holds at {num(cns_acc)}. "
         + (f"A secondary study gates a {fb['model_parameters']/1e6:.1f}M decoder "
            f"trained from scratch: the graph refutes "
            f"{football_stats(FOOTBALL_CLAIMS)['refuted_rate']:.3f} of its claims, and "
            f"gating leaves {football_stats(FOOTBALL_CLAIMS)['coverage']:.3f} "
            f"coverage. " if fb else "")
         + "We report coverage beside every accuracy and document a failure the "
-          "aggregate hides: on questions no policy covers, the default configuration "
+          "aggregate hides: on questions no policy covers the default configuration "
           "abstains in 0 of 15 cases, because verification establishes support, not "
           "relevance.",
         "Abstract")
@@ -701,64 +756,58 @@ def build(doc: Doc, test: dict, confirm: dict, scale: dict,
     doc.p("Language models now answer questions that carry consequences: whether a "
           "refund is owed, which policy version governs a dispute, how much a traveller "
           "may reclaim. Retrieval-augmented generation grounds such answers in "
-          "documents, but grounding is not entailment. A model handed the right clause "
-          "can still state a conclusion the clause does not license, and it does so "
-          "fluently enough that a reader has no signal to distrust it.")
-    doc.p("The common remedies keep the model as the authority. Self-consistency "
-          "sampling [16], self-critique and chain-of-verification all ask the model to audit "
-          "its own output. Our measurements suggest this is a weak defence: asking a 7B "
-          f"model to check its own retrieval-grounded draft moved accuracy from "
-          f"{num(rag_acc)} to {num(sc_acc)} and hallucination from {num(rag_hal)} to "
-          f"{num(sc_hal)} — an improvement far smaller than the error it is meant to "
-          "remove.")
-    doc.p("PRAXIS takes the opposite position. The model is treated as a language "
-          "engine, never a truth engine. It may interpret a question and it may phrase "
-          "a conclusion, but it never establishes one. Between those two points sits "
-          "deterministic, replayable code: a typed knowledge graph, a three-valued "
-          "reasoner over versioned rules, and an evidence gate that withholds any answer "
-          "failing its checks. In the default configuration the model is absent from the "
-          "decision path entirely.")
+          "documents, but grounding is not entailment: a model handed the right clause "
+          "can still state a conclusion the clause does not license, fluently enough "
+          "that a reader has no signal to distrust it.")
+    doc.p(f"The common remedies keep the model as the authority: self-consistency "
+          f"sampling [16], self-critique and chain-of-verification all ask it to audit "
+          f"its own output. That is a weak defence — asking a 7B model to check its own "
+          f"retrieval-grounded draft moved accuracy from {num(rag_acc)} to "
+          f"{num(sc_acc)} and hallucination from {num(rag_hal)} to {num(sc_hal)}, far "
+          f"smaller than the error it is meant to remove.")
+    doc.p("PRAXIS takes the opposite position. The model is a language engine, never a "
+          "truth engine: it may interpret a question and phrase a conclusion, but never "
+          "establishes one. Between those points sits deterministic, replayable code — "
+          "a typed knowledge graph, a three-valued reasoner over versioned rules, and "
+          "an evidence gate that withholds any answer failing its checks. In the "
+          "default configuration the model is absent from the decision path entirely.")
 
     doc.h2("Scope and Contributions")
-    doc.p("This paper makes six contributions:")
+    # Six contributions as six separate paragraphs cost six paragraph gaps and six
+    # part-filled last lines. Running prose carries the same content in a third of the
+    # vertical space, which is what a six-page limit is bought with.
+    #
     # "cannot arise" overstated what the architecture buys. No language model asserts
     # a conclusion here, which removes that mechanism; it does not remove error. The
     # test split holds 25 wrong definite answers, from the encoder's reading of the
     # question and from the rule base itself.
-    doc.p("1. An architecture whose decision path contains no language model, so a "
-          "decision is never a model’s prediction. The residual errors have different "
-          "sources — question understanding and the rule base — and the test split "
-          "carries 25 wrong definite answers from them.")
-    doc.p("2. A four-valued verification layer distinguishing supported, contradicted, "
-          "unverified and not-checkable, so that missing evidence is never silently "
-          "treated as refutation. It sits above a three-valued rule engine; the two "
-          "layers and their logics are distinct.")
-    doc.p("3. A controlled evaluation on 510 questions across ten generated enterprise "
-          "worlds — a test split frozen before any system ran on it, and a confirmatory "
-          "split written after the system was final and scored once — supported by a "
-          "further 153 development questions over three separate worlds used only to "
-          "calibrate thresholds and never scored as a result.")
-    doc.p("4. Seven ablations isolating the contribution of verification, three-valued "
-          "reasoning, policy versioning, statement trust, authorization, numeric "
-          "checking and kind agreement.")
-    # This contribution previously also claimed a scale measurement. That comparison
-    # ran across two inference stacks, so it was cut from the results and now appears
-    # in the limitations as an open question; advertising it here contradicted that.
-    doc.p("5. An error analysis of a failure mode the aggregate metrics conceal: "
-          "questions outside the rule base are answered confidently, because "
-          "verification establishes support, not relevance.")
+    #
+    # Contribution 5 previously also claimed a scale measurement. That comparison ran
+    # across two inference stacks, so it was cut from the results and now appears in
+    # the limitations as an open question; advertising it here contradicted that.
+    contributions = (
+        "This paper contributes: (1) an architecture whose decision path contains no "
+        "language model, so a decision is never a model’s prediction — the residual "
+        "errors come instead from question understanding and from the rule base, 25 "
+        "wrong definite answers on the test split; (2) a four-valued verification layer "
+        "separating supported, contradicted, unverified and not-checkable, so missing "
+        "evidence is never read as refutation, above a three-valued rule engine; (3) a "
+        "controlled evaluation on 510 questions across ten generated enterprise worlds, "
+        "with a frozen test split and a confirmatory split scored once; (4) seven "
+        "ablations isolating verification, three-valued reasoning, policy versioning, "
+        "statement trust, authorization, numeric checking and kind agreement; and (5) "
+        "an error analysis of a failure the aggregate metrics conceal, in which "
+        "questions outside the rule base are answered confidently because verification "
+        "establishes support, not relevance.")
     if fb:
-        doc.p("6. A second study in the opposite regime, where a language model trained "
-              "from random initialization does the generating and the same symbolic "
-              "gate decides what is released, quantifying both the hallucination it "
-              "removes and the coverage that removal costs.")
-
-    doc.h2("Research Framing Statement")
-    doc.p("This is an architecture paper backed by a controlled evaluation on "
-          "generated enterprise worlds, not a general-domain factuality result. Every "
-          "figure reported here is read from a stored per-question record, and the "
-          "tables are generated from those files rather than transcribed. Where a "
-          "result does not generalize, we say so.")
+        contributions += (
+            " A sixth is a second study in the opposite regime, where a language model "
+            "trained from random initialization does the generating and the same "
+            "symbolic gate decides what is released, quantifying both the hallucination "
+            "it removes and the coverage that removal costs.")
+    doc.p(contributions)
+    doc.p("Every figure in this paper is read from a stored per-question record and "
+          "every table generated from those files rather than transcribed.")
 
     # ---- II. Related Work ----
     doc.h1("Related Work")
@@ -768,18 +817,18 @@ def build(doc: Doc, test: dict, confirm: dict, scale: dict,
           "Retrieval-augmented generation [3] supplies evidence but leaves inference to "
           "the model. Self-RAG [4] learns to retrieve and critique; "
           "chain-of-verification [5] and SelfCheckGPT [6] detect inconsistency by "
-          "resampling or self-interrogation. These share a limit: auditor and author are "
-          "the same model, so a confident systematic error is invisible to both. "
-          "FActScore [7] decomposes text into atomic claims for scoring, which informs "
-          "our claim-level checks but is an evaluation method, not a release gate.")
+          "resampling or self-interrogation. These share a limit: auditor and author "
+          "are the same model, so a confident systematic error is invisible to both. "
+          "FActScore [7] decomposes text into atomic claims, which informs our "
+          "claim-level checks but is an evaluation method, not a release gate.")
     doc.p("Neuro-symbolic approaches delegate inference to an external solver: "
-          "Logic-LM [8] and LINC [9] translate to first-order logic and discharge it "
-          "with a prover, PAL [10] and Program-of-Thoughts [11] emit executable "
-          "programs, and Binder [12] binds language to symbolic languages; the wider "
-          "programme is set out in [13], [14]. PRAXIS differs in what it formalizes — "
-          "not a reasoning chain for a puzzle but the enterprise’s own rule base, "
-          "versioned over time and filtered by an authorization view — and in treating "
-          "verification as a release gate rather than a post-hoc score.")
+          "Logic-LM [8] and LINC [9] translate to first-order logic for a prover, "
+          "PAL [10] and Program-of-Thoughts [11] emit executable programs, Binder [12] "
+          "binds language to symbolic languages, and [13], [14] set out the wider "
+          "programme. PRAXIS differs in what it formalizes — not a reasoning chain for "
+          "a puzzle but the enterprise’s own rule base, versioned over time and "
+          "filtered by an authorization view — and in treating verification as a "
+          "release gate rather than a post-hoc score.")
 
     # ---- III. Research Questions ----
     # The heading previously promised hypotheses and stated none. Each question now
@@ -799,47 +848,39 @@ def build(doc: Doc, test: dict, confirm: dict, scale: dict,
     # ---- IV. Architecture ----
     doc.h1("PRAXIS Architecture")
     doc.figure(FIGURES / "architecture.png",
-               "Fig. 1. Architecture of PRAXIS as implemented, top to bottom. Box "
-               "tags match the subsections: A1-A2 neural understanding (IV-A), B1-B4 "
-               "symbolic reasoning (IV-B), C1-C4 the evidence gate (IV-C). The legend "
-               "gives the four block kinds. The two inputs on the left — who is asking "
-               "and the date of the case — are what select the authorized view and the "
-               "policy version; the realizer is optional and wording-only, and the "
-               "controller re-verifies anything it writes. The rule engine is "
-               "three-valued (true, false, unknown) while verification is four-valued, "
-               "since a claim may also be not checkable; the two are distinct layers. "
-               "The dashed panel is the relevance check, which exists on the parser "
-               "path and not on the encoder path — the failure analysed in Section X.",
+               "Fig. 1. Architecture as implemented, top to bottom. Box tags match the "
+               "subsections: A1-A2 neural understanding (IV-A), B1-B4 symbolic "
+               "reasoning (IV-B), C1-C4 the evidence gate (IV-C). The two inputs on "
+               "the left select the authorized view and the policy version; the "
+               "realizer is optional and wording-only, and the controller re-verifies "
+               "anything it writes. The rule engine is three-valued while verification "
+               "is four-valued, since a claim may also be not checkable. The dashed "
+               "panel is the relevance check, present on the parser path and not the "
+               "encoder path — the failure analysed in Section X.",
                width_in=3.30)
-    doc.p(f"Fig. 1 shows the implemented pipeline. The neural lane — a 33M encoder by "
-          "default, or the model acting as semantic parser — yields a goal, the records "
-          "referred to and any stated facts, and retrieval gathers the evidence. The "
-          "symbolic lane resolves the policy version in force on the case’s own date, "
-          "restricts records to those the asker may see, and evaluates the rules under "
-          "three-valued logic to produce an established conclusion. Claims are then "
-          f"extracted and checked against the evidence by the applicable members of a "
-          f"{checks()['defined_checks']}-check suite, and "
-          "the release gate either publishes the answer or withholds it and reports "
-          "insufficient evidence.")
-    doc.p("A model may phrase the conclusion but never establishes it, and its "
-          "wording is checked for figures the evidence does not carry. The dashed "
-          "panel is a relevance check between the resolved goal and the question, "
-          "which this configuration cannot express: nearest-neighbour selection "
-          "always returns a goal.")
+    doc.p(f"The neural lane — a 33M encoder by default, or the model acting as "
+          f"semantic parser — yields a goal, the records referred to and any stated "
+          f"facts, and retrieval gathers the evidence. The symbolic lane resolves the "
+          f"policy version in force on the case’s own date, restricts records to those "
+          f"the asker may see, and evaluates the rules under three-valued logic. Claims "
+          f"are then extracted and checked against the evidence by the applicable "
+          f"members of a {checks()['defined_checks']}-check suite, and the release gate "
+          f"either publishes the answer or reports insufficient evidence. A model may "
+          f"phrase the conclusion but never establishes it.")
 
     doc.h2("Neural Understanding")
     doc.p("A 33M-parameter bge-small encoder [17], run locally through ONNX, maps the "
-          "question to a goal in the rule base, the records it refers to and any facts "
-          "it states. The output is validated against the schema’s own declarations, so "
-          "an interpretation naming a goal that does not exist is rejected rather than "
-          "carried forward.")
+          "question to a goal, the records it refers to and any facts it states, "
+          "validated against the schema’s own declarations so that an interpretation "
+          "naming a goal that does not exist is rejected rather than carried "
+          "forward.")
 
     doc.h2("Three-Valued Symbolic Reasoning")
     doc.p("Rules are evaluated under Kleene strong three-valued logic [15]: a fact the "
-          "company has no record of is unknown, not false. A two-valued engine answers "
-          "“no, you are not eligible” when the truthful answer is “nobody recorded "
-          "whether you are”. The reasoner resolves the policy version in force on the "
-          "case’s own date rather than the newest, and reads records through an "
+          "company has no record of is unknown, not false, where a two-valued engine "
+          "answers “no, you are not eligible” when the truthful answer is “nobody "
+          "recorded whether you are”. The reasoner resolves the policy version in force "
+          "on the case’s own date rather than the newest and reads records through an "
           "authorized view, so a rule consults only facts the asker may see.")
 
     doc.h2("The Evidence Gate")
@@ -856,121 +897,99 @@ def build(doc: Doc, test: dict, confirm: dict, scale: dict,
     if trace:
         case, full, latest = trace
         doc.h2("One Question Through the Pipeline")
-        doc.p(f"A support agent asks: “{case['question']}” A1 resolves this to the "
-              f"goal {case['expect']['goal']}({case['expect']['subject']}) with one "
-              f"stated fact, the customer’s reason for the return; an interpretation "
-              f"naming a goal outside the schema would have been rejected here. A2 "
-              f"retrieves the returns clauses the agent is allowed to see. The two "
+        # Two paragraphs into one for the six-page limit. The reviewer asked for a
+        # question traced through the pipeline and this still traces one through every
+        # stage, including the ablation that reverses it; what went is the restatement
+        # of what each box does, which Fig. 1 already shows.
+        doc.p(f"A support agent asks: “{case['question']}” A1 resolves this to "
+              f"{case['expect']['goal']}({case['expect']['subject']}) with one stated "
+              f"fact, and A2 retrieves the returns clauses the agent may see. The two "
               f"inputs then do their work: the asker’s role selects the authorized "
-              f"view (B2), and the date of the case selects the policy version (B1). "
-              f"That second choice decides the answer. The returns policy was "
+              f"view (B2) and the date of the case selects the policy version (B1). "
+              f"That second choice decides the answer — the returns policy was "
               f"rewritten to allow 14 days instead of 8, effective 16 November 2026, "
               f"and this case is dated 14 November, so version 1 governs it. B3 "
-              f"evaluates clause RET-4 under that version over the authorized records "
-              f"and B4 establishes "
+              f"evaluates clause RET-4 under that version and B4 establishes "
               f"{case['expect']['goal']}({case['expect']['subject']}) = "
-              f"{str(full['decision']).lower()}.")
-        doc.p(f"The default configuration runs no realizer, so C1 is empty and the "
-              f"conclusion is rendered from its own grounds: “{full['text'].splitlines()[0]}” "
-              f"C2 extracts the claims from that wording and C3 checks them; the "
-              f"{full['numbers']} figures it states are each traced to a record or a "
+              f"{str(full['decision']).lower()}. No realizer runs, so the conclusion is "
+              f"rendered from its own grounds: “{full['text'].splitlines()[0]}” C3 "
+              f"traces each of the {full['numbers']} figures stated to a record or a "
               f"clause, so {full['unsupported_numbers']} are unsupported and C4 "
-              f"releases it, with the caveat that it rests on what the customer said. "
-              f"The ablation that applies the newest policy to every case reaches the "
-              f"opposite conclusion on this question — “{latest['text'].splitlines()[0]}” "
-              f"— fluently, with a real clause, and wrong. It is one of the nine "
-              f"questions behind that row in Table III.")
+              f"releases it. The ablation applying the newest policy to every case "
+              f"reaches the opposite conclusion here — "
+              f"“{latest['text'].splitlines()[0]}” — fluently, with a real clause, and "
+              f"wrong.")
 
     # ---- V. Experimental Design ----
     doc.h1("Experimental Design")
-    doc.table(["Split", "Worlds", "Questions", "Purpose"],
-              [["Development", "3", "153", "threshold calibration only; never reported"],
-               ["Test", "5", "255", "frozen before first use; main results"],
-               ["Confirmatory", "5", "255", "written after the system was final, scored once"],
-               ["Evaluation total", "10", "510", "test + confirmatory"],
-               ["Corpus total", "13", "663", "all generated cases"]],
-              "TABLE 0. Dataset splits. The 510 evaluation questions are the test and "
-              "confirmatory splits; the development split is excluded from every "
-              "reported result.")
-    # The split enumeration that stood here repeated Table I line for line. What the
-    # table cannot say is that the three share no case and no world, which is the
-    # property that makes the confirmatory split a held-out one.
+    # This was a five-row table of three splits and two totals. Three splits are a
+    # sentence; the two totals are sums of them. Dropping it costs a reader nothing
+    # and buys a tenth of a page, which at six pages is the trade every time.
+    doc.p("The corpus is 663 cases over 13 worlds in three splits that share no case "
+          "and no world: 153 development questions over 3 worlds, used only to "
+          "calibrate thresholds and never reported; 255 test questions over 5 worlds, "
+          "frozen before any system ran, carrying the main results; and 255 "
+          "confirmatory questions over 5 further worlds, written after the system was "
+          "final and scored once. The 510 test and confirmatory questions are the "
+          "evaluation.")
+    # "Section XI-C" named a subsection of Study II that no longer exists: compressing
+    # that section removed its headings, and a cross-reference to a heading is only as
+    # stable as the heading. It points at the limitation that states the authorship.
     doc.p("Cases are generated over synthetic enterprise worlds, each with its own "
           "catalogue, staff, policy history and records, with gold answers from a "
           "reference oracle independent of the system under test — a separate "
-          "implementation, not an independent author; Section XI-C states who wrote "
-          "it. The three splits of "
-          "Table I share no case and no world: thresholds were calibrated on the "
-          "development worlds alone, and the confirmatory split was written after the "
-          "system was final and scored once. All systems see the same questions, corpus "
-          "and authorization context, every language-model system in a run uses the same "
-          "model, and decoding is greedy so a run repeats exactly on one machine.")
-    doc.p("Size of the formalization and of a world. The rule base declares 13 entity "
-          "types, 17 goals and 2 lookups, discharged by 48 rules across 4 files, and "
-          "every world is generated against that one schema. A world holds 138 "
-          "records — 48 orders, 48 payments, 13 products, 6 customers, 5 categories, "
-          "4 returns, 4 refunds, 4 employees, 3 grades, 2 policy versions and the "
-          "company — and 6 policy documents, one of which exists in two versions so "
-          "that a case dated before the change is governed by the older text. Each "
-          "split draws 51 questions from each of its 5 worlds. The ten question "
-          "categories, with their counts over the 255-case split, are: paraphrased 45 "
-          "(the same question in other words), calculation 45, known 30 (a fact on "
-          "record), policy_version 25 (a case governed by a superseded text), "
-          "recommendation 25 (which remedy to offer), multi_hop 20, false_premise 20, "
+          "implementation, not an independent author (Section XII). All systems see "
+          "the same questions, corpus and authorization context, and every "
+          "language-model system in a run uses the same model.")
+    doc.p("Size of the formalization. The rule base declares 13 entity types, 17 goals "
+          "and 2 lookups, discharged by 48 rules across 4 files, and every world is "
+          "generated against that schema, holding 138 records and 6 policy documents, "
+          "one of them in two versions so that a case dated before the change is "
+          "governed by the older text. Each split draws 51 questions from each of its "
+          "5 worlds. The ten categories, with counts over the 255-case split: "
+          "paraphrased 45, calculation 45, known 30, policy_version 25 (governed by a "
+          "superseded text), recommendation 25, multi_hop 20, false_premise 20, "
           "missing_info 15, unauthorized 15 and not_covered 15 (no clause governs it).")
-    doc.p("Baselines. Every language-model system uses Qwen2.5-7B-Instruct [18], "
-          "reached "
-          "through one local OpenAI-compatible server with greedy decoding at "
-          "temperature 0 and an SQLite completion cache keyed by model, messages and "
-          "token limit, so a re-run reproduces the scored outputs exactly. Retrieval "
-          "is the same bge-small encoder over clause-level passages, filtered by the "
-          "asker’s authorization before ranking, taking the top 6 passages above "
-          "cosine 0.45; LLM + RAG + rules additionally places the governing rule text "
-          "in the prompt, and Extractive RAG answers by quoting the top passage with "
-          "no generator at all. Every baseline is given the same JSON reply schema "
-          "with explicit refusal and hedging options — needs_more_information, "
-          "ask_which_record, not_covered and not_permitted — so a baseline that "
-          "abstains is following its instructions, not failing to parse. The latency "
-          "column is per-question wall-clock time inside the system under test; the "
-          "PRAXIS rows are CPU-only while the model rows wait on a GPU server whose "
-          "device the run metadata does not record, so that column is not "
-          "hardware-controlled and is read as seconds against milliseconds.")
-    doc.p("Code and data. The system, the generators, the oracle, the frozen splits, "
-          "every per-question record and the scripts that build each table and figure "
-          "in this paper are at github.com/A-Pravin02/praxis-neurosymbolic; "
-          "docs/paper/REPRODUCING.md gives the exact commands and the commit at which "
-          "the splits were frozen.")
+    doc.p("Baselines. Every language-model system uses Qwen2.5-7B-Instruct [18] through "
+          "one local OpenAI-compatible server, greedy at temperature 0, with a "
+          "completion cache keyed by model, messages and token limit, so a re-run "
+          "reproduces the scored outputs exactly. Retrieval is the same bge-small "
+          "encoder over clause-level passages, filtered by the asker’s authorization "
+          "before ranking, top 6 above cosine 0.45; LLM + RAG + rules also places the "
+          "governing rule text in the prompt, and Extractive RAG quotes the top passage "
+          "with no generator. Every baseline gets the same JSON reply schema with "
+          "explicit refusal and hedging options — needs_more_information, "
+          "ask_which_record, not_covered, not_permitted — so a baseline that abstains "
+          "is following its instructions, not failing to parse. The system, generators, "
+          "oracle, frozen splits, per-question records and the scripts building every "
+          "table and figure here are at github.com/A-Pravin02/praxis-neurosymbolic, "
+          "with the commands and the freezing commit in docs/paper/REPRODUCING.md.")
 
     doc.h1("Evaluation Metrics")
     doc.p("Denominators differ between metrics, which is why the figures can look "
           "incompatible and are not. Let N be all cases in a split, A the answerable "
-          "cases — those whose gold kind is a decision, a value or a result — and D the "
-          "subset of A answered definitely. Accuracy and hallucination are over N, "
-          "coverage is |D|/|A|, and selective accuracy is correctness over D, so "
-          "conditional, denied and not-covered cases are excluded from coverage but "
-          "included in accuracy. " + worked_example() + " Every value in this paper is "
-          "recomputed from the stored per-question records twice: by "
-          "scripts/audit_metrics.py, which mirrors the harness, and by "
-          "scripts/independent_metrics.py, which implements the definitions above "
-          "from the raw records instead, so that an error shared by harness and audit "
-          "would still surface. All 151 values reproduce.")
+          "ones — gold kind a decision, a value or a result — and D the subset of A "
+          "answered definitely. Accuracy and hallucination are over N, coverage is "
+          "|D|/|A| and selective accuracy is correctness over D, so conditional, "
+          "denied and not-covered cases are excluded from coverage but included in "
+          "accuracy. " + worked_example() + " Every value here is recomputed from the "
+          "stored records twice, once mirroring the harness and once implementing "
+          "these definitions from the raw records, so an error shared by harness and "
+          "audit would still surface. All 151 reproduce.")
     # The verbal restatement of coverage and selective accuracy that stood here
     # repeated the formulas above and the worked example; what the reader needs is
     # the correctness rule per gold kind and why the two are always paired.
-    doc.p("A case whose gold kind is not-covered is correct only if the system reports "
-          "insufficient evidence; a conditional case only if the answer is hedged and "
-          "not definite; a denied case only if the system refuses without disclosing "
-          "the record. Hallucination is the union of three disjoint faults: a wrong "
-          "definite answer, a definite answer where the gold says evidence is "
-          "insufficient, and disclosure of a record the asker may not see. Coverage and "
-          "selective accuracy are always reported together, because a system can buy "
-          "high selective accuracy by refusing the hard questions.")
-    doc.p("Intervals are 95% bootstrap percentile intervals over questions. Paired "
-          "comparisons use the exact McNemar test [19] on per-question outcomes: cases where "
-          "both systems agree carry no information, so of the discordant pairs only, "
-          "the count favouring one system is tested two-sided against Binomial(n, 1/2). "
-          "The exact binomial tail is used rather than the chi-square approximation, "
-          "because the discordant counts here are small.")
+    doc.p("A not-covered case is correct only if the system reports insufficient "
+          "evidence, a conditional case only if the answer is hedged, a denied case "
+          "only if the system refuses without disclosing the record. Hallucination is "
+          "the union of three disjoint faults: a wrong definite answer, a definite "
+          "answer where the gold says evidence is insufficient, and disclosure of a "
+          "record the asker may not see. Coverage and selective accuracy are always "
+          "reported together, because a system can buy high selective accuracy by "
+          "refusing hard questions. Intervals are 95% bootstrap percentile intervals "
+          "over questions; paired comparisons use the exact McNemar test [19], testing "
+          "the discordant pairs two-sided against Binomial(n, 1/2), the exact tail "
+          "rather than the chi-square approximation because those counts are small.")
 
     # ---- VI. Results ----
     doc.h1("Results")
@@ -982,10 +1001,9 @@ def build(doc: Doc, test: dict, confirm: dict, scale: dict,
           "verification reducing unsupported claims under the evaluated conditions: a "
           "controlled benchmark of synthetic enterprise scenarios with gold answers "
           "from an oracle independent of the system under test, not real customer "
-          "traffic. They do not "
-          "establish general-purpose hallucination elimination, nor effectiveness "
-          "across models, datasets and domains not tested here, and the rates below "
-          "should not be read as open-domain factuality rates.")
+          "traffic. They establish neither general-purpose hallucination elimination "
+          "nor effectiveness across untested models and domains, and the rates below "
+          "are not open-domain factuality rates.")
     order = ["neurosymbolic", "ns_parser", "llm_rag_rules", "llm_rag_selfcheck",
              "llm_only", "llm_rag", "rag_extractive"]
     # Shortened: in a single column these names wrapped mid-phrase, so "LLM + RAG +
@@ -1008,60 +1026,73 @@ def build(doc: Doc, test: dict, confirm: dict, scale: dict,
         sel, _ = T(name, "selective_accuracy")
         over, _ = T(name, "over_abstention")
         lat, _ = T(name, "mean_latency_ms")
-        rows.append([label[name], num(cov), num(sel), num(over), num(lat, places=0)])
-    # Headings abbreviated to what fits a quarter of one column; the caption below
-    # defines each one, which is where a definition belongs anyway.
-    doc.table(["System", "Coverage", "Sel. acc.", "Over-abst.", "Latency"], rows,
-              f"TABLE II. Test split, {test['cases']} questions: the quantities not "
-              f"shown in Fig. 2. Coverage is definite answers over answerable "
-              f"questions; selective accuracy is correctness among them; "
-              f"over-abstention is the answerable questions refused; latency is the "
-              f"per-question mean in milliseconds, and the PRAXIS rows are CPU-only "
-              f"while the model rows wait on a GPU server, so the column is not "
-              f"hardware-controlled.",
-              widths=[1.05, 0.62, 0.58, 0.62, 0.58])
+        acc, _ = T(name, "accuracy")
+        hal, _ = T(name, "hallucination_rate")
+        rows.append([label[name], num(acc), num(hal), num(cov), num(sel), num(over),
+                     num(lat, places=0)])
+    # Accuracy and hallucination are plotted in Fig. 2 and now tabulated here too. A
+    # bar read off an axis is an estimate; a reader checking a claim, or quoting one,
+    # needs the figure to three places. The two come from the same report file, so
+    # they cannot disagree - scripts/independent_metrics.py recomputes both.
+    #
+    # Headings abbreviated to what fits a seventh of the width; the caption defines
+    # each one, which is where a definition belongs anyway.
+    # One column, not spanning. Spanning it cost most of a page: a spanning table
+    # opens and closes a section, and Word balances the columns around the break. Seven
+    # narrow columns fit a single column at 8pt if the headings are abbreviated, and
+    # the caption defines them.
+    # The first column was 0.92 in, which broke "LLM+RAG+rules" across two lines as
+    # "LLM+RAG+rule" and "s". It is the only column holding words, so it takes the
+    # width and the six numeric columns give it up: a figure of five characters at 8pt
+    # needs about a third of an inch, and no more.
+    doc.table(["System", "Acc.", "Hall.", "Cov.", "Sel.", "Over", "ms"], rows,
+              widths=[1.06, 0.37, 0.37, 0.37, 0.37, 0.37, 0.43],
+              caption=
+              f"TABLE I. Test split, {test['cases']} questions. Acc. and Hall. are "
+              f"over every case and are what Fig. 2 plots, to three places. Cov. is "
+              f"definite answers over answerable questions, Sel. correctness among "
+              f"them, Over the answerable questions refused, ms the mean latency; the "
+              f"PRAXIS rows are CPU-only and the model rows wait on a GPU server, so "
+              f"that column is not hardware-controlled.")
 
     doc.figure(FIGURES / "main_results.png",
-               "Fig. 2. Main comparison on the test split. Accuracy and hallucination "
-               "are both over all 255 cases. Error bars show 95% bootstrap intervals; "
-               "hatched bars are the proposed system. Coverage, which has a different "
-               "denominator, is reported in Table II so that a system cannot appear "
-               "strong merely by refusing to answer. Extractive RAG commits to no "
-               "decision on any case, so its 0.000 accuracy and 0.000 coverage are one "
-               "fact, not two.",
-               width_in=6.6, span=True)
+               "Fig. 2. Main comparison on the test split, both measures over all 255 "
+               "cases: accuracy higher is better, hallucination lower is better. "
+               "Systems are numbered in the row order of Table I, which gives every "
+               "value to three places; error bars are 95% bootstrap intervals and "
+               "hatched bars are the proposed system.",
+               width_in=3.30)
     # The caveat this paragraph carried is now in the scope paragraph above, which
     # is where a reader meets the numbers; Fig. 2's own caption says what it plots.
     # The headline comparison is against the baseline that receives the same rules.
     # Leading with LLM + RAG, which does not, measures the rules as much as the
     # architecture and flatters this system by about seven accuracy points.
     doc.p(f"RQ1. The fair comparison is against the configuration given everything "
-          f"PRAXIS is given: the same corpus, the same retrieval and the governing rule "
+          f"PRAXIS is given: the same corpus, the same retrieval, the governing rule "
           f"text in its prompt. The LLM-free configuration answers "
-          f"{num(ns_acc, ns_acc_ci)} of all questions correctly at "
-          f"{num(ns_hal, ns_hal_ci)} hallucination; that baseline answers "
-          f"{num(rules_acc)} at {num(rules_hal)}. The paired gain is "
-          f"{rules_gap:+.3f} accuracy [{rules_gap_ci[0]:.3f}, {rules_gap_ci[1]:.3f}], "
-          f"correct where the baseline is not on {rules_only_a} questions against "
-          f"{rules_only_b} the other way "
+          f"{num(ns_acc, ns_acc_ci)} correctly at {num(ns_hal, ns_hal_ci)} "
+          f"hallucination against that baseline’s {num(rules_acc)} and "
+          f"{num(rules_hal)}: a paired gain of {rules_gap:+.3f} accuracy "
+          f"[{rules_gap_ci[0]:.3f}, {rules_gap_ci[1]:.3f}], correct where the baseline "
+          f"is not on {rules_only_a} questions against {rules_only_b} the other way "
           f"(exact McNemar, p = {rules_p:.1g}). Against retrieval without the rules the "
-          f"gap is larger — {num(rag_acc)} and {num(rag_hal)} — but part of that gap is "
-          f"the rules, not the architecture, so it is not the claim we make.")
-    doc.p(f"RQ2. The reduction is not bought with abstention. PRAXIS covers "
+          f"gap is larger — {num(rag_acc)} and {num(rag_hal)} — but part of it is the "
+          f"rules, not the architecture, so it is not the claim we make.")
+    doc.p(f"RQ2. The reduction is not bought with abstention: PRAXIS covers "
           f"{num(ns_cov)} of answerable questions against "
           f"{num(T('llm_rag_rules','coverage')[0])} for the rules-in-prompt baseline "
-          f"and {num(T('llm_rag','coverage')[0])} for retrieval alone: it answers more "
-          f"questions and more of them correctly. Extractive RAG is the opposite case "
-          f"and is kept in the tables as the reference point: quoting a retrieved "
-          f"passage gives {num(T('rag_extractive','accuracy')[0])} accuracy at "
+          f"and {num(T('llm_rag','coverage')[0])} for retrieval alone, answering more "
+          f"questions and more of them correctly. Extractive RAG is the opposite case, "
+          f"kept as the reference point: quoting a retrieved passage gives "
+          f"{num(T('rag_extractive','accuracy')[0])} accuracy at "
           f"{num(T('rag_extractive','hallucination_rate')[0])} hallucination and "
-          f"{num(T('rag_extractive','coverage')[0])} coverage, because it never "
-          f"commits to a decision at all — the low hallucination rate is silence, not "
-          f"reliability, which is the reading the coverage column exists to prevent.")
-    doc.p(f"Confining the model to semantic parsing, with the decision still symbolic, "
-          f"gives the strongest configuration: {num(pa_acc, pa_acc_ci)} accuracy at "
-          f"{num(pa_hal, pa_hal_ci)} hallucination, {num(pa_cov)} coverage, and a "
-          f"selective accuracy of {num(pa_sel)}. Of the questions it commits to, none is "
+          f"{num(T('rag_extractive','coverage')[0])} coverage, because it never commits "
+          f"to a decision — the low hallucination rate is silence, not reliability, "
+          f"which is the reading the coverage column exists to prevent. Confining the "
+          f"model to semantic parsing, with the decision still symbolic, gives the "
+          f"strongest configuration: {num(pa_acc, pa_acc_ci)} accuracy at "
+          f"{num(pa_hal, pa_hal_ci)} hallucination, {num(pa_cov)} coverage and "
+          f"{num(pa_sel)} selective accuracy — of the questions it commits to, none is "
           f"wrong. Section IX examines how far that survives.")
 
     # ---- VII. Ablations ----
@@ -1093,12 +1124,12 @@ def build(doc: Doc, test: dict, confirm: dict, scale: dict,
                      "n/a" if p is None else f"{p:.3g} (n={disc})"])
     doc.table(["Configuration", "Accuracy", "Hallucination", "Coverage", "Disclosure",
                "p vs full"], rows, span=True, caption=
-              "TABLE III. Decision-level ablations on the test split, 255 questions. "
-              "Each row disables one mechanism. Disclosure is the share of the 15 "
-              "unauthorized-category questions on which a record the asker may not see "
-              "is revealed, so 0.867 is 13 of 15. The last column is the exact McNemar "
-              "p-value for correctness against the full system, with the discordant "
-              "count on which it is computed; the gate acts on wording, so Section "
+              "TABLE II. Decision-level ablations on the test split, 255 questions, "
+              "each row disabling one mechanism. Disclosure is the share of the 15 "
+              "unauthorized-category questions revealing a record the asker may not "
+              "see; the last column is the exact McNemar p-value for correctness "
+              "against the full system, with its discordant count. The gate acts on "
+              "wording, so Section "
               # Not kept together: pushing all eight rows onto the next page left a
               # third of this one blank, and the heading row now repeats if it breaks.
               "VIII-A tests it instead.")
@@ -1106,7 +1137,7 @@ def build(doc: Doc, test: dict, confirm: dict, scale: dict,
     # "broadly intact" was wrong by its own table: authorization costs 0.059 accuracy,
     # more than the 0.051 the same paragraph calls real weight. The disclosure point
     # stands on its own and does not need the accuracy claim to be soft.
-    doc.p("RQ3, and three readings. Three-valued reasoning carries real weight: "
+    doc.p("RQ3. Three-valued reasoning carries real weight: "
           f"treating unknown as false costs "
           f"{abs(ns_acc - T('ns_two_valued','accuracy')[0]):.3f} accuracy "
           f"(p = {_sig('ns_two_valued')[0]:.3g}), because the system starts denying "
@@ -1120,8 +1151,7 @@ def build(doc: Doc, test: dict, confirm: dict, scale: dict,
           f"{num(T('neurosymbolic','leak_rate')[0])} to "
           f"{num(T('ns_no_authorization','leak_rate')[0])}, so the unauthorized "
           "reasoner answers slightly worse and reveals 13 of the 15 protected records "
-          "while doing it. An accuracy-only evaluation would record the first and miss "
-          "the second.")
+          "while doing it; an accuracy-only evaluation would miss the second.")
 
     # Two rows of this table still read as refutations at a glance, and the columns
     # that answer them are now in it. The prose says what the columns mean.
@@ -1129,81 +1159,63 @@ def build(doc: Doc, test: dict, confirm: dict, scale: dict,
     (ka_p, ka_n), (ts_p, _) = _sig("ns_no_kind_agreement"), _sig("ns_trust_statements")
     ts_hal = T("ns_trust_statements", "hallucination_rate")[0]
     ts_cov = T("ns_trust_statements", "coverage")[0]
-    doc.p(f"Two rows need reading against a second column before they are read as "
-          f"refutations. Removing the kind-agreement check raises accuracy to "
-          f"{num(ka_acc)}, nominally above the full system, but the paired test puts "
-          f"the difference at p = {ka_p:.3g} on {ka_n} discordant cases: it "
-          f"is noise, and what the check actually buys is "
+    doc.p(f"Two rows need a second column before they read as refutations. Removing "
+          f"the kind-agreement check raises accuracy to {num(ka_acc)}, nominally above "
+          f"the full system, but the paired test puts the difference at "
+          f"p = {ka_p:.3g} on {ka_n} discordant cases: noise. What the check buys is "
           f"{abs(ns_hal - T('ns_no_kind_agreement','hallucination_rate')[0]):.3f} "
           f"hallucination for "
           f"{abs(ns_cov - T('ns_no_kind_agreement','coverage')[0]):.3f} coverage. "
           f"Letting the asker’s statements override records lowers hallucination to "
           f"{num(ts_hal)}, well below the full system, while coverage falls from "
           f"{num(ns_cov)} to {num(ts_cov)} and accuracy drops significantly "
-          f"(p = {ts_p:.3g}). That row is this paper’s own warning turned on itself: "
-          f"the configuration abstains its way to a better hallucination rate, which "
-          f"is precisely why we report coverage beside every accuracy. Removing the "
-          f"numeric grounding check changes nothing at all, for the same reason the "
-          f"verification gate does not — both police prose, and the default "
-          f"configuration writes none.")
+          f"(p = {ts_p:.3g}) — this paper’s own warning turned on itself, since that "
+          f"configuration abstains its way to the better rate. Removing the numeric "
+          f"grounding check changes nothing, for the same reason the gate does not: "
+          f"both police prose, and the default configuration writes none.")
 
     doc.h2("A Controlled Test of the Verification Gate")
+    # Condensed for the six-page limit. The decision-level/text-level distinction was
+    # stated three times across five paragraphs; it is stated once here. Every number
+    # survives: the divergence count, both unsupported counts, the discordant pairs and
+    # the exact McNemar p that stops us claiming the difference.
     doc.p("Two measurements are at stake, and separating them resolves an apparent "
           "contradiction. The ablation rows above are decision-level: they grade "
           "structured outcomes and cannot see the gate at all, since the default "
           "configuration renders conclusions deterministically and the gate acts only "
-          "on prose. The experiment below is text-level and measures what the gate "
-          "changes in the released answer. It holds everything else fixed — the same "
-          "255 questions, model, retrieval and prompts, with the model writing the "
-          "final wording in both arms and verification on in one and off in the other.")
-    # Condensed for the page budget; the three layers are enumerated in the
-    # accompanying validation report and in the regression test itself.
-    doc.p("Reaching the switch proved harder than expected, and the difficulty is "
-          "itself a result. The guard is layered across the realizer, the controller’s "
-          "re-verification and the release check; the switch originally reached only "
-          "the last, and two successive runs produced byte-identical arms on all 255 "
-          "cases — not because the checks do nothing, but because each remaining layer "
-          "repaired what the ablated one let through. A regression test now asserts "
-          "that it reaches all three.")
+          "on prose. The experiment here is text-level. It holds everything else "
+          "fixed — the same 255 questions, model, retrieval and prompts, with the "
+          "model writing the final wording in both arms and verification on in one and "
+          "off in the other. Reaching the switch proved harder than expected, and the "
+          "difficulty is itself a result: the guard is layered across the realizer, the "
+          "controller’s re-verification and the release check, and a switch "
+          "reaching only the last produced byte-identical arms on all 255 cases, "
+          "because each remaining layer repaired what the ablated one let through. A "
+          "regression test now asserts that it reaches all three.")
     doc.p(f"With the switch complete the arms diverge: the released answer differs on "
           f"{gate['differ']} of {gate['cases']} cases. Answers stating a figure the "
           f"evidence does not support rise from {gate['gated_unsupported']} to "
-          f"{gate['ablated_unsupported']}, and that difference is not established: the "
-          f"two arms differ on only {gate['discordant']} questions in this respect, "
-          f"giving an exact McNemar p of {gate['p_value']:.2g}. We therefore do not "
-          f"claim the count as a measured effect. What the experiment does show is "
-          f"qualitative and specific. On one case the gated system answers with the "
+          f"{gate['ablated_unsupported']}, and that difference is not established "
+          f"— the arms differ on only {gate['discordant']} questions in this "
+          f"respect, an exact McNemar p of {gate['p_value']:.2g} — so we do not "
+          f"claim the count as a measured effect. What the experiment shows is "
+          f"qualitative and specific: on one case the gated system answers with the "
           f"recommended resolution and its grounds, while the ablated system abandons "
-          f"the conclusion and emits generic support boilerplate carrying a figure "
-          f"found nowhere in the evidence. Establishing the rate needs a larger "
-          f"prose-bearing split than the 255 questions this one has.")
-    doc.p("Yet every decision-level metric is identical in both arms. This locates "
-          "what the benchmark can see: the scorer grades the structured decision — "
-          "goal, decision, value, outcome — which the symbolic layer fixes before any "
-          "model writes a word and which the gate therefore never changes. The gate "
-          "protects the prose, and prose faithfulness is not in this scorer. Its "
-          "contribution is visible here at the level of released text and is not "
-          "quantified by this experiment; a decision-level benchmark is the wrong "
-          "instrument, and Study II supplies the claim-level one.")
-    # Two numbers in this paper invite the reading that one was copied from the other.
-    # Both were recounted from the records, and they are unrelated.
-    doc.p(f"Two coincidences are worth naming, because each looks like a transcription "
-          f"error and neither is. This section counts {gate['differ']} of "
-          f"{gate['cases']} cases whose wording the gate changes, and Table V counts "
-          f"{len(_wrong_cases)} of {test['cases']} questions the full system gets "
-          f"wrong. "
-          + ("The two figures are equal and the two sets are not: they overlap in "
-             if gate['differ'] == len(_wrong_cases) else
-             "The two sets are different: they overlap in ")
-          + f"{len(gate['differ_cases'] & set(_wrong_cases))} questions, and each was "
-          f"counted from its own run’s records. Separately, mean "
-          f"latency is {num(only_lat, places=0)} ms for the model alone and "
-          f"{num(sc_lat, places=0)} ms for retrieval with a self-check: the self-check "
-          f"arm is retrieval’s {num(rag_lat, places=0)} ms plus a short second call, "
-          f"while the model alone makes one call but writes longer answers with no "
-          f"retrieved text to anchor them. The two totals land a millisecond apart by "
-          f"chance, and their distributions differ (slowest case "
-          f"{max(_only_lat):.0f} ms against {max(_sc_lat):.0f} ms).")
+          f"the conclusion for generic boilerplate carrying a figure found nowhere in "
+          f"the evidence; establishing the rate needs a larger prose-bearing split. "
+          f"Every decision-level metric is meanwhile identical in both arms, which "
+          f"locates what the benchmark can see: the scorer grades the structured "
+          f"decision, fixed by the symbolic layer before any model writes a word. The "
+          f"gate protects the prose, which this scorer does not grade; Study II "
+          f"supplies the claim-level instrument.")
+    # Removed for the six-page limit: a paragraph explaining that two pairs of numbers
+    # in this paper are coincidences rather than transcription errors - the gate's
+    # changed-wording count against the full system's error count, and two mean
+    # latencies a millisecond apart. Both were recounted from the records and both
+    # hold, but the explanation answers a reader's suspicion rather than stating a
+    # result, which makes it a line for a response to reviewers rather than for the
+    # paper. The counts and the two distributions are in docs/audit/, and
+    # scripts/independent_metrics.py recomputes every one of them.
 
     # A closing paragraph here restated the decision-level/text-level distinction a
     # third time - after the opening paragraph of this subsection and after "Yet every
@@ -1234,37 +1246,35 @@ def build(doc: Doc, test: dict, confirm: dict, scale: dict,
                           num(a, aci), num(h, hci), num(cv), num(sl)])
     doc.table(["System", "Accuracy", "Hallucination", "Coverage", "Selective acc."],
               conf_rows, span=True, caption=
-              f"TABLE IV. Confirmatory split, {confirm['cases']} questions over five "
-              f"companies the system had never seen, written after the system was final "
-              f"and scored once. Brackets are 95% bootstrap intervals. Fewer systems "
-              f"ran here than on the test split: the confirmatory run was scoped to the "
-              f"comparisons the paper’s claims rest on.", keep_together=True)
+              f"TABLE III. Confirmatory split, {confirm['cases']} questions over five "
+              f"unseen companies, written after the system was final and scored once. "
+              f"Brackets are 95% bootstrap intervals. Fewer systems ran here: the "
+              f"confirmatory run was scoped to the comparisons the paper’s claims rest "
+              f"on.", keep_together=True)
     doc.p(f"RQ4. The LLM-free configuration transfers essentially unchanged "
           f"({num(cns_acc)} against {num(ns_acc)} on test). The parser configuration "
-          f"does not: accuracy falls from {num(pa_acc)} to {num(cpa_acc)}, hallucination "
-          f"rises from {num(pa_hal)} to {num(cpa_hal)}, and selective accuracy falls "
-          f"from {num(pa_sel)} to {num(cpa_sel)}. Its advantage over embedding "
-          "understanding narrows from roughly fifteen accuracy points to two, and the "
-          "paired tests narrow with it: on the test split the parser is correct where "
-          "embedding understanding is not on 40 questions against 2 the other way "
-          "(exact McNemar, p = 4e-10), while on the confirmatory split the same "
-          "comparison is 7 against 1 (p = 0.07). At the 0.05 level the first is "
-          "persuasive and the second is not. We therefore report the parser’s advantage "
-          "as demonstrated on the test split and not established on unseen worlds.")
+          f"does not: accuracy falls from {num(pa_acc)} to {num(cpa_acc)}, "
+          f"hallucination rises from {num(pa_hal)} to {num(cpa_hal)} and selective "
+          f"accuracy falls from {num(pa_sel)} to {num(cpa_sel)}. The paired tests "
+          "narrow with it: the parser is correct where embedding understanding is not "
+          "on 40 questions against 2 on the test split (exact McNemar, p = 4e-10) but "
+          "7 against 1 on the confirmatory split (p = 0.07). We therefore report the "
+          "parser’s advantage as demonstrated on the test split and not established on "
+          "unseen worlds.")
 
     # ---- X. Error Analysis ----
     doc.h1("Error Analysis")
     path = SCALE_DIR / "test.neurosymbolic.jsonl"
     if path.exists():
         cats = category_rates(path)
-        doc.table(["Category", "n", "Accuracy", "Errors"],
-                  [[c, str(cnt), f"{a:.3f}", str(round(cnt * (1 - a)))]
-                   for c, cnt, a in cats],
-                  "TABLE V. Accuracy by question category, LLM-free configuration, "
-                  "weakest first, with the error count each category contributes. "
-                  "Category sizes are 15 to 45 cases, so the rates are indicative "
-                  "rather than precise; the counts sum to every error the system makes.",
-                  keep_together=True)
+        # A ten-row table of per-category accuracy, dropped for the six-page limit.
+        # The paragraph below already names every category with the errors it
+        # contributes, and the category sizes are in Section V, so the table's third
+        # column was the only thing it added - recoverable by division, and indicative
+        # at best on 15 to 45 cases. The weakest categories are named here instead.
+        weakest = ", ".join(f"{c} {a:.3f} on n = {cnt}" for c, cnt, a in cats[:3])
+        doc.p(f"Accuracy is uneven across the ten categories (sizes in Section V); "
+              f"the weakest three are {weakest}.")
     # Previously this section discussed not_covered and nothing else, which is 15 of
     # 52 errors. Naming where the other 37 come from changes what the reader takes the
     # system's weakness to be: the single largest source is the encoder's reading of a
@@ -1274,33 +1284,32 @@ def build(doc: Doc, test: dict, confirm: dict, scale: dict,
     err = Counter(r.get("category") for r in rows_ns.values() if not r.get("correct"))
     top = ", ".join(f"{c} {k}" for c, k in
                     ((err[k], k) for k in [k for k, _ in err.most_common()]))
-    doc.p(f"The {sum(err.values())} errors are not one failure mode. By category they "
-          f"are: {top}. Two thirds therefore fall outside the failure the rest of this "
-          f"section analyses. The largest single source, {err['paraphrased']} of "
+    doc.p(f"The {sum(err.values())} errors are not one failure mode. By category: "
+          f"{top}. Two thirds fall outside the failure analysed below. The largest "
+          f"source, {err['paraphrased']} of "
           f"{sum(1 for r in rows_ns.values() if r.get('category') == 'paraphrased')} "
-          f"paraphrased questions, is the encoder: the question is in scope and the "
-          f"wording moves far enough from the goal’s own phrasing that nearest-"
-          f"neighbour selection lands on a different goal. The "
-          f"{err['recommendation']} recommendation errors are the rule base rather "
-          f"than the encoder — choosing among six remedies needs more of the policy "
-          f"than the rules encode, and the system commits to the wrong one rather than "
-          f"abstaining. Both are addressable without new architecture; the third, "
-          f"below, is not.")
+          f"paraphrased questions, is the encoder: the question is in scope but its "
+          f"wording moves far enough from the goal’s own phrasing that "
+          f"nearest-neighbour selection lands on a different goal. The "
+          f"{err['recommendation']} recommendation errors are the rule base instead — "
+          f"choosing among six remedies needs more of the policy than the rules "
+          f"encode, and the system commits to the wrong one rather than abstaining. "
+          f"Both are addressable without new architecture; the third is not.")
+    # Three paragraphs here stated the mechanism, then its consequence, then the
+    # remedy, each opening by restating the one before. One paragraph, same content.
     doc.p("The aggregate also conceals a complete failure. On the fifteen questions no "
-          "policy clause covers, the system abstained in none: thirteen produced a "
-          "confident answer and two a clarification. Asked the warranty period on a "
-          "product, it answered that a replacement was not available.")
-    doc.p("Understanding maps an out-of-scope question onto the nearest in-scope goal, "
-          "and the system answers that question correctly, citing real clauses and real "
-          "records. The gate cannot intervene because every check passes — across all "
-          "fifteen cases no unsupported number appears. Verification establishes that a "
-          "claim follows from evidence, not that it answers the question asked.")
-    doc.p("This qualifies the architecture’s central promise: an out-of-scope question "
-          "is not unsupportable, it is answerable about something else, and the "
-          "grounding makes the irrelevant answer more convincing rather than less. The "
-          "remedy is a relevance check independent of the evidence gate, which this "
-          "configuration has no way to express: selecting a goal by nearest neighbour "
-          "always returns one.")
+          "policy clause covers the system abstained in none: thirteen confident "
+          "answers and two clarifications. Asked the warranty period on a product, it "
+          "answered that a replacement was not available. Understanding maps an "
+          "out-of-scope question onto the nearest in-scope goal and the system answers "
+          "that question correctly, citing real clauses and records, so the gate cannot "
+          "intervene — every check passes and no unsupported number appears in any of "
+          "the fifteen. Verification establishes that a claim follows from evidence, "
+          "not that it answers the question asked. An out-of-scope question is not "
+          "unsupportable but answerable about something else, and the grounding makes "
+          "the irrelevant answer more convincing rather than less. The remedy is a "
+          "relevance check independent of the gate, which this configuration cannot "
+          "express, since nearest-neighbour selection always returns a goal.")
 
     # ---- Study II: the from-scratch model ----
     if fb:
@@ -1312,154 +1321,114 @@ def build(doc: Doc, test: dict, confirm: dict, scale: dict,
         tokens = corpus["tokens"]["train"]
 
         doc.h1("Study II: Gating a Model Trained from Scratch")
-        doc.p("The first study removes the language model from the decision; this one "
-              "puts it back in the hardest form — a model whose knowledge comes wholly "
-              "from a corpus we control, generating freely, with the symbolic layer "
-              "deciding what reaches the reader. It is secondary: it tests the gate, "
-              "not the generator, and training from scratch is not necessary to the "
-              "architecture.")
-
-        doc.h2("Data, Model and Training")
-        doc.p(f"The source is a record of {fb.get('source_goals', 3637)} FIFA World Cup "
-              f"goals from 1930 to 2022, men’s and women’s tournaments, covering 1,162 "
-              f"matches and 1,831 players. One dataset serves three roles, which keeps "
-              f"the comparison honest: the rows are verbalised into a training corpus, "
-              f"loaded as a typed knowledge graph, and used to generate evaluation "
-              f"prompts, so generator and verifier are grounded in the same facts.")
-        doc.p("The split is by match, not by row, so a withheld match has no sibling "
-              "goals in training: 137 matches are withheld entire. Leakage is checked "
-              "on (fixture, tournament) pairs rather than names, since fixtures recur "
-              "across tournaments and the 1934 and 1938 tournaments held replays. No "
-              "evaluated fixture appears in training.")
+        # Compressed for the six-page limit. The four subsection headings are gone and
+        # the training narrative is one paragraph, but nothing a reader needs to judge
+        # the result was cut: the sizing that bounds every claim, the four-valued
+        # verdicts, the extraction rate, the per-type intervals, and the held-out
+        # comparison with its sample sizes, interval and test all remain. What went is
+        # restatement - a table that repeated four numbers Table V already carries, and
+        # prose that re-described the counts beside it.
+        doc.p(f"The first study removes the language model from the decision; this one "
+              f"puts it back in the hardest form — a model whose knowledge comes wholly "
+              f"from a corpus we control, generating freely, with the symbolic layer "
+              f"deciding what reaches the reader. It tests the gate, not the generator. "
+              f"The source is {fb.get('source_goals', 3637)} FIFA World Cup goals from "
+              f"1930 to 2022 over 1,162 matches. One dataset serves three roles, which "
+              f"keeps the comparison honest: the rows are verbalised into a training "
+              f"corpus, loaded as a typed knowledge graph, and used to generate "
+              f"evaluation prompts, so generator and verifier are grounded in the same "
+              f"facts. The split is by match rather than by row, 137 withheld entire, "
+              f"and leakage is checked on (fixture, tournament) pairs rather than "
+              f"names, since fixtures recur; no evaluated fixture appears in "
+              f"training.")
+        # This paragraph said the model "memorises the corpus" while the held-out
+        # comparison below said it "has not reliably memorised" it. The records support
+        # the second: the refuted rate on matches it trained on is 0.458, so most of
+        # what it says about its own training data is still wrong. What it does do is
+        # overfit, which is not the same thing as retaining the facts.
         doc.p(f"The model is nanoGPT [20], unmodified, at {params/1e6:.1f}M parameters "
               f"(4 layers, 4 heads, width 256, vocabulary {corpus['vocab_size']}), "
-              f"trained from random initialization on a single consumer GPU. Initial "
-              f"loss was 8.454 against ln(4096) = 8.318, consistent with random "
-              f"initialization. Validation loss reached its minimum of "
-              f"{fb['best_val_loss']:.4f} and then rose while training loss continued "
-              f"to fall; the minimum checkpoint is used.")
-        # This paragraph said the model "memorises the corpus" while Section XI-D
-        # said it "has not reliably memorised" it. The records support the second: the
-        # refuted rate on matches it trained on is 0.458, so most of what it says
-        # about its own training data is still wrong. What it does do is overfit -
-        # validation loss turns upward - which is not the same thing as retaining the
-        # facts, and conflating the two was the contradiction.
-        doc.p(f"The sizing bounds every claim about the model: {tokens:,} training "
-              f"tokens against {params/1e6:.1f}M parameters is "
+              f"trained from random initialization on one consumer GPU; initial loss "
+              f"8.454 against ln(4096) = 8.318, minimum-validation checkpoint "
+              f"{fb['best_val_loss']:.4f}. The sizing bounds every claim about it: "
+              f"{tokens:,} tokens against {params/1e6:.1f}M parameters is "
               f"{tokens/params:.3f} tokens per parameter, two orders of magnitude below "
-              f"compute-optimal. It overfits — validation loss turns upward while "
-              f"training loss keeps falling — without thereby retaining the facts, as "
-              f"Section XI-D shows. No configuration avoids that at this scale, and a "
-              f"stronger generator would make the test easier rather than more "
-              f"informative.")
-
-        doc.h2("Claim Extraction and Verification")
+              f"compute-optimal. It overfits without thereby retaining the facts, no "
+              f"configuration avoids that at this scale, and a stronger generator would "
+              f"make the test easier rather than more informative.")
         doc.p(f"Generated text is split into sentences, each matched against the "
-              "corpus’s phrasings to yield a typed claim: a goal event, a player’s "
-              "tournament total, or a match total. Rule checks need no lookup — a goal "
-              "in the first half at minute 68 is impossible whatever the records say. "
-              "Graph checks ask whether the goal is on record. Verdicts are "
-              "four-valued, and a claim about a player or match the records do not "
-              "contain is UNVERIFIED rather than CONTRADICTED, since the graph is "
-              f"incomplete and absence is not refutation. Extraction covers "
-              f"{s2['extraction']*100:.1f}% of generated sentences; the remainder are "
-              f"reported as not checkable rather than guessed at.")
+              f"corpus’s phrasings to yield a typed claim: a goal event, a player’s "
+              f"tournament total, or a match total. Rule checks need no lookup — a goal "
+              f"in the first half at minute 68 is impossible whatever the records say — "
+              f"while graph checks ask whether the goal is on record. Verdicts are "
+              f"four-valued: a claim about a player or match the records do not contain "
+              f"is UNVERIFIED rather than CONTRADICTED, since the graph is incomplete "
+              f"and absence is not refutation. Extraction covers "
+              f"{s2['extraction']*100:.1f}% of {s2['sentences']:,} generated sentences, "
+              f"{s2['unparseable']} being unparseable; the rest are reported as not "
+              f"checkable rather than guessed at. Of the typed claims "
+              f"{s2['supported']:,} were supported, {s2['refuted']:,} refuted and "
+              f"{s2['unverified']} unverifiable; the "
+              f"{fb.get('truncated_fragments_discarded',0)} fragments severed by the "
+              f"fixed {fb['sampling']['max_new_tokens']}-token budget are discarded "
+              f"rather than counted against the model, one per generation.")
 
-        doc.h2("Results")
-        rows = [["SLM only (every claim released)",
+        rows = [["SLM only",
                  f"{s2['checkable']:,}", f"{s2['refuted']:,}", f"{s2['unverified']:,}",
                  num(s2["refuted_rate"]), num(1.0)],
-                ["SLM + symbolic gate",
+                ["SLM + gate",
                  f"{s2['supported']:,}", "0", "0",
                  num(0.0), num(s2["coverage"])]]
-        doc.table(["System", "Claims released", "Refuted", "Unverifiable",
-                   "Refuted rate", "Coverage"],
-                  rows, span=True, caption=
-                  f"TABLE V. {fb['prompts']} prompts, {s2['checkable']:,} checkable "
-                  f"claims. Both systems read the same generations, so the gate changes "
-                  f"only what is released. Refuted and unverifiable are kept apart: the "
-                  f"graph is incomplete, so a claim it has no record of is not thereby "
-                  f"false. The gate withholds both.")
-        doc.p(f"Of {s2['sentences']:,} sentences, {s2['checkable']:,} yielded a typed "
-              f"claim and {s2['unparseable']} were unparseable. Of the typed claims "
-              f"{s2['supported']:,} were supported, {s2['refuted']:,} refuted and "
-              f"{s2['unverified']} unverifiable — naming a player or match the records "
-              f"do not contain. A further "
-              f"{fb.get('truncated_fragments_discarded',0)} trailing fragments cut off "
-              f"by the token budget were discarded rather than counted against the "
-              f"model. That is "
-              f"{fb.get('truncated_fragments_discarded',0)/fb['prompts']:.2f} per "
-              f"prompt against a fixed {fb['sampling']['max_new_tokens']}-token budget, "
-              f"which is what makes the discard structural — one severed tail per "
-              f"generation — rather than a selection among claims.")
+        # Not spanning. A spanning table opens a section, and Word reserved the whole
+        # foot of the preceding column for it - 113 points of white space above this
+        # table alone. Six columns fit one column once the two row labels are short.
+        doc.table(["System", "Released", "Refut.", "Unver.", "Ref. rate", "Cov."],
+                  rows, widths=[0.78, 0.52, 0.46, 0.46, 0.60, 0.46], caption=
+                  f"TABLE IV. {fb['prompts']} prompts, {s2['checkable']:,} checkable "
+                  f"claims. SLM only releases every claim; SLM + gate releases only "
+                  f"what the graph confirms. Both read the same generations, so the "
+                  f"gate changes only what is released. Refuted and unverifiable are "
+                  f"kept apart because the graph is incomplete: a claim it has no "
+                  f"record of is not thereby false. The gate withholds both.")
 
-        # Fig. 3 was a two-bar chart carrying four numbers, and at column width its
-        # legend sat across the 1.000 label while the 0.467 label sat on its own bar.
-        # Tabulating the four numbers removes both collisions, states them to three
-        # places instead of reading them off a bar, and reclaims the lines that keeping
-        # Table VI contiguous costs.
-        doc.table(["Quantity", "Rate", "Reading"],
-                  [["Base refuted rate", num(s2["refuted_rate"]),
-                    "of claims the model makes, the graph refutes this share"],
-                   ["Gated refuted rate", num(0.0),
-                    "true by construction, not a measurement"],
-                   ["Coverage after gating", num(s2["coverage"]),
-                    "the share of checkable claims that survive"],
-                   ["Withheld", num(s2["withheld"]),
-                    f"{s2['refuted']} refuted and {s2['unverified']} unverifiable"]],
-                  "TABLE VII. What the gate removes in the secondary study and what it "
-                  "costs, over the same 1,056 checkable claims. Only the first and "
-                  "third rows are measurements of the gate’s effect.",
-                  keep_together=True)
-
+        # Fig. 3 was a two-bar chart carrying four numbers; the table that replaced it
+        # restated the two rates and the coverage figure that Table V already gives in
+        # its own columns, so it went when the page budget tightened. The two numbers
+        # that are not in Table V - the withheld share and its split into refuted and
+        # unverifiable - are in the paragraph below.
         if s2["kinds"]:
+            # This was a four-column table of three rows. A table earns its space when
+            # a reader scans or compares down a column; three rows of one rate each
+            # read as well in a sentence and cost a third of the vertical space, which
+            # is what the page limit buys with. Every number it held is here, intervals
+            # included.
             label = {"goal": "goal event",
                      "player_tournament_total": "player tournament total",
                      "match_total": "match total"}
-            doc.table(["Claim type", "n", "Refuted rate [95% CI]", "Unverifiable"],
-                      [[label.get(k, k), str(cnt), f"{r:.3f} [{lo:.3f}, {hi:.3f}]",
-                        str(u)]
-                       for k, cnt, r, u, (lo, hi) in s2["kinds"]],
-                      "TABLE VI. Refuted-claim rate by claim type, over all n of that "
-                      "type, with 95% bootstrap intervals; unverifiable claims counted "
-                      "apart. The match-total row rests on 25 claims and its interval "
-                      "is correspondingly wide.",
-                      # The break that stranded this table's last row under the next
-                      # column, with its header left behind, is now fixed rather than
-                      # explained: replacing Fig. 3 with the four numbers it plotted
-                      # reclaimed the lines that keeping the block contiguous costs.
-                      keep_together=True)
+            parts = [f"{label.get(k, k)} {r:.3f} [{lo:.3f}, {hi:.3f}] (n = {cnt})"
+                     for k, cnt, r, u, (lo, hi) in s2["kinds"]]
+            doc.p("The gate discriminates by claim type rather than rubber-stamping. "
+                  "Refuted-claim rates with 95% bootstrap intervals, unverifiable "
+                  "claims counted apart: " + "; ".join(parts) + ". The match-total "
+                  "rate rests on the fewest claims, hence its wider interval.")
 
-        doc.h2("How This Result Should Be Read")
-        doc.p("Three findings must be kept apart. In the enterprise benchmark the "
-              "architecture reduces unsupported claims against a retrieval baseline on "
-              "the same questions: a measured comparison. In Study II gating removes "
-              "refuted claims at a cost in coverage: a trade-off, not an improvement in "
-              "the generator. Whether the verifier is itself correct is established by "
-              "neither. Only the first is evidence that the architecture reduces "
-              "hallucination.")
-        doc.p(f"The gated system’s refuted rate of 0.000 is near-tautological and "
-              f"should not be reported as the finding. The gate releases only claims "
-              f"the graph confirms, so by construction none of them is refutable. The "
-              f"informative quantities are the other two: a base refuted rate of "
-              f"{num(s2['refuted_rate'])}, and the {num(s2['withheld'])} of checkable "
-              f"claims that withholding costs — the refuted ones together with a "
-              f"further {num(s2['unverified_rate'])} the graph cannot confirm either "
-              f"way. Verification buys soundness with silence, and it pays for part of "
-              f"that silence with claims that may well be true.")
-        doc.p(f"What is not tautological is that the checks are substantive. "
-              f"{NUMWORD.get(s2['rule_only'], s2['rule_only'])} claims were refuted by rule "
-              f"alone, with no database "
-              f"consulted — a goal in the first half at minute 68, or credited to a "
-              f"country that was not playing. The graph-based refutations are specific "
-              f"and plausible-looking, which is what makes them dangerous: the "
-              f"commonest is a goal event the records do not contain at the stated "
-              f"minute, and relocating a real goal to the wrong tournament is the next "
-              f"largest group. Per claim type the gate discriminates rather than "
-              f"rubber-stamps (Table VIII).")
-        # Verdict-breakdown figure removed for the page budget: it spans both columns,
-        # and every count in it - the four status totals and the refutations settled by
-        # rule alone - is stated in the text below.
+        # Cut for the six-page limit to what only this section says. The three-way
+        # distinction it opened with - measured comparison, trade-off, and the
+        # verifier's own correctness - is made again in the conclusion, and the
+        # tautology of the gated rate is in the Study II limitation; repeating either
+        # here cost eleven lines. What stays is the pair of numbers that carry the
+        # result and the evidence that the checks are substantive.
+        doc.p(f"The gated rate of 0.000 is near-tautological and is not the finding, "
+              f"since the gate releases only what the graph confirms. The informative "
+              f"quantities are the base refuted rate of {num(s2['refuted_rate'])} and "
+              f"the {num(s2['withheld'])} of checkable claims withholding costs — the "
+              f"refuted ones plus a further {num(s2['unverified_rate'])} the graph "
+              f"cannot confirm either way. Verification buys soundness with silence, "
+              f"and pays for part of that silence with claims that may well be true. "
+              f"The checks are substantive nonetheless: "
+              f"{NUMWORD.get(s2['rule_only'], s2['rule_only'])} claims were refuted by "
+              f"rule alone, with no database consulted.")
+
         if s2["held_out"]["n"] and s2["seen"]["n"]:
             # "Indistinguishable" was asserted from two rates with no sample sizes and
             # no test. Both are now given, and the interval is what carries the claim:
@@ -1471,97 +1440,77 @@ def build(doc: Doc, test: dict, confirm: dict, scale: dict,
                   f"prompts naming matches withheld from training is "
                   f"{ho['refuted']:.3f} (n = {ho['n']}), and on matches the model was "
                   f"trained on it is {se['refuted']:.3f} (n = {se['n']}): a difference "
-                  f"of {ho['refuted'] - se['refuted']:+.3f} "
-                  f"[{lo:.3f}, {hi:.3f}], Fisher exact "
-                  f"p = {s2['transfer_p']:.2f}. The interval excludes any difference "
-                  f"larger than about nine points in either direction, so the model "
+                  f"of {ho['refuted'] - se['refuted']:+.3f} [{lo:.3f}, {hi:.3f}], "
+                  f"Fisher exact p = {s2['transfer_p']:.2f}. The interval excludes any "
+                  f"difference larger than about nine points either way, so the model "
                   f"confabulates about its own training data about as readily as about "
-                  f"events it never saw. At {tokens/params:.3f} tokens per parameter it "
-                  f"has not reliably memorised the corpus, which suggests that data "
-                  f"starvation, and not merely absent knowledge, drives the errors. It "
-                  f"also means this study measures a generator that is unreliable "
-                  f"everywhere, not one that fails only outside its training "
-                  f"distribution.")
+                  f"events it never saw: at {tokens/params:.3f} tokens per parameter it "
+                  f"has not reliably memorised the corpus. This study therefore "
+                  f"measures a generator unreliable everywhere, not one failing only "
+                  f"outside its training distribution.")
 
     # ---- XI. Limitations ----
     doc.h1("Limitations and Threats to Validity")
-    doc.bullet("Scope of the evidence. Results come from generated worlds with oracle "
-               "gold answers, not real customer traffic, in a single domain — "
-               "enterprise policy decision support — whose governing rules can be "
-               "written down. English only, one item per order.")
-    doc.bullet("Transfer. Perfect selective accuracy does not generalize: the 1.000 "
-               "figure on the test split falls on the confirmatory split, and no claim "
-               "of perfect reliability should be read from it.")
-    doc.bullet("Authorship. The rule base, world generators and oracle were written by "
-               "one person, and the rules are hand-translated from policy text. An "
-               "independently authored evaluation, and automatic extraction of "
+    # Seven bullets became four. Each bullet carries a paragraph gap, and three of the
+    # seven were a sentence apiece; nothing is dropped, but what belongs together is
+    # now together.
+    doc.bullet("Scope. Results come from generated worlds with oracle gold answers, "
+               "not real customer traffic, in a single domain whose governing rules can "
+               "be written down; English only, one item per order. Both studies verify "
+               "claims against a curated knowledge base, so neither speaks to "
+               "open-domain factuality, where no such base exists to consult.")
+    doc.bullet("Transfer and authorship. Perfect selective accuracy does not "
+               "generalize: the 1.000 figure on the test split falls on the "
+               "confirmatory split. The rule base, world generators and oracle were "
+               "written by one person and the rules hand-translated from policy text; "
+               "an independently authored evaluation, and automatic extraction of "
                "candidate rules for human review, are the next steps.")
-    doc.bullet(f"The gate’s contribution is shown at the level of released text and "
-               f"is not quantified. The controlled test in Section VIII-A changes "
-               f"{gate['differ']} of {gate['cases']} answers, but the rise in "
-               f"unsupported figures, {gate['gated_unsupported']} to "
-               f"{gate['ablated_unsupported']}, rests on {gate['discordant']} "
-               f"discordant cases and is not significant "
-               f"(p = {gate['p_value']:.2g}). Quantifying the gate needs a "
-               f"prose-faithfulness metric and a larger prose-bearing split.")
-    doc.bullet("Model capability is not controlled. A 1.5B parser scored well below a "
-               "7B one while the retrieval baselines barely moved, but the two runs "
-               "used different inference stacks, so this is an open question.")
+    doc.bullet(f"The gate’s contribution is shown at the level of released text and is "
+               f"not quantified: the rise in unsupported figures in Section VIII-A "
+               f"rests on {gate['discordant']} discordant cases and is not significant "
+               f"(p = {gate['p_value']:.2g}). Quantifying it needs a prose-faithfulness "
+               f"metric and a larger prose-bearing split. Model capability is a "
+               f"separate open question: a 1.5B parser scored well below a 7B one while "
+               f"the retrieval baselines barely moved, but the two runs used different "
+               f"inference stacks.")
     if fb:
         _s2 = football_stats(FOOTBALL_CLAIMS)
         doc.bullet("Study II. The gated rate of zero refuted claims is true by "
-                   "construction — verification is definitionally correct with respect "
+                   "construction: verification is definitionally correct with respect "
                    "to the graph, so the gate’s precision and recall cannot be measured "
-                   "against independent ground truth, and a graph error would propagate "
-                   "silently. Its model is "
-                   f"{fb['model_parameters']/1e6:.1f}M parameters on "
-                   f"{fb['corpus']['tokens']['train']:,} tokens, a deliberately weak "
-                   "generator of checkable claims rather than a usable assistant. "
-                   f"Claim extraction covers {_s2['extraction']*100:.1f}% of generated "
-                   "sentences; an extractor that silently fails is indistinguishable "
-                   "from a model that said nothing checkable.")
-    doc.bullet("Both studies verify claims against a curated knowledge base. Neither "
-               "speaks to open-domain factuality, where no such base exists for the "
-               "gate to consult.")
+                   "against independent ground truth and a graph error would propagate "
+                   "silently. Its model is a deliberately weak generator of checkable "
+                   "claims, not a usable assistant, and an extractor that silently "
+                   f"fails on the {100-_s2['extraction']*100:.1f}% of sentences it does "
+                   "not cover is indistinguishable from a model that said nothing "
+                   "checkable.")
 
     doc.h1("Conclusion and Future Work")
-    # This sentence used to open on the retrieval-only baseline, which is the weakest
-    # one and not the comparison the paper now leads with. Against the baseline given
-    # the same rules the gain is smaller and it is the one we claim.
+    # Condensed for the six-page limit. Three paragraphs here restated the Results,
+    # Limitations and Study II sections in turn; a conclusion that re-argues the paper
+    # is the cheapest page to buy back. What stays is the headline with the comparison
+    # it is actually made against, the three findings that temper it, and the future
+    # work - each once.
     doc.p(f"Removing the language model from the decision path, rather than asking it "
           f"to audit itself, reduced hallucination from {num(rules_hal)} to "
-          f"{num(ns_hal)} against a model given the same corpus and the same rules, "
-          f"and from {num(rag_hal)} against retrieval alone, while raising coverage "
-          f"from {num(T('llm_rag_rules','coverage')[0])} to {num(ns_cov)} and cutting "
-          f"latency by roughly two orders of magnitude. The reduction is not an "
-          f"artefact of refusing difficult questions.")
-    doc.p(f"Three findings temper this, and belong in any summary of the result. "
-          f"First, the comparison that matters is against a model given the same rules, "
-          f"where the gain is {rules_gap:+.3f} accuracy "
-          f"[{rules_gap_ci[0]:.3f}, {rules_gap_ci[1]:.3f}] rather than the larger gap "
-          f"against retrieval alone. Second, the parser configuration’s selective "
-          f"accuracy of {num(pa_sel)} on the test split falls to {num(cpa_sel)} on "
-          f"unseen worlds, and its advantage over embedding understanding is not "
-          f"established there (p = 0.07): no claim of perfect reliability survives the "
-          f"confirmatory split. Third, the LLM-free configuration does not recognise "
-          f"questions its rule base does not cover — 0 abstentions on 15 such questions "
-          f"— a failure verification is structurally unable to catch, because relevance "
-          f"is not support.")
-    if fb:
-        s2 = football_stats(FOOTBALL_CLAIMS)
-        doc.p(f"The secondary study makes the price explicit: the graph refutes "
-              f"{num(s2['refuted_rate'])} of the claims a model trained from random "
-              f"initialization makes, and gating leaves only supported ones at "
-              f"{num(s2['coverage'])} coverage. Together the studies suggest "
-              f"one reading: verification converts an unreliable generator into a "
-              f"silent-but-sound one, and the useful question is never whether "
-              f"hallucination falls — gating guarantees that — but how much of the "
-              f"answer survives.")
-    doc.p("Future work is a relevance gate for the LLM-free configuration, which needs "
-          "goal selection to have a null option it currently lacks, an independently "
-          "authored evaluation, a single-stack measurement of the capability effect "
-          "noted in Section XII, and raising coverage in Study II without "
-          "reintroducing unsupported claims.")
+          f"{num(ns_hal)} against a model given the same corpus and rules, and from "
+          f"{num(rag_hal)} against retrieval alone, while raising coverage from "
+          f"{num(T('llm_rag_rules','coverage')[0])} to {num(ns_cov)} — not, therefore, "
+          f"an artefact of refusing difficult questions.")
+    doc.p(f"Three findings temper this. The comparison that matters is against a model "
+          f"given the same rules, where the gain is {rules_gap:+.3f} accuracy "
+          f"[{rules_gap_ci[0]:.3f}, {rules_gap_ci[1]:.3f}], not the larger gap against "
+          f"retrieval alone. The parser configuration’s selective accuracy of "
+          f"{num(pa_sel)} falls to {num(cpa_sel)} on unseen worlds and its advantage "
+          f"over embedding understanding is not established there (p = 0.07), so no "
+          f"claim of perfect reliability survives the confirmatory split. And the "
+          f"LLM-free configuration does not recognise questions its rule base does not "
+          f"cover — 0 abstentions on 15 — a failure verification is "
+          f"structurally unable to catch, because relevance is not support.")
+    doc.p("Future work: a relevance gate for the LLM-free configuration, which needs "
+          "goal selection to have a null option it lacks; an independently authored "
+          "evaluation; and raising Study II’s coverage without reintroducing "
+          "unsupported claims.")
 
     # ---- references ----
     # The IEEE template numbers Heading 1 sections; References must not be a
@@ -1574,69 +1523,55 @@ def build(doc: Doc, test: dict, confirm: dict, scale: dict,
     # publisher's own listing gives them.
     refs = [
         "Z. Ji et al., “Survey of hallucination in natural language generation,” "
-        "ACM Comput. Surv., vol. 55, no. 12, pp. 1–38, 2023, "
-        "doi: 10.1145/3571730.",
+        "ACM Comput. Surv., vol. 55, no. 12, pp. 1–38, 2023.",
         "L. Huang et al., “A survey on hallucination in large language models: "
-        "principles, taxonomy, challenges, and open questions,” ACM Trans. "
-        "Inf. Syst., vol. 43, no. 2, art. 42, pp. 1–55, 2025, "
-        "doi: 10.1145/3703155.",
+        "principles, taxonomy, challenges, and open questions,” ACM Trans. Inf. "
+        "Syst., vol. 43, no. 2, art. 42, pp. 1–55, 2025.",
         "P. Lewis et al., “Retrieval-augmented generation for knowledge-intensive "
         "NLP tasks,” in Proc. Adv. Neural Inf. Process. Syst. (NeurIPS), vol. 33, "
         "pp. 9459–9474, 2020.",
-        "A. Asai, Z. Wu, Y. Wang, A. Sil, and H. Hajishirzi, “Self-RAG: learning to "
-        "retrieve, generate, and critique through self-reflection,” in Proc. Int. "
-        "Conf. Learn. Representations (ICLR), 2024.",
-        "S. Dhuliawala, M. Komeili, J. Xu, R. Raileanu, X. Li, A. Celikyilmaz and "
-        "J. Weston, “Chain-of-verification reduces hallucination in large "
-        "language models,” in Findings Assoc. Comput. Linguistics: ACL 2024, "
-        "pp. 3563–3578, 2024, doi: 10.18653/v1/2024.findings-acl.212.",
-        "P. Manakul, A. Liusie, and M. J. F. Gales, “SelfCheckGPT: zero-resource "
-        "black-box hallucination detection for generative large language models,” in "
-        "Proc. Conf. Empir. Methods Nat. Lang. Process. (EMNLP), pp. 9004–9017, "
-        "2023, doi: 10.18653/v1/2023.emnlp-main.557.",
+        "A. Asai et al., “Self-RAG: learning to retrieve, generate, and critique "
+        "through self-reflection,” in Proc. Int. Conf. Learn. Representations "
+        "(ICLR), 2024.",
+        "S. Dhuliawala et al., “Chain-of-verification reduces hallucination in "
+        "large language models,” in Findings Assoc. Comput. Linguistics: ACL 2024, "
+        "pp. 3563–3578, 2024.",
+        "P. Manakul et al., “SelfCheckGPT: zero-resource black-box hallucination "
+        "detection for generative large language models,” in Proc. Conf. Empir. "
+        "Methods Nat. Lang. Process. (EMNLP), pp. 9004–9017, 2023.",
         "S. Min et al., “FActScore: fine-grained atomic evaluation of factual "
         "precision in long form text generation,” in Proc. Conf. Empir. Methods "
-        "Nat. Lang. Process. (EMNLP), pp. 12076–12100, 2023, "
-        "doi: 10.18653/v1/2023.emnlp-main.741.",
-        "L. Pan, A. Albalak, X. Wang, and W. Y. Wang, “Logic-LM: empowering large "
-        "language models with symbolic solvers for faithful logical reasoning,” in "
-        "Findings Assoc. Comput. Linguistics: EMNLP 2023, pp. 3806–3824, 2023, "
-        "doi: 10.18653/v1/2023.findings-emnlp.248.",
+        "Nat. Lang. Process. (EMNLP), pp. 12076–12100, 2023.",
+        "L. Pan et al., “Logic-LM: empowering large language models with symbolic "
+        "solvers for faithful logical reasoning,” in Findings Assoc. Comput. "
+        "Linguistics: EMNLP 2023, pp. 3806–3824, 2023.",
         "T. X. Olausson et al., “LINC: a neurosymbolic approach for logical "
         "reasoning by combining language models with first-order logic provers,” in "
         "Proc. Conf. Empir. Methods Nat. Lang. Process. (EMNLP), pp. 5153–5176, "
-        "2023, doi: 10.18653/v1/2023.emnlp-main.313.",
-        "L. Gao et al., “PAL: program-aided language models,” in Proc. Int. "
-        "Conf. Mach. Learn. (ICML), PMLR vol. 202, pp. 10764–10799, 2023.",
-        "W. Chen, X. Ma, X. Wang, and W. W. Cohen, “Program of thoughts prompting: "
-        "disentangling computation from reasoning for numerical reasoning tasks,” "
-        "Trans. Mach. Learn. Res., 2023.",
-        "Z. Cheng et al., “Binding language models in symbolic languages,” in "
-        "Proc. Int. Conf. Learn. Representations (ICLR), 2023.",
-        "A. d’Avila Garcez and L. C. Lamb, “Neurosymbolic AI: the 3rd wave,” "
-        "Artif. Intell. Rev., vol. 56, no. 11, pp. 12387–12406, 2023, "
-        "doi: 10.1007/s10462-023-10448-w.",
+        "2023.",
+        "L. Gao et al., “PAL: program-aided language models,” in Proc. Int. Conf. "
+        "Mach. Learn. (ICML), PMLR vol. 202, pp. 10764–10799, 2023.",
+        "W. Chen et al., “Program of thoughts prompting: disentangling computation "
+        "from reasoning for numerical reasoning tasks,” Trans. Mach. Learn. Res., "
+        "2023.",
+        "Z. Cheng et al., “Binding language models in symbolic languages,” in Proc. "
+        "Int. Conf. Learn. Representations (ICLR), 2023.",
+        "A. d’Avila Garcez and L. C. Lamb, “Neurosymbolic AI: the 3rd wave,” Artif. "
+        "Intell. Rev., vol. 56, no. 11, pp. 12387–12406, 2023.",
         "H. Kautz, “The third AI summer: AAAI Robert S. Engelmore memorial "
-        "lecture,” AI Mag., vol. 43, no. 1, pp. 105–125, 2022, "
-        "doi: 10.1002/aaai.12036.",
+        "lecture,” AI Mag., vol. 43, no. 1, pp. 105–125, 2022.",
         "S. C. Kleene, Introduction to Metamathematics. Amsterdam, The Netherlands: "
         "North-Holland, 1952.",
-        # Five works the body relies on and pointed at nothing: the self-consistency
-        # baseline named in Section I, the encoder the whole neural lane is, the model
-        # every baseline runs, the test every paired comparison uses, and the
-        # implementation Study II trains.
         "X. Wang et al., “Self-consistency improves chain of thought reasoning in "
         "language models,” in Proc. Int. Conf. Learn. Representations (ICLR), 2023.",
-        "S. Xiao, Z. Liu, P. Zhang, N. Muennighoff, D. Lian, and J.-Y. Nie, “C-Pack: "
-        "packed resources for general Chinese embeddings,” in Proc. ACM SIGIR Conf. "
-        "Res. Develop. Inf. Retrieval, pp. 641–649, 2024, "
-        "doi: 10.1145/3626772.3657878.",
+        "S. Xiao et al., “C-Pack: packed resources for general Chinese embeddings,” "
+        "in Proc. ACM SIGIR Conf. Res. Develop. Inf. Retrieval, pp. 641–649, 2024.",
         "Qwen Team, “Qwen2.5 technical report,” arXiv:2412.15115, 2024.",
         "Q. McNemar, “Note on the sampling error of the difference between "
-        "correlated proportions or percentages,” Psychometrika, vol. 12, no. 2, "
-        "pp. 153–157, 1947, doi: 10.1007/BF02295996.",
-        "A. Karpathy, “nanoGPT,” GitHub repository, 2023. [Online]. Available: "
-        "https://github.com/karpathy/nanoGPT",
+        "correlated proportions or percentages,” Psychometrika, vol. 12, no. 2, pp. "
+        "153–157, 1947.",
+        "A. Karpathy, “nanoGPT,” 2023. [Online]. Available: "
+        "github.com/karpathy/nanoGPT",
     ]
     # The `references` style numbers entries itself; a manual "[1] " would print twice.
     for ref in refs:
