@@ -22,10 +22,9 @@ Token files are flat `uint16` memory-maps, valid only while vocab_size <= 65536.
 from __future__ import annotations
 
 import hashlib
-import json
 import re
 import unicodedata
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, Iterator
 

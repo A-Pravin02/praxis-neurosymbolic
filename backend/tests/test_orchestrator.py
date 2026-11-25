@@ -8,7 +8,6 @@ from app.neuro.intent import parse_intent
 from app.orchestrator.pipeline import Orchestrator
 from app.orchestrator.router import Route, route
 from app.verification.gate import GateDecision
-from tests.conftest import principal_for
 
 
 def ask(principal, question: str, mode: str = "neurosymbolic"):

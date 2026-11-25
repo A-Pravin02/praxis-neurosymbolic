@@ -13,8 +13,8 @@ from app.knowledge.extraction import (
 from app.knowledge.schema import unwrap
 from app.rag import injection
 from app.rag.chunker import chunk_document, chunk_text
-from app.rag.embeddings import HashingEmbeddingProvider, cosine, get_embedder
-from app.rag.ingest import IngestOptions, ingest_bytes, ingest_text
+from app.rag.embeddings import HashingEmbeddingProvider, cosine
+from app.rag.ingest import IngestOptions, ingest_text
 from app.rag.parsers import parse_bytes, select_parser, split_sections
 from app.rag.retriever import HybridRetriever, RetrievalQuery, rerank
 from tests.conftest import auth_headers

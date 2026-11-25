@@ -11,7 +11,6 @@ neither is self-evident from reading the code.
 """
 from __future__ import annotations
 
-import json
 import math
 
 import numpy as np
@@ -170,7 +169,9 @@ def test_cleaning_removes_unknown_token_markers():
 
 def test_shingle_hash_is_stable_across_processes():
     """Reproducible dedup requires a hash that does not change between interpreters."""
-    import subprocess, sys, textwrap
+    import subprocess
+    import sys
+    import textwrap
     script = textwrap.dedent("""
         import sys; sys.path.insert(0, %r)
         from app.slm.data import _stable_hash

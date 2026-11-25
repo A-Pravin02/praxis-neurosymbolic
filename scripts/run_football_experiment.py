@@ -40,7 +40,7 @@ sys.path.insert(0, str(ROOT / "nanogpt"))
 
 from app.football.verifier import (  # noqa: E402
     CONTRADICTED, NOT_CHECKABLE, SUPPORTED, UNVERIFIED,
-    FootballGraph, extract_claims, gate, verify)
+    FootballGraph, extract_claims, verify)
 
 
 def load_model(checkpoint: Path, device: str):

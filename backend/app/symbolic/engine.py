@@ -13,14 +13,13 @@ Design commitments:
 """
 from __future__ import annotations
 
-import itertools
 import math
 from dataclasses import dataclass, field
 from typing import Any, Iterable
 
 from app.knowledge.schema import FactDTO, FactKind, Provenance, make_fact, unwrap
 from app.symbolic.schema import (
-    CompiledRule, Condition, Const, Expr, Head, Term, Var, check_stratification, render_rule,
+    CompiledRule, Condition, Const, Expr, Term, Var, check_stratification, render_rule,
 )
 
 MAX_ITERATIONS = 32

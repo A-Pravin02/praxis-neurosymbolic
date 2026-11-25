@@ -4,13 +4,11 @@ Every test here pins a defect that only appeared once real data was ingested.
 """
 from __future__ import annotations
 
-import io
 
-import pytest
 
 from app.ingestion.merged_dataset import (
-    ColumnStats, SourceFile, canonical, dataset_card, entity_facts,
-    schema_and_statistic_facts, slug,
+    SourceFile, canonical, dataset_card, entity_facts,
+    schema_and_statistic_facts,
 )
 from app.knowledge.resolver import question_tokens_of, resolve
 from app.neuro.heuristics import extract_numbers

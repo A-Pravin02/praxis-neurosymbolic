@@ -15,7 +15,7 @@ import inspect
 import json
 import math
 import time
-from dataclasses import dataclass, asdict, field
+from dataclasses import dataclass, asdict
 from pathlib import Path
 
 import numpy as np

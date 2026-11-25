@@ -19,7 +19,6 @@ import json
 import pathlib
 import re
 import subprocess
-import sys
 from datetime import datetime, timezone
 
 import docx
@@ -635,14 +634,14 @@ def main() -> None:
             f"Table {r.number('Table', 'checks')}. The verifier's "
             f"{census['defined_checks']} checks. Counts are measured over the "
             f"{census['cases']} frozen test questions, not asserted.", fs=8.5)
-    r.p(f"Each check returns one of four verdicts, and the distinction between the "
-        f"last two is what keeps the gate honest. **Supported**: the evidence entails "
-        f"the claim. **Contradicted**: the evidence refutes it. **Unverified**: the "
-        f"evidence neither entails nor refutes it - the records are silent. **Not "
-        f"checkable**: the claim is not the kind of thing this check can evaluate. "
-        f"Treating *unverified* as *contradicted* would make the gate punish the "
-        f"company for incomplete records; treating it as *supported* would let an "
-        f"unevidenced claim through. It is reported as itself.")
+    r.p("Each check returns one of four verdicts, and the distinction between the "
+        "last two is what keeps the gate honest. **Supported**: the evidence entails "
+        "the claim. **Contradicted**: the evidence refutes it. **Unverified**: the "
+        "evidence neither entails nor refutes it - the records are silent. **Not "
+        "checkable**: the claim is not the kind of thing this check can evaluate. "
+        "Treating *unverified* as *contradicted* would make the gate punish the "
+        "company for incomplete records; treating it as *supported* would let an "
+        "unevidenced claim through. It is reported as itself.")
     r.p(f"The release decision is then simple and deterministic: if any applicable "
         f"check returns contradicted, the answer is withheld and the system reports "
         f"insufficient evidence. Measured over the {census['cases']} test cases the "

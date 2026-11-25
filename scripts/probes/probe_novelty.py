@@ -8,7 +8,10 @@ not exist ("gift-wrap", "instalments", "warranty").
 This probe scores each novel content word against everything the pack describes, and
 reports the *lowest* such score per question - how alien the most alien word is.
 """
-import sys, collections, io, statistics
+import sys
+import collections
+import io
+import statistics
 from pathlib import Path
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
 REPO = Path(r"C:/Users/aprav/OneDrive/Desktop/praxisvit")

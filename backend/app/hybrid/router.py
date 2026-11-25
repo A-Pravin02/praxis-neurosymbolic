@@ -501,10 +501,10 @@ class ReasoningRouter:
         if goal.goal_kind == "calculation" or (act == "calculate" and computes):
             return RouteDecision(
                 Pipeline.CALCULATION,
-                f"The answer is an amount. It is computed by rule arithmetic over company "
-                f"records and stated values, because a number a language model produces is a "
-                f"prediction, not a calculation. The result is then checked against the rule's "
-                f"constraints.",
+                "The answer is an amount. It is computed by rule arithmetic over company "
+                "records and stated values, because a number a language model produces is a "
+                "prediction, not a calculation. The result is then checked against the rule's "
+                "constraints.",
                 goal=goal, goal_score=score, symbolic_required=True,
                 symbolic_reason=why_symbolic, neural_reason=neural_reason,
                 required_knowledge=required, clauses=clauses,

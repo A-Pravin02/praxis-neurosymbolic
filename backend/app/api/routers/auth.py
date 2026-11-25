@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Request, Response, status
+from fastapi import APIRouter, Request, Response, status
 
 from app.api.schemas import (
     AuthOut, LoginRequest, PrincipalOut, RefreshRequest, RegisterRequest, SessionOut, TokenOut,

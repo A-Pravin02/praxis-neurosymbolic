@@ -12,9 +12,8 @@ raise its own confidence.
 from __future__ import annotations
 
 import time
-import uuid
 from dataclasses import dataclass, field
-from typing import Any, Iterator
+from typing import Any
 
 from sqlalchemy import and_, or_, select
 from sqlalchemy.orm import Session
@@ -31,7 +30,7 @@ from app.neuro.heuristics import extract_numbers as _numbers
 from app.neuro.heuristics import is_exploratory
 from app.neuro.heuristics import phrase_fact
 from app.neuro import prompts
-from app.neuro.base import CompletionRequest, Message, Role, Task
+from app.neuro.base import CompletionRequest, Task
 from app.neuro.intent import IntentFrame, parse_intent
 from app.neuro.registry import get_fallback_llm, get_llm
 from app.orchestrator.router import Plan, Route, route_for_mode
@@ -41,7 +40,7 @@ from app.db.models.rag import Chunk, Document
 from app.neuro.heuristics import coverage
 from app.rag.retriever import EvidenceSpan, HybridRetriever, RetrievalQuery
 from app.symbolic.engine import (
-    Contradiction, InferenceResult, InferenceStep, SymbolicEngine, check_constraints,
+    Contradiction, InferenceResult, SymbolicEngine, check_constraints,
 )
 from app.tenancy.context import Principal
 from app.verification import gate as gate_module

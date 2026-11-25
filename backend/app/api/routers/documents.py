@@ -9,9 +9,8 @@ from app.api.schemas import (
 )
 from app.config import settings
 from app.core.deps import CurrentPrincipal, DbSession, require_permissions
-from app.core.errors import NotFoundError, PayloadTooLargeError, ValidationError
+from app.core.errors import PayloadTooLargeError, ValidationError
 from app.db.models.rag import Document
-from app.policy.pdp import Resource
 from app.policy import service as policy_service
 from app.rag import ingest as ingest_service
 from app.rag.retriever import HybridRetriever, RetrievalQuery

@@ -20,7 +20,6 @@ on the second - the failure that killed the previous attempt.
 """
 from __future__ import annotations
 
-import collections
 import pathlib
 import statistics
 import sys

@@ -5,7 +5,7 @@ import datetime as dt
 import hashlib
 import secrets
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 import jwt
 

@@ -1,0 +1,33 @@
+# What "lint clean" means in this repository.
+#
+#     python -m ruff check .          # must report no errors
+#     python -m ruff check . --fix    # applies the mechanical ones
+#
+# Before this file existed there was no configuration at all, so `ruff check` ran on
+# ruff's defaults and reported 142 findings that nothing enforced and nobody read. The
+# rules below are the defaults plus `W`, which is the set that catches mistakes rather
+# than opinions: unused imports and names (F), syntax and logic errors (E9, F82),
+# statements that hide a second statement on one line (E7), import placement (E4), and
+# whitespace (W).
+#
+# E501, line length, is deliberately absent, as it is from ruff's own defaults: 228
+# lines in this repository exceed 100 columns, most of them prose in a docstring or a
+# table of numbers that reads worse when reflowed. Wrapping them mechanically would be
+# a large diff that changes no behaviour and risks breaking a string literal. If this
+# repository ever adopts a formatter, that is the thing to let it decide.
+line-length = 100
+target-version = "py311"
+
+[lint]
+select = ["E4", "E7", "E9", "F", "W"]
+
+[lint.per-file-ignores]
+# nanoGPT is vendored verbatim from upstream under MIT, and `nanogpt/VENDORED.md`
+# states that these four files are unmodified. The paper relies on that: a reviewer
+# reproducing the run is meant to be reading Karpathy's code, not ours. Their eight
+# findings are style (a lambda assigned to a name, `l` as a variable, a type compared
+# with ==), none of them a defect, and fixing them would make the claim false. The
+# PRAXIS-specific files added under nanogpt/ are not listed here and are linted.
+"nanogpt/bench.py" = ["E731"]
+"nanogpt/configurator.py" = ["E721"]
+"nanogpt/sample.py" = ["E731", "E741"]

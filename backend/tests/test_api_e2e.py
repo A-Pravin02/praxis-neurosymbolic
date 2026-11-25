@@ -9,7 +9,7 @@ import io
 import json
 import re
 
-from tests.conftest import auth_headers, login, unique_email
+from tests.conftest import auth_headers, unique_email
 
 
 def numbers(text: str) -> set[float]:

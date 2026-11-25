@@ -4,7 +4,8 @@ The audit's finding: on not_covered cases the router snaps to the nearest goal i
 does have rules for and answers THAT question confidently. This sweeps the floor
 and reports overall accuracy, hallucination, and the not_covered category alone.
 """
-import sys, json
+import sys
+import json
 from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "backend"))

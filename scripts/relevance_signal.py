@@ -100,7 +100,7 @@ def main() -> None:
             print(f"  {i}/{len(cases)} generated", flush=True)
     summarise("GENERATED test split", rows, keys)
 
-    print(f"\n  per category, z_top1:")
+    print("\n  per category, z_top1:")
     for cat in sorted(per_cat, key=lambda c: statistics.fmean(x["z_top1"]
                                                               for x in per_cat[c])):
         vals = [x["z_top1"] for x in per_cat[cat]]
@@ -125,7 +125,7 @@ def main() -> None:
         mcat.setdefault(cat, []).append(s)
         mrows.append(("covered", s))
     summarise("CURATED Meridian test (all treated as covered)", mrows, keys)
-    print(f"\n  per category, z_top1:")
+    print("\n  per category, z_top1:")
     for cat in sorted(mcat, key=lambda c: statistics.fmean(x["z_top1"]
                                                            for x in mcat[c])):
         vals = [x["z_top1"] for x in mcat[cat]]

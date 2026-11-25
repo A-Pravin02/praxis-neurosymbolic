@@ -23,7 +23,7 @@ References are in `docs/paper/references.bib`.
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, asdict, field
+from dataclasses import dataclass, asdict
 
 import torch
 import torch.nn as nn

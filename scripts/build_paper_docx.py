@@ -1411,7 +1411,7 @@ def build(doc: Doc, test: dict, confirm: dict, scale: dict,
                   "costs, over the same 1,056 checkable claims. Only the first and "
                   "third rows are measurements of the gate’s effect.",
                   keep_together=True)
-        
+
         if s2["kinds"]:
             label = {"goal": "goal event",
                      "player_tournament_total": "player tournament total",

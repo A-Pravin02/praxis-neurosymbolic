@@ -9,13 +9,13 @@ from __future__ import annotations
 import uuid
 
 import pytest
-from sqlalchemy import select, text
+from sqlalchemy import select
 
 from app.db.models.knowledge import Fact
-from app.db.models.rag import Chunk, Document
+from app.db.models.rag import Chunk
 from app.db.session import tenant_session
 from app.orchestrator.pipeline import Orchestrator
-from tests.conftest import auth_headers, login, unique_email
+from tests.conftest import auth_headers, unique_email
 
 
 def ask(principal, question: str):

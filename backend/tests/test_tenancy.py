@@ -1,7 +1,6 @@
 """Multi-tenancy: row level security, least privilege, cross-tenant isolation."""
 from __future__ import annotations
 
-import uuid
 
 import pytest
 from sqlalchemy import select, text

@@ -9,10 +9,10 @@ from sqlalchemy import select
 from app.db.models.knowledge import Answer, Claim as ClaimRow, ProvenanceRecord
 from app.db.session import tenant_session
 from app.evaluation import harness
-from app.evaluation.cases import DEMO_SUITE, EvalCase, get_suite
+from app.evaluation.cases import DEMO_SUITE, EvalCase
 from app.knowledge import store as knowledge_store
 from app.knowledge.schema import (
-    FactDTO, FactKind, Provenance, make_fact, render_value, typed_value, unwrap,
+    FactKind, Provenance, make_fact, render_value, typed_value, unwrap,
 )
 from app.orchestrator import conversation as convo
 from app.orchestrator.pipeline import Orchestrator

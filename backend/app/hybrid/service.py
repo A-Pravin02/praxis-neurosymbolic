@@ -51,7 +51,6 @@ def previous_context(session: Session, principal: Principal,
 
 
 def answer(principal: Principal, question: str, context: dict[str, Any]) -> AssistantTurn:
-    from app.hybrid.controller import NeuroSymbolicController
 
     result = _controller().answer(question, actor_email=principal.email,
                                   actor_roles=tuple(sorted(principal.roles)), context=context)

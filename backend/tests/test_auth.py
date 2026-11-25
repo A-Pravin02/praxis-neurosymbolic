@@ -1,16 +1,12 @@
 """Authentication: registration, login, rotation, replay, lockout, enumeration."""
 from __future__ import annotations
 
-import datetime as dt
 
 import pytest
-from sqlalchemy import select
 
 from app.auth import passwords, service as auth_service, tokens
-from app.core.errors import InvalidCredentialsError, TokenError, ValidationError
-from app.db.models.tenancy import RefreshToken, User
-from app.db.session import SessionLocal, bind_tenant
-from tests.conftest import DEMO_PASSWORD, auth_headers, login, unique_email
+from app.core.errors import TokenError, ValidationError
+from tests.conftest import auth_headers, login, unique_email
 
 
 # --- password hashing -------------------------------------------------------

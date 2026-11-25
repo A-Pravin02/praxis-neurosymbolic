@@ -18,7 +18,7 @@ from app.auth.service import provision_tenant_roles, resolve_principal
 from app.core.logging import get_logger, log_event
 from app.db.models.policy import AccessConstraint, Policy
 from app.db.models.rag import Document
-from app.db.models.symbolic import ConstraintRule, Rule
+from app.db.models.symbolic import ConstraintRule
 from app.db.models.tenancy import (
     Role, Tenant, TenantLookup, User, UserLookup, UserRole,
 )

@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import uuid
 
-import pytest
 
 from app.knowledge.schema import FactKind, Provenance, make_fact
 from app.rag.retriever import EvidenceSpan

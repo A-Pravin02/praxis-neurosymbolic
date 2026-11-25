@@ -19,7 +19,7 @@ from app.db.models.tenancy import (
 )
 from app.db.session import SessionLocal, bind_tenant
 from app.tenancy.context import Principal
-from app.tenancy.permissions import ALL_PERMISSIONS, DEFAULT_ROLE, ROLE_TEMPLATES
+from app.tenancy.permissions import DEFAULT_ROLE, ROLE_TEMPLATES
 
 logger = get_logger("praxis.auth")
 

@@ -102,7 +102,7 @@ def main() -> None:
                   "  8. Verification — " + ", ".join(
                       f"{c['check']} {'✓' if c['passed'] else '✕'}"
                       for c in trace["verification"]["checks"]),
-                  f"  9. Evidence — " + ", ".join(
+                  "  9. Evidence — " + ", ".join(
                       f"{s['id']}" + (f" v{s['version']}" if s.get("version") else "")
                       for s in result.sources),
                   "  10. Natural-language explanation — the answer above, composed only from the "

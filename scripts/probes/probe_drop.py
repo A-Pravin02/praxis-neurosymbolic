@@ -8,7 +8,11 @@ The relative signal may survive. For a covered question the meaning lives in the
 verb, so removing the record should not help the goal match. For a not-covered one
 the match is carried BY the record, so removing it should cost.
 """
-import sys, collections, io, statistics, yaml
+import sys
+import collections
+import io
+import statistics
+import yaml
 from pathlib import Path
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
 REPO = Path(r"C:/Users/aprav/OneDrive/Desktop/praxisvit")

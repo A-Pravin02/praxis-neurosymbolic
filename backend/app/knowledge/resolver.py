@@ -21,13 +21,12 @@ import re
 import time
 import uuid
 from dataclasses import dataclass, field
-from functools import lru_cache
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.db.models.knowledge import Fact
-from app.neuro.heuristics import STOPWORDS, content_words, normalize, stem
+from app.neuro.heuristics import STOPWORDS, content_words, stem
 from app.tenancy.context import Principal
 
 # A statistical word in the question implies a suffix on the predicate.

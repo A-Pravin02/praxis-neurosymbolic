@@ -23,7 +23,6 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
 
-from sqlalchemy import select
 
 from app.config import settings
 from app.core.logging import get_logger, log_event
@@ -31,7 +30,7 @@ from app.db.models.evaluation import EvalCaseResult, EvalRun
 from app.db.models.tenancy import User, UserLookup
 from app.db.session import SessionLocal, bind_tenant
 from app.evaluation.cases import EvalCase, get_suite
-from app.neuro.heuristics import extract_numbers, normalize
+from app.neuro.heuristics import extract_numbers
 from app.orchestrator.pipeline import AssistantTurn, Orchestrator
 from app.verification.gate import GateDecision
 

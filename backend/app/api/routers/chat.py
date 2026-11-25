@@ -16,8 +16,8 @@ from app.config import settings
 from app.db.models.rag import Document
 from app.policy import service as policy_service
 from app.core import ratelimit
-from app.core.deps import CurrentPrincipal, DbSession, client_ip, require_permissions
-from app.core.errors import AuthorizationError, NotFoundError
+from app.core.deps import CurrentPrincipal, DbSession, require_permissions
+from app.core.errors import AuthorizationError
 from app.db.session import tenant_session
 from app.hybrid import service as ns_service
 from app.orchestrator import conversation as convo

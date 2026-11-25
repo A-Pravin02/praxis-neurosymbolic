@@ -6,7 +6,11 @@ that could plausibly separate a spurious goal match from a real one, and reports
 signal's mean per category. Any signal worth building on must put not_covered clearly
 outside the answerable categories.
 """
-import sys, collections, io, statistics, re
+import sys
+import collections
+import io
+import statistics
+import re
 from pathlib import Path
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
 REPO = Path(r"C:/Users/aprav/OneDrive/Desktop/praxisvit")
