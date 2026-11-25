@@ -61,7 +61,22 @@ def _load(name: str):
 
 
 def _sha(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+    """Hash a figure's contents.
+
+    A PNG is compared byte for byte: `.gitattributes` marks it binary, so the file in
+    a clone is the file that was committed.
+
+    An SVG cannot be. `.gitattributes` sets `* text=auto eol=lf`, so git stores and
+    checks it out with LF endings, while matplotlib writes CRLF on Windows. The two
+    files then differ in every line and in nothing else - the drawing is identical, and
+    byte equality would fail in any clone on either platform for a reason that has
+    nothing to do with the figure. Normalising the line endings compares the drawing,
+    which is the thing this test is about.
+    """
+    data = path.read_bytes()
+    if path.suffix == ".svg":
+        data = data.replace(b"\r\n", b"\n")
+    return hashlib.sha256(data).hexdigest()
 
 
 # ---------------------------------------------------------------------------
