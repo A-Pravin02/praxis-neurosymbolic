@@ -31,8 +31,8 @@ STAMP = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
 
 def rows(path: pathlib.Path) -> dict:
-    return {json.loads(l)["case"]: json.loads(l)
-            for l in path.read_text(encoding="utf-8").splitlines() if l.strip()}
+    return {json.loads(line)["case"]: json.loads(line)
+            for line in path.read_text(encoding="utf-8").splitlines() if line.strip()}
 
 
 def mcnemar_exact(a: dict, b: dict, field: str = "correct"):

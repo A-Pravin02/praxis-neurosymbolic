@@ -33,8 +33,8 @@ TOL = 5e-4          # the paper prints three decimals
 
 
 def load(path: pathlib.Path) -> list[dict]:
-    return [json.loads(l) for l in path.read_text(encoding="utf-8").splitlines()
-            if l.strip()]
+    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()
+            if line.strip()]
 
 
 def recompute(rows: list[dict]) -> dict[str, float | None]:

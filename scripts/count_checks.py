@@ -21,7 +21,7 @@ WORLDS = BACKEND / "data/benchmark_worlds"
 sys.path.insert(0, str(BACKEND))
 
 import yaml  # noqa: E402
-from _paths import show
+from _paths import show  # noqa: E402
 
 
 def main() -> None:

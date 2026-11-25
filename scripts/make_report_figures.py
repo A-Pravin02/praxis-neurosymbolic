@@ -61,7 +61,9 @@ def finish(fig, name):
 # --- Figure 1: Project 1 architecture ---------------------------------------
 def fig_p1_architecture():
     fig, ax = plt.subplots(figsize=(6.6, 8.3))
-    ax.set_xlim(0, 10); ax.set_ylim(0, 10.6); ax.axis("off")
+    ax.set_xlim(0, 10)
+    ax.set_ylim(0, 10.6)
+    ax.axis("off")
     steps = [
         ("Question + asker identity", "", NEURAL, "NEURAL"),
         ("Encode & semantically parse", "bge-small-en-v1.5 · 384-dim · offline", NEURAL, "NEURAL"),
@@ -94,7 +96,9 @@ def fig_p1_architecture():
 # --- Figure 2: Project 1 routing ---------------------------------------------
 def fig_p1_routing():
     fig, ax = plt.subplots(figsize=(7.4, 4.5))
-    ax.set_xlim(0, 12); ax.set_ylim(0, 7.4); ax.axis("off")
+    ax.set_xlim(0, 12)
+    ax.set_ylim(0, 7.4)
+    ax.axis("off")
     ax.text(6, 7.1, "How Project 1 decides symbolic vs. plain language model",
             ha="center", fontsize=11.5, weight="bold", color=INK)
     box(ax, 4.6, 6.0, 2.8, 0.62, "Goal matched?", HYBRID)
@@ -154,9 +158,12 @@ def fig_p1_confidence():
         ax.barh(names, values, color=colours, height=0.6)
         for i, v in enumerate(values):
             ax.text(v + 0.006, i, f"{v:.2f}", va="center", fontsize=8, color=INK)
-        ax.set_xlim(0, 0.42); ax.set_title(title, fontsize=10, weight="bold", color=INK)
-        ax.tick_params(labelsize=8); ax.set_xlabel("weight", fontsize=8)
-        for side in ("top", "right"): ax.spines[side].set_visible(False)
+        ax.set_xlim(0, 0.42)
+        ax.set_title(title, fontsize=10, weight="bold", color=INK)
+        ax.tick_params(labelsize=8)
+        ax.set_xlabel("weight", fontsize=8)
+        for side in ("top", "right"):
+            ax.spines[side].set_visible(False)
     fig.suptitle("Confidence is computed in code, never asked of the model",
                  fontsize=11.5, weight="bold", color=INK, y=1.03)
     fig.text(0.5, -0.07,
@@ -169,7 +176,9 @@ def fig_p1_confidence():
 # --- Figure 4: Project 2 architecture ----------------------------------------
 def fig_p2_architecture():
     fig, ax = plt.subplots(figsize=(6.6, 7.2))
-    ax.set_xlim(0, 10); ax.set_ylim(0, 9.0); ax.axis("off")
+    ax.set_xlim(0, 10)
+    ax.set_ylim(0, 9.0)
+    ax.axis("off")
     steps = [
         ("Question", "", SYMBOLIC, ""),
         ("ENTITY LINKING", "longest match over the KB's name index", SYMBOLIC, "SYMBOLIC"),
@@ -227,13 +236,15 @@ def fig_comparison():
             ax.text(c + 0.47, len(grid) - 1 - r + 0.45, marks[v], ha="center", va="center",
                     fontsize=8.4, weight="bold" if v == 2 else "normal",
                     color=INK if v else MUTED)
-    ax.set_xlim(-0.05, len(criteria)); ax.set_ylim(-0.05, len(grid))
+    ax.set_xlim(-0.05, len(criteria))
+    ax.set_ylim(-0.05, len(grid))
     ax.set_xticks([c + 0.47 for c in range(len(criteria))])
     ax.set_xticklabels(criteria, fontsize=7.8)
     ax.set_yticks([len(grid) - 1 - r + 0.45 for r in range(len(grid))])
     ax.set_yticklabels(approaches, fontsize=8.4)
     ax.tick_params(length=0)
-    for side in ax.spines.values(): side.set_visible(False)
+    for side in ax.spines.values():
+        side.set_visible(False)
     ax.set_title("What each approach structurally guarantees",
                  fontsize=11.5, weight="bold", color=INK, pad=12)
     fig.text(0.5, -0.06,
@@ -270,7 +281,10 @@ def fig_results():
     for s in systems:
         rows = data[s]
         if not rows:
-            labels.append(s); acc.append(0); hall.append(0); notes.append("not yet run")
+            labels.append(s)
+            acc.append(0)
+            hall.append(0)
+            notes.append("not yet run")
             continue
         n = len(rows)
         labels.append(s)
@@ -290,10 +304,13 @@ def fig_results():
             ax.text(x + 0.19, h + 0.015, f"{h:.2f}", ha="center", fontsize=7.6, color=INK)
         ax.text(x, -0.115, note, ha="center", fontsize=6.9,
                 color="#B3261E" if "INCOMPLETE" in note else MUTED)
-    ax.set_xticks(list(xs)); ax.set_xticklabels(labels, fontsize=8.2)
-    ax.set_ylim(0, 1.12); ax.set_ylabel("rate on the dev split", fontsize=8.5)
+    ax.set_xticks(list(xs))
+    ax.set_xticklabels(labels, fontsize=8.2)
+    ax.set_ylim(0, 1.12)
+    ax.set_ylabel("rate on the dev split", fontsize=8.5)
     ax.legend(fontsize=8, frameon=False, ncols=2, loc="upper right")
-    for side in ("top", "right"): ax.spines[side].set_visible(False)
+    for side in ("top", "right"):
+        ax.spines[side].set_visible(False)
     ax.set_title("Measured results — Project 2 dev split (300 questions)",
                  fontsize=11.5, weight="bold", color=INK, pad=10)
     # The caption states what the panel actually shows. While a run was partial it warned
@@ -321,15 +338,18 @@ def fig_executor():
     fig, ax = plt.subplots(figsize=(6.6, 2.5))
     bars = [("All 11,797 validation\ngold programs", 0.9947),
             ("Dev split, 300\ngold programs", 1.000)]
-    names = [b[0] for b in bars]; values = [b[1] for b in bars]
+    names = [b[0] for b in bars]
+    values = [b[1] for b in bars]
     ax.barh(names, values, color="#2E7D32", height=0.5)
     ax.barh(names, [1 - v for v in values], left=values, color="#E6E8EB", height=0.5)
     for i, v in enumerate(values):
         ax.text(v - 0.012, i, f"{v:.4f}".rstrip("0").rstrip("."), va="center", ha="right",
                 fontsize=10, weight="bold", color="white")
-    ax.set_xlim(0, 1.0); ax.tick_params(labelsize=8.2)
+    ax.set_xlim(0, 1.0)
+    ax.tick_params(labelsize=8.2)
     ax.set_xlabel("fraction of gold programs reproducing the gold answer", fontsize=8.2)
-    for side in ("top", "right", "left"): ax.spines[side].set_visible(False)
+    for side in ("top", "right", "left"):
+        ax.spines[side].set_visible(False)
     ax.set_title("The symbolic executor is verified independently of any model",
                  fontsize=11, weight="bold", color=INK, pad=10)
     fig.text(0.5, -0.16,

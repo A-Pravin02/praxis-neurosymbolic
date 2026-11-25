@@ -15,13 +15,16 @@ import statistics
 import yaml
 from pathlib import Path
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
-REPO = Path(r"C:/Users/aprav/OneDrive/Desktop/praxisvit")
+# scripts/probes/<this file> - two levels up is the repository. This was an
+# absolute path into one developer's home directory, so the probe ran on exactly
+# one machine and failed everywhere else at the first import.
+REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / "backend"))
 
-from app.evaluation.casegen import generate_cases
-from app.evaluation.worlds import DEV_SEEDS, WORLDS_DIR, generate_world
-from app.hybrid.knowledge_pack import load_pack
-from app.hybrid.router import context_free_support
+from app.evaluation.casegen import generate_cases  # noqa: E402
+from app.evaluation.worlds import DEV_SEEDS, WORLDS_DIR, generate_world  # noqa: E402
+from app.hybrid.knowledge_pack import load_pack  # noqa: E402
+from app.hybrid.router import context_free_support  # noqa: E402
 
 
 def drop_for(pack, question):

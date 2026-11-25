@@ -1109,8 +1109,8 @@ def main() -> None:
 
     r.h("8.5 Secondary study: gating a model trained from scratch", 2)
     claims = ROOT / "artifacts/football/results/claims.jsonl"
-    rows_c = [json.loads(l) for l in claims.read_text(encoding="utf-8").splitlines()
-              if l.strip()]
+    rows_c = [json.loads(line) for line in claims.read_text(encoding="utf-8").splitlines()
+              if line.strip()]
     chk = [x for x in rows_c if x["status"] != "NOT_CHECKABLE"]
     ref = sum(1 for x in chk if x["status"] == "CONTRADICTED")
     unv = sum(1 for x in chk if x["status"] == "UNVERIFIED")

@@ -148,8 +148,8 @@ class Report:
 
 # ---------------------------------------------------------------- recomputation
 def rows_by_case(path: pathlib.Path) -> dict:
-    return {json.loads(l)["case"]: json.loads(l)
-            for l in path.read_text(encoding="utf-8").splitlines() if l.strip()}
+    return {json.loads(line)["case"]: json.loads(line)
+            for line in path.read_text(encoding="utf-8").splitlines() if line.strip()}
 
 
 def mcnemar_exact(a: dict, b: dict) -> tuple[int, int, int, float]:
@@ -172,8 +172,8 @@ def study_two() -> dict | None:
     """
     if not CLAIMS.exists():
         return None
-    rows = [json.loads(l) for l in CLAIMS.read_text(encoding="utf-8").splitlines()
-            if l.strip()]
+    rows = [json.loads(line) for line in CLAIMS.read_text(encoding="utf-8").splitlines()
+            if line.strip()]
     chk = [r for r in rows if r["status"] != "NOT_CHECKABLE"]
     ref = sum(1 for r in chk if r["status"] == "CONTRADICTED")
     unv = sum(1 for r in chk if r["status"] == "UNVERIFIED")
@@ -440,8 +440,8 @@ def main() -> None:
     r.h("6.1 The accuracy numerator", 2)
     pr = ROOT / "eval_reports/research/paper/test.ns_parser.jsonl"
     if pr.exists():
-        recs = [json.loads(l) for l in pr.read_text(encoding="utf-8").splitlines()
-                if l.strip()]
+        recs = [json.loads(line) for line in pr.read_text(encoding="utf-8").splitlines()
+                if line.strip()]
         ANS = ("decision", "value", "result")
 
         def grp(kind: str | tuple, definite_only: bool = False) -> int:

@@ -299,12 +299,19 @@ def test_the_bootstrap_interval_is_deterministic(builder):
 # ---------------------------------------------------------------------------
 
 def test_no_script_hard_codes_an_author_path():
-    """A path under /Users/<someone> is a script that runs on exactly one machine."""
+    """A path under /Users/<someone> is a script that runs on exactly one machine.
+
+    `rglob`, not `glob`: this check was written with `glob("*.py")`, which does not
+    descend, so the three scripts in scripts/probes/ were never looked at. All three
+    held an absolute path into one developer's home directory and failed everywhere
+    else at the first import. A check that silently covers less than it appears to is
+    worse than no check, because it is cited as evidence.
+    """
     import re
 
     offenders = []
     pattern = re.compile(r"(?:[A-Za-z]:[\\/]Users[\\/]|/home/|/Users/)", re.I)
-    for path in sorted(SCRIPTS.glob("*.py")):
+    for path in sorted(SCRIPTS.rglob("*.py")):
         for n, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
             if pattern.search(line) and "sys.executable" not in line:
                 offenders.append(f"{path.name}:{n}: {line.strip()[:90]}")

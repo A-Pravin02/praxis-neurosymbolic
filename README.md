@@ -69,6 +69,14 @@ python scripts/check_paper.py           # the paper's build inputs, and each fig
 cd backend && python -m pytest -q -m no_db
 ```
 
+Linting, with the rule set in [`ruff.toml`](ruff.toml) — `ruff check .` reports nothing,
+and a test in the suite above fails if that stops being true:
+
+```bash
+pip install -r backend/requirements-dev.txt
+python -m ruff check .                  # or: make lint
+```
+
 ## Rebuilding the paper
 
 ```bash

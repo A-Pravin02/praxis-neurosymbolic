@@ -67,8 +67,9 @@ gate = ROOT / "eval_reports/research/gate-ablation-v3"
 a_path = gate / "test.neurosymbolic_llm.jsonl"
 b_path = gate / "test.neurosymbolic_llm_no_verification.jsonl"
 if a_path.exists() and b_path.exists():
-    load = lambda p: {json.loads(l)["case"]: json.loads(l)
-                      for l in p.read_text(encoding="utf-8").splitlines() if l.strip()}
+    def load(p):
+        return {json.loads(line)["case"]: json.loads(line)
+                for line in p.read_text(encoding="utf-8").splitlines() if line.strip()}
     a, b = load(a_path), load(b_path)
     shared = sorted(set(a) & set(b))
     text_diff = sum(1 for k in shared
@@ -126,8 +127,8 @@ ANSWERABLE = ("decision", "value", "result")
 parser_records = ROOT / "eval_reports/research/paper/test.ns_parser.jsonl"
 paper_docx = ROOT / "docs/paper/PRAXIS_IEEE.docx"
 if parser_records.exists() and paper_docx.exists():
-    recs = [json.loads(l) for l in
-            parser_records.read_text(encoding="utf-8").splitlines() if l.strip()]
+    recs = [json.loads(line) for line in
+            parser_records.read_text(encoding="utf-8").splitlines() if line.strip()]
     groups = {
         "answerable definite and correct":
             sum(1 for r in recs if r["gold_kind"] in ANSWERABLE
@@ -205,8 +206,8 @@ else:
 claims_path = ROOT / "artifacts/football/results/claims.jsonl"
 paper_docx = ROOT / "docs/paper/PRAXIS_IEEE.docx"
 if claims_path.exists() and paper_docx.exists():
-    rows = [json.loads(l) for l in
-            claims_path.read_text(encoding="utf-8").splitlines() if l.strip()]
+    rows = [json.loads(line) for line in
+            claims_path.read_text(encoding="utf-8").splitlines() if line.strip()]
     chk = [r for r in rows if r["status"] != "NOT_CHECKABLE"]
     nref = sum(1 for r in chk if r["status"] == "CONTRADICTED")
     nunv = sum(1 for r in chk if r["status"] == "UNVERIFIED")

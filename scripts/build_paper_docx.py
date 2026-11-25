@@ -87,8 +87,8 @@ def worked_example() -> str:
     path = ROOT / "eval_reports/research/paper/test.ns_parser.jsonl"
     if not path.exists():
         return ""
-    rows = [json.loads(l) for l in path.read_text(encoding="utf-8").splitlines()
-            if l.strip()]
+    rows = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()
+            if line.strip()]
     ans = [r for r in rows if r["gold_kind"] in ANSWERABLE]
     definite = [r for r in ans if r["definite"]]
 
@@ -167,8 +167,8 @@ def scale_rates() -> dict[str, dict[str, float]]:
     """Accuracy/hallucination/coverage per system from the 1.5B per-case records."""
     out: dict[str, dict[str, float]] = {}
     for path in sorted(SCALE_DIR.glob("test.*.jsonl")):
-        rows = [json.loads(l) for l in path.read_text(encoding="utf-8").splitlines()
-                if l.strip()]
+        rows = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()
+                if line.strip()]
         if len(rows) < 255:          # only complete systems are reported
             continue
         name = path.stem.split(".", 1)[1]
@@ -227,8 +227,8 @@ def football_stats(path: Path) -> dict:
     and the refuted rate is what the paper reports. The gate withholds both, so
     coverage is the same either way.
     """
-    rows = [json.loads(l) for l in path.read_text(encoding="utf-8").splitlines()
-            if l.strip()]
+    rows = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()
+            if line.strip()]
     chk = [r for r in rows if r["status"] != "NOT_CHECKABLE"]
     nsup = sum(1 for r in chk if r["status"] == "SUPPORTED")
     ncon = sum(1 for r in chk if r["status"] == "CONTRADICTED")
@@ -296,8 +296,8 @@ def per_case(system: str, directory: Path = PAPER_DIR,
     if not path.exists():
         return {}
     return {r["case"]: r for r in
-            (json.loads(l) for l in path.read_text(encoding="utf-8").splitlines()
-             if l.strip())}
+            (json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()
+             if line.strip())}
 
 
 def paired_accuracy_gap(a: str, b: str, seed: int = 0, draws: int = 10000) -> tuple:
@@ -362,7 +362,7 @@ def gate_experiment() -> dict:
 
 
 def category_rates(path: Path) -> list[tuple[str, int, float]]:
-    rows = [json.loads(l) for l in path.read_text(encoding="utf-8").splitlines() if l.strip()]
+    rows = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
     buckets: dict[str, list[int]] = {}
     for r in rows:
         buckets.setdefault(r.get("category", "?"), []).append(bool(r.get("correct")))

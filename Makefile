@@ -2,7 +2,7 @@
 # docs/DEVELOPMENT.md; nothing is hidden behind make.
 
 .PHONY: help up down logs rebuild reset test test-security eval seed ingest \
-        migrate shell fmt frontend-dev frontend-build
+        migrate shell lint lint-fix frontend-dev frontend-build
 
 help:
 	@echo "up             start the full stack (build if needed)"
@@ -11,6 +11,8 @@ help:
 	@echo "logs           follow the backend logs"
 	@echo "test           run the backend test suite"
 	@echo "test-security  run the security regression suite only"
+	@echo "lint           ruff check, under the rules in ruff.toml"
+	@echo "lint-fix       ruff check --fix, the mechanical ones"
 	@echo "eval           run the four-way evaluation benchmark"
 	@echo "seed           re-seed the demo workspaces (idempotent)"
 	@echo "migrate        apply database migrations"
@@ -54,3 +56,12 @@ frontend-dev:
 
 frontend-build:
 	cd frontend && npm run build
+
+# `fmt` was named in .PHONY above with no rule behind it, so `make fmt` failed with
+# "No rule to make target". These two are the real thing: the rule set lives in
+# ruff.toml, and backend/tests/test_scripts_runnable.py fails if `lint` would.
+lint:
+	python -m ruff check .
+
+lint-fix:
+	python -m ruff check . --fix

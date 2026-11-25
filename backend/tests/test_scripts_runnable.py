@@ -58,3 +58,25 @@ def test_the_script_starts_and_prints_its_usage(script):
         f"{(result.stderr or result.stdout).strip()[-1500:]}")
     assert "usage:" in result.stdout.lower(), (
         f"{script.name} exited 0 without printing a usage line")
+
+
+def test_the_repository_is_lint_clean():
+    """`ruff check .` reports nothing, under the rules `ruff.toml` declares.
+
+    The repository had no ruff configuration at all, so the command ran on defaults
+    and reported 142 findings. Fixing them once settles nothing: without a test the
+    count drifts straight back up, and a linter nobody can trust is a linter nobody
+    runs. The rule set lives in ruff.toml so this test has a definition to check
+    against rather than a number baked in here.
+    """
+    ruff = pytest.importorskip(
+        "ruff",
+        reason="ruff absent; pip install -r backend/requirements-dev.txt (pins 0.8.4)")
+    assert ruff  # the import is the check; the command below runs the installed tool
+
+    result = subprocess.run(
+        [sys.executable, "-m", "ruff", "check", ".", "--output-format", "concise"],
+        cwd=ROOT, capture_output=True, text=True, timeout=300)
+    assert result.returncode == 0, (
+        "ruff check reports findings; run `python -m ruff check . --fix` and fix the "
+        f"rest by hand:\n{result.stdout.strip()[:3000]}")

@@ -50,8 +50,8 @@ def recount(claims_path: Path) -> dict:
     which counts the unverifiable claims as false. The paper keeps the two apart,
     so the figures recount rather than read that field.
     """
-    rows = [json.loads(l) for l in claims_path.read_text(encoding="utf-8").splitlines()
-            if l.strip()]
+    rows = [json.loads(line) for line in claims_path.read_text(encoding="utf-8").splitlines()
+            if line.strip()]
     chk = [r for r in rows if r["status"] != "NOT_CHECKABLE"]
     c = sum(1 for r in chk if r["status"] == "CONTRADICTED")
     u = sum(1 for r in chk if r["status"] == "UNVERIFIED")

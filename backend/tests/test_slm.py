@@ -18,10 +18,10 @@ import pytest
 
 torch = pytest.importorskip("torch", reason="torch is only needed for the SLM experiment")
 
-from app.slm import data as D
-from app.slm.model import (LanguageModel, ModelConfig, PRESETS, apply_rope,
+from app.slm import data as D  # noqa: E402
+from app.slm.model import (LanguageModel, ModelConfig, PRESETS, apply_rope,  # noqa: E402
                            build_rope_cache)
-from app.slm.train import TokenBatcher, TrainConfig, lr_at, perplexity
+from app.slm.train import TokenBatcher, TrainConfig, lr_at, perplexity  # noqa: E402
 
 pytestmark = pytest.mark.no_db
 

@@ -26,7 +26,6 @@ def ask(principal, question: str):
 # --- tenant escape ---------------------------------------------------------
 
 def test_cross_tenant_document_read_is_impossible(client, carol):
-    acme = auth_headers(client, "alice@acme.test")
     globex_docs = client.get("/api/documents",
                              headers=auth_headers(client, "carol@globex.test")).json()
     victim_id = globex_docs[0]["id"]

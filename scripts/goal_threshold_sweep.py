@@ -10,8 +10,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "backend"))
 
-from app.hybrid import router
-from app.evaluation import research
+from app.hybrid import router  # noqa: E402
+from app.evaluation import research  # noqa: E402
 
 OUT = ROOT / "eval_reports" / "goal-sweep"
 DEFAULT = router.GOAL_ACCEPT

@@ -64,7 +64,6 @@ def build(path: pathlib.Path, *, limit: int | None, per_dataset: int,
 
     for source in sources:
         name = pathlib.PurePath(source.source_file).stem
-        subject = f"dataset:{source.slug}"
 
         # --- shape: row and column counts, exactly known -------------------
         cases.append({

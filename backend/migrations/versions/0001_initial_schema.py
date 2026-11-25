@@ -6,7 +6,7 @@ model change, which makes the second migration collide with the first on a
 fresh database. Explicit DDL keeps each revision a fixed point in history.
 
 Revision ID: 0001
-Revises: 
+Revises:
 Create Date: 2026-09-04 03:06:54.639154
 """
 from __future__ import annotations
