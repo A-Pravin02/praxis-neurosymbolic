@@ -709,10 +709,15 @@ def build(doc: Doc, test: dict, confirm: dict, scale: dict,
     # city and country, then email. Department and email are left as explicit markers
     # rather than guessed: inventing either would put a false affiliation and a false
     # address on a published paper. Fill both before submitting.
+    # The department line is dropped at the authors' request; IEEE's block is
+    # name / affiliation / city, country / email, and the department line is optional.
+    # Athiban Karthik's address is still a placeholder because nobody has given it:
+    # inventing an address for a named co-author would put a false contact on a
+    # published paper, so it stays visible until it is filled in.
     doc.authors([
-        "Pravin Anbalagan\n<DEPARTMENT>\nVellore Institute of Technology (VIT)\n"
-        "Vellore, India\n<EMAIL>",
-        "Athiban Karthik\n<DEPARTMENT>\nVellore Institute of Technology (VIT)\n"
+        "Pravin Anbalagan\nVellore Institute of Technology (VIT)\n"
+        "Vellore, India\npravinanbalagan02@gmail.com",
+        "Athiban Karthik\nVellore Institute of Technology (VIT)\n"
         "Vellore, India\n<EMAIL>",
     ])
 

@@ -75,9 +75,18 @@ def panel(ax, report, systems, key, title, ylabel):
     ax.errorbar(list(xs), vals, yerr=[los, his], fmt="none", ecolor="#000000",
                 elinewidth=0.9, capsize=2.5)
     # The printed value over each bar is gone with the width: at one column the
-    # labels collided with their own error bars, and Table II beside the figure gives
+    # labels collided with their own error bars, and Table I beside the figure gives
     # every one of these numbers to three places. A bar chart that has to be read to
     # three places was the wrong instrument anyway; this one shows the shape.
+    #
+    # A bar of height zero draws nothing, and a reader sees a missing bar rather than
+    # a measured zero - Extractive RAG commits to no decision on any case, so its
+    # accuracy really is 0.000 and that is a result, not a gap in the chart. Zero bars
+    # are labelled so they cannot be read as an omission.
+    for x, v in zip(xs, vals):
+        if v == 0:
+            ax.annotate("0.000", (x, 0.02), ha="center", va="bottom", fontsize=5.0,
+                        rotation=90)
     ax.set_xticks(list(xs))
     # Numbered, not named. At one column each of the seven slots is a third of an
     # inch, which no system name fits; the numbers are the row order of Table II,
